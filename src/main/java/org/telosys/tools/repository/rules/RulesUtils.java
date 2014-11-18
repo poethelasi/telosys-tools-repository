@@ -1,0 +1,124 @@
+package org.telosys.tools.repository.rules;
+
+import java.util.StringTokenizer;
+
+import org.telosys.tools.repository.model.Column;
+import org.telosys.tools.repository.model.Entity;
+import org.telosys.tools.repository.model.Link;
+
+public class RulesUtils {
+	
+	//------------------------------------------------------------------------------
+    /**
+     * The first character of the given string is forced to upper case  
+     * ie : "aBcDeFg" --> "ABcDeFg"
+     * @param inputString 
+     * @return 
+     */
+	public String capitalize(String inputString)
+    {
+    	if ( inputString == null || inputString.length() == 0 ) return "";
+        return inputString.substring(0, 1).toUpperCase() + inputString.substring(1);
+    }
+
+	//------------------------------------------------------------------------------
+    /**
+     * The first character of the given string is forced to upper case and all others are forced to lower case  
+     * ie : "aBcDeFg" --> "Abcdefg"
+     * @param inputString 
+     * @return 
+     */
+	public String capitalizeFully(String inputString)
+    {
+    	if ( inputString == null || inputString.length() == 0 ) return "";
+        return inputString.substring(0, 1).toUpperCase() + inputString.substring(1).toLowerCase();
+    }
+
+	//------------------------------------------------------------------------------
+    /**
+     * The first character of the given string is forced to lower case  
+     * @param inputString
+     * @return
+     */
+    public String uncapitalize(String inputString)
+    {
+    	if ( inputString == null || inputString.length() == 0 ) return "";
+        //return inputString.substring(0,1).toLowerCase() + inputString.substring(1,inputString.length()) ;
+        return inputString.substring(0,1).toLowerCase() + inputString.substring(1) ;
+    }
+	
+    //------------------------------------------------------------------------------
+    /**
+     * Transform the given string to "CamelCase", using the given word separator  
+     * ie : "ORDER_ITEM" --> "OrderItem"
+     * @param inputString eg "ORDER_ITEM"
+     * @param separator   eg "_"
+     * @return
+     */
+    public String camelCase(String inputString, String separator) {
+        if (inputString != null)
+        {
+            StringBuffer sb = new StringBuffer( inputString.length() );
+            String sToken = null;
+            String s = inputString.trim(); // to be secure
+            StringTokenizer st = new StringTokenizer(s, separator);
+            while (st.hasMoreTokens())
+            {
+                sToken = st.nextToken();
+                sb.append( capitalizeFully( sToken ) );
+            }
+            return sb.toString();
+        }
+        else
+        {
+            return "";
+        }
+    }
+    
+    public String separatedWords(String inputString, String separator) {
+        if (inputString != null)
+        {
+            StringBuffer sb = new StringBuffer( inputString.length() );
+            String sToken = null;
+            String s = inputString.trim().toLowerCase(); // to be secure
+            StringTokenizer st = new StringTokenizer(s, separator);
+            int i = 0 ;
+            while (st.hasMoreTokens())
+            {
+            	i++ ;
+                sToken = st.nextToken();
+                if ( i > 1 ) {
+                    sb.append( " " );
+                }
+                if ( i == 1 ) {
+                	sToken = capitalize( sToken ) ;
+                }
+            	sb.append( sToken );
+            }
+            return sb.toString();
+        }
+        else
+        {
+            return "";
+        }
+    }
+
+    public boolean attributeNameAlreadyUsed(String attributeName, Entity entity ) {
+    	//--- Search in all columns/attributes
+    	Column[] columns = entity.getColumns();
+    	for ( Column column : columns ) {
+    		if ( column.getJavaName().equals(attributeName) ) {
+    			return true ;
+    		}
+    	}
+    	//--- Search in all links
+    	Link[] links = entity.getLinks();
+    	for ( Link link : links ) {
+    		if ( link.getJavaFieldName().equals(attributeName) ) {
+    			return true ;
+    		}
+    	}
+    	return false ;
+    }
+
+}
