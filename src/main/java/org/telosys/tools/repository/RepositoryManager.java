@@ -29,13 +29,12 @@ import org.telosys.tools.db.model.DatabaseColumn;
 import org.telosys.tools.db.model.DatabaseForeignKey;
 import org.telosys.tools.db.model.DatabaseForeignKeyColumn;
 import org.telosys.tools.db.model.DatabaseTable;
-import org.telosys.tools.repository.config.EntityInformationProvider;
-import org.telosys.tools.repository.config.UserInterfaceInformationProvider;
 import org.telosys.tools.repository.model.Column;
 import org.telosys.tools.repository.model.Entity;
 import org.telosys.tools.repository.model.ForeignKey;
 import org.telosys.tools.repository.model.ForeignKeyColumn;
 import org.telosys.tools.repository.model.RepositoryModel;
+import org.telosys.tools.repository.rules.RepositoryRules;
 
 /**
  * Abstract repository manager ancestor<br>
@@ -47,31 +46,30 @@ import org.telosys.tools.repository.model.RepositoryModel;
 
 public abstract class RepositoryManager extends StandardTool
 {
-	private final EntityInformationProvider        entityInformationProvider ;
-	private final UserInterfaceInformationProvider uiInfoProvider ;
-	
-//	protected ClassNameProvider    _classNameProvider = null;
+//	private final EntityInformationProvider        entityInformationProvider ;
+//	private final UserInterfaceInformationProvider uiInfoProvider ;
+	private final RepositoryRules repositoryRules ;
 	
 	protected final TelosysToolsLogger   logger ;
 
-
-//	public RepositoryManager(InitializerChecker inichk, ClassNameProvider classNameProvider, TelosysToolsLogger logger) 
+//	public RepositoryManager(EntityInformationProvider entityInformationProvider, UserInterfaceInformationProvider uiInfoProvider, TelosysToolsLogger logger) 
 //	{
 //		super(logger);
-//		_inichk = inichk;
-//		_classNameProvider = classNameProvider ;
-//		_logger = logger;
+//		this.entityInformationProvider = entityInformationProvider;
+//		this.uiInfoProvider = uiInfoProvider ;
+//		this.logger = logger;
 //	}
-	public RepositoryManager(EntityInformationProvider entityInformationProvider, UserInterfaceInformationProvider uiInfoProvider, TelosysToolsLogger logger) 
+	protected RepositoryManager(RepositoryRules repositoryRules, TelosysToolsLogger logger) 
 	{
 		super(logger);
-		this.entityInformationProvider = entityInformationProvider;
-		this.uiInfoProvider = uiInfoProvider ;
+		this.repositoryRules = repositoryRules ;
 		this.logger = logger;
 	}
 
-
-
+	protected RepositoryRules getRepositoryRules() {
+		return this.repositoryRules ;
+	}
+	
 	protected DatabaseMetaData getMetaData(Connection con) throws TelosysToolsException {
 		DatabaseMetaData dbmd = null;
 		try {
@@ -87,31 +85,17 @@ public abstract class RepositoryManager extends StandardTool
 	{
 		logger.log("addEntity()...");
 
-		//--- Create Entity = DB TABLE
+		//--- Create Entity from the Database TABLE
 		Entity entity = new Entity();
 		entity.setName( dbTable.getTableName() );
 
 		//--- Get the VO Bean class name from the Table Name
-		//String sBeanClassName      = _inichk.getEntityClassName(entity.getName());
-		String sBeanClassName      = entityInformationProvider.getEntityClassName(entity.getName());
-		
+		String beanClassName = repositoryRules.getEntityClassName(entity.getName());
 
-// REMOVED in v 2.0.7 
-//		//--- Get the other class names from the VO Bean class name
-//		String sVOListClassName    = _classNameProvider.getVOListClassName(sBeanClassName);
-//		String sDAOClassName       = _classNameProvider.getDAOClassName(sBeanClassName);
-//		String sXmlMapperClassName = _classNameProvider.getXmlMapperClassName(sBeanClassName);
-
-		entity.setBeanJavaClass(sBeanClassName);		
-// REMOVED in v 2.0.7 
-//		entity.setListJavaClass(sVOListClassName);
-//		entity.setDaoJavaClass(sDAOClassName);
-//		entity.setConverterJavaClass(sXmlMapperClassName);
-		
+		entity.setBeanJavaClass(beanClassName);		
 		entity.setCatalog ( dbTable.getCatalogName() ); 
 		entity.setSchema  ( dbTable.getSchemaName() ); 
-		
-		entity.setDatabaseType ( dbTable.getTableType() ) ; // v 2.0.7 #LGU
+		entity.setDatabaseType ( dbTable.getTableType() ) ; 
 		
 		//--- Add the columns of this table
 		addColumns( entity, dbTable) ;
@@ -119,12 +103,10 @@ public abstract class RepositoryManager extends StandardTool
 		//--- Add the Foreign Keys of this table
 		addForeignKeyParts( entity, dbTable);
 		
-		
 		//--- Add the entity in the repository
 		repositoryModel.storeEntity(entity);
 
 		logger.log("addEntity() : entity " + dbTable.getTableName() + "stored");
-
 	}
 	
 	private void addColumns( Entity entity, DatabaseTable dbTable) 
@@ -166,8 +148,7 @@ public abstract class RepositoryManager extends StandardTool
     	return false ;
     }
 		
-	protected Column buildColumn( DatabaseColumn dbCol ) 
-	{	
+	protected Column buildColumn( DatabaseColumn dbCol ) {	
 		String dbColName     = dbCol.getColumnName(); //--- Column Name
 		String dbTypeName    = dbCol.getDbTypeName(); //--- Column Type (original database type)
 		int    iDbSize       = dbCol.getSize(); //--- Column Size (max nb of characters or decimal precision 
@@ -177,31 +158,24 @@ public abstract class RepositoryManager extends StandardTool
 		//--- Java field name and type
 		String sAttributeName = "???";
 		String sAttributeType = "???";
-		//String sLongTextFlag = null;
 		boolean bAttributeLongText = false ;
 		String sAttributeDateType = null;
 		
 		try {
-			//sJavaType = _inichk.getAttributeType(dbTypeName, iJdbcTypeCode, dbCol.isNotNull() );
-			sAttributeType = entityInformationProvider.getAttributeType(dbTypeName, iJdbcTypeCode, dbCol.isNotNull() );
+			sAttributeType = repositoryRules.getAttributeType(dbTypeName, iJdbcTypeCode, dbCol.isNotNull() );
 			if (sAttributeType == null) {
 				sAttributeType = "null";
 			}
 
-			//sJavaName = _inichk.getAttributeName(dbColName, dbTypeName, iJdbcTypeCode);
-			sAttributeName = entityInformationProvider.getAttributeName(dbColName, dbTypeName, iJdbcTypeCode);
+			sAttributeName = repositoryRules.getAttributeName(dbColName);
 			if (sAttributeName == null) {
 				sAttributeName = "null";
 			}
 
 			//--- Attribute LONG TEXT ? ( BLOB, CLOB, etc )
-			//sLongTextFlag = _inichk.getAttributeLongTextFlag(dbTypeName, iJdbcTypeCode, sJavaType);
-			//sLongTextFlag = entityInformationProvider.getAttributeLongTextFlag(dbTypeName, iJdbcTypeCode, sJavaType);
 			bAttributeLongText = isAttributeLongText ( dbTypeName, iJdbcTypeCode );
 			
 			//--- Attribute DATE TYPE ( Date Only, Time Only, Date and Type )
-			//sDateType = _inichk.getAttributeDateType(dbTypeName, iJdbcTypeCode, sJavaType);
-			//sAttributeDateType = entityInformationProvider.getAttributeDateType(dbTypeName, iJdbcTypeCode, sAttributeType);
 			sAttributeDateType = getAttributeDateType(dbTypeName, iJdbcTypeCode);
 
 		} catch (Throwable t) {
@@ -209,10 +183,6 @@ public abstract class RepositoryManager extends StandardTool
 		}
 		logger.log("   - Column : " + dbColName + " ( " + iJdbcTypeCode + " : " + dbTypeName + " ) ---> "
 				+ sAttributeName + " ( " + sAttributeType + " ) ");
-
-//		if (sJavaName.equals("boolean")) {
-//			// bUseBooleanType = true;
-//		}
 
 		//--- Create a new "column" for this "table/entity"
 		Column column = new Column();
@@ -232,9 +202,7 @@ public abstract class RepositoryManager extends StandardTool
 			column.setJavaDefaultValue(sDefaultValue);
 		}
 		
-		//if (sLongTextFlag != null) {
 		if ( bAttributeLongText == true ) {
-			//column.setLongText(sLongTextFlag);
 			column.setLongText( Column.SPECIAL_LONG_TEXT_TRUE );
 		}
 		if (sAttributeDateType != null) {
@@ -248,24 +216,17 @@ public abstract class RepositoryManager extends StandardTool
 		column.setPrimaryKey( dbCol.isInPrimaryKey());
 
 		//--- Is this column a member of a Foreign Key ?
-		//setFkAttribute(dbColName, column, listFK);
 		column.setForeignKey( dbCol.getUsedInForeignKey() > 0 );
 
 		//--- Is this column auto-incremented ?
 		column.setAutoIncremented(dbCol.isAutoIncremented());
-		
 		column.setDatabasePosition( dbCol.getOrdinalPosition() ); // #LGU 10/08/2011
-		
 		column.setDatabaseDefaultValue( dbCol.getDefaultValue() ); // #LGU 10/08/2011
-		
 		column.setDatabaseComment( dbCol.getComment() ); // v 2.1.1 - #LCH 20/08/2014
 
 		//--- Further information ( v 2.0.3 )
-//		column.setLabel(     _inichk.getAttributeLabel(dbColName, dbTypeName, iJdbcTypeCode) );
-//		column.setInputType( _inichk.getAttributeInputType(dbColName, dbTypeName, iJdbcTypeCode, sJavaType));		
-		column.setLabel(     uiInfoProvider.getAttributeLabel(dbColName, dbTypeName, iJdbcTypeCode) );
-		column.setInputType( uiInfoProvider.getAttributeInputType(dbColName, dbTypeName, iJdbcTypeCode));
-		
+		column.setLabel(     repositoryRules.getAttributeGuiLabel(dbColName) );
+		column.setInputType( repositoryRules.getAttributeGuiType(dbColName, iJdbcTypeCode));
 		
 		//--- Further information for Java Validator 
 		if ( ! column.isJavaPrimitiveType() ) {
@@ -273,12 +234,10 @@ public abstract class RepositoryManager extends StandardTool
 				column.setJavaNotNull( true );
 				column.setNotEmpty(true);
 			}
-			if ( column.isJavaTypeString() )
-			{
+			if ( column.isJavaTypeString() ) {
 				column.setMaxLength(""+iDbSize);
 			}
 		}
-		
 		return column ;
 	}
 	
@@ -311,15 +270,11 @@ public abstract class RepositoryManager extends StandardTool
 		return foreignKey ;
 	}
 	
-	protected void addForeignKeyParts( Entity entity, DatabaseTable dbTable) 
-	{
+	private void addForeignKeyParts( Entity entity, DatabaseTable dbTable) {
 		//--- For each foreign key of the table ...
 		for ( DatabaseForeignKey dbFK : dbTable.getForeignKeys() ) {
-			ForeignKey foreignKey = buildForeignKey( dbFK ) ;
-			
-			entity.storeForeignKey(foreignKey);
+			entity.storeForeignKey(buildForeignKey( dbFK ) );
 		}
-		
 	}
 
 }

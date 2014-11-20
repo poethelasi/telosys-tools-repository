@@ -122,7 +122,7 @@ public class StandardRepositoryRules implements RepositoryRules
 	}
 
     @Override
-	public String getAttributeNameForLinkManyToOne(Entity entity, Entity referencedEntity ) 
+	public String getAttributeNameForLinkToOne(Entity entity, Entity referencedEntity ) 
 	{
 		//--- Determines the attribute name
 		String originalAttributeName = rulesUtils.uncapitalize( referencedEntity.getBeanJavaClass() ) ;
@@ -137,7 +137,7 @@ public class StandardRepositoryRules implements RepositoryRules
 	}
 
     @Override
-	public String getAttributeNameForLinkOneToMany(Entity entity, Entity referencedEntity ) 
+	public String getAttributeNameForLinkToMany(Entity entity, Entity referencedEntity ) 
 	{
 		//--- Determines the attribute name
 		String originalAttributeName = "listOf" + referencedEntity.getBeanJavaClass() ;

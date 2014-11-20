@@ -19,18 +19,17 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Date;
-import java.util.Iterator;
 
 import org.telosys.tools.commons.TelosysToolsException;
 import org.telosys.tools.commons.TelosysToolsLogger;
 import org.telosys.tools.commons.dbcfg.DatabaseConfiguration;
+import org.telosys.tools.commons.jdbc.ConnectionManager;
 import org.telosys.tools.db.model.DatabaseModelManager;
 import org.telosys.tools.db.model.DatabaseTable;
 import org.telosys.tools.db.model.DatabaseTables;
-import org.telosys.tools.repository.config.EntityInformationProvider;
-import org.telosys.tools.repository.config.UserInterfaceInformationProvider;
 import org.telosys.tools.repository.model.ModelVersion;
 import org.telosys.tools.repository.model.RepositoryModel;
+import org.telosys.tools.repository.rules.RepositoryRules;
 
 /**
  * Repository (model) generator 
@@ -40,35 +39,65 @@ import org.telosys.tools.repository.model.RepositoryModel;
  */
 public class RepositoryGenerator extends RepositoryManager
 {
-	/**
-	 * Constructor
-	 * @param entityInformationProvider
-	 * @param uiInfoProvider
-	 * @param logger
-	 */
-	public RepositoryGenerator(EntityInformationProvider entityInformationProvider, UserInterfaceInformationProvider uiInfoProvider, TelosysToolsLogger logger) 
-	{
-		super(entityInformationProvider, uiInfoProvider, logger);
-	}
+//	/**
+//	 * Constructor
+//	 * @param entityInformationProvider
+//	 * @param uiInfoProvider
+//	 * @param logger
+//	 */
+//	public RepositoryGenerator(EntityInformationProvider entityInformationProvider, UserInterfaceInformationProvider uiInfoProvider, TelosysToolsLogger logger) 
+//	{
+//		super(entityInformationProvider, uiInfoProvider, logger);
+//	}
 
 	/**
-	 * Generates the repository model from the given database <br>
+	 * Constructor
+	 * @param repositoryRules
+	 * @param logger
+	 */
+	public RepositoryGenerator(RepositoryRules repositoryRules, TelosysToolsLogger logger) {
+		super( repositoryRules, logger);
+	}
+
+//	/**
+//	 * Generates the repository model from the given database <br>
+//	 * Generates all the entities and all the links between the entities
+//	 * 
+//	 * @param connection
+//	 * @param databaseConfig
+//	 * @return
+//	 * @throws TelosysToolsException
+//	 */
+//	public RepositoryModel generate(Connection connection, DatabaseConfiguration databaseConfig) throws TelosysToolsException 
+//	{
+//		//--- STEP 1 : Generates the model entities 
+//		RepositoryModel repositoryModel = generateRepository(connection, databaseConfig);
+//		
+//		//--- STEP 2 : Generates the links between entities 
+//		LinksGenerator linksGenerator = new LinksGenerator(getLogger());
+//		linksGenerator.generateAllLinks(repositoryModel);
+//		
+//		return repositoryModel ;
+//	}
+	
+	/**
+	 * Generates the repository model from the given database configuration<br>
 	 * Generates all the entities and all the links between the entities
-	 * 
-	 * @param con
-	 * @param databaseConfig
+	 * @param databaseConfiguration
 	 * @return
 	 * @throws TelosysToolsException
 	 */
-	public RepositoryModel generate(Connection con, DatabaseConfiguration databaseConfig) throws TelosysToolsException 
+	public RepositoryModel generate(DatabaseConfiguration databaseConfiguration) throws TelosysToolsException 
 	{
+		ConnectionManager connectionManager = new ConnectionManager(logger);
+		Connection connection = connectionManager.getConnection(databaseConfiguration);
+		
 		//--- STEP 1 : Generates the model entities 
-		RepositoryModel repositoryModel = generateRepository(con, databaseConfig);
+		RepositoryModel repositoryModel = generateRepository(connection, databaseConfiguration);
 		
 		//--- STEP 2 : Generates the links between entities 
-		LinksGenerator linksGenerator = new LinksGenerator(getLogger());
+		LinksGenerator linksGenerator = new LinksGenerator(getRepositoryRules(), getLogger() );
 		linksGenerator.generateAllLinks(repositoryModel);
-
 		
 		return repositoryModel ;
 	}
@@ -130,8 +159,8 @@ public class RepositoryGenerator extends RepositoryManager
 		logger.log("   ... * Table Name Pattern  = " + sTableNamePattern);
 
 		StringBuffer sb = new StringBuffer(100);
-		for (int i = 0 ; i < arrayTableTypes.length ; i++ ) {
-			sb.append("[" + arrayTableTypes[i] + "] ");
+		for (String s : arrayTableTypes ) {
+			sb.append("[" + s + "] ");
 		}
 		logger.log("   ... * Table Types Array  = " + sb.toString());
 
@@ -140,12 +169,13 @@ public class RepositoryGenerator extends RepositoryManager
 		DatabaseTables dbTables = manager.getDatabaseTables(con, sCatalog, sSchema, sTableNamePattern, arrayTableTypes, sTableNameInclude, sTableNameExclude);
 
 		//--- For each table add an Entity in the repository
-		Iterator<DatabaseTable> iter = dbTables.iterator();
+//		Iterator<DatabaseTable> iter = dbTables.iterator();
 		int iTablesCount = 0;
-		while ( iter.hasNext() )
+//		while ( iter.hasNext() )
+		for ( DatabaseTable dbTable : dbTables )
 		{
 			iTablesCount++;
-			DatabaseTable dbTable = (DatabaseTable) iter.next();
+//			DatabaseTable dbTable = (DatabaseTable) iter.next();
 			logger.log("   --------------------------------------------------------------");
 			logger.log("   Table '" + dbTable.getTableName() 
 					+ "' ( catalog = '" + dbTable.getCatalogName() 
@@ -155,7 +185,6 @@ public class RepositoryGenerator extends RepositoryManager
 		logger.log("   --------------------------------------------------------------");
 		logger.log("   " + iTablesCount + " table(s) generated.");
 		logger.log("   --------------------------------------------------------------");
-			
 	}
 
 }

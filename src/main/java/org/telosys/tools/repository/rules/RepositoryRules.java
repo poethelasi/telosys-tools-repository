@@ -59,20 +59,20 @@ public interface RepositoryRules
     public String getAttributeType(String databaseColumnType, int jdbcTypeCode, boolean columnNotNull );
 
 	/**
-     * Returns the attribute name for a link with a "Many To One" cardinality
+     * Returns the attribute name for a link with a "Many To One" or "One To One" cardinality
 	 * @param entity  the entity needing an attribute name ( for a single object )
 	 * @param referencedEntity the entity referenced by the link
 	 * @return the attribute name ( eg "book", "employee", "employee2", etc )
 	 */
-	public String getAttributeNameForLinkManyToOne(Entity entity, Entity referencedEntity ) ;
+	public String getAttributeNameForLinkToOne(Entity entity, Entity referencedEntity ) ;
 
 	/**
-     * Returns the attribute name for a link with a "One To Many" cardinality
+     * Returns the attribute name for a link with a "One To Many" or "Many To Many" cardinality
 	 * @param entity  the entity needing an attribute name ( for a collection )
 	 * @param referencedEntity the entity referenced by the link
 	 * @return the attribute name ( eg "listOfBook", "listOfEmployee", "listOfEmployee2", etc )
 	 */
-	public String getAttributeNameForLinkOneToMany(Entity entity, Entity referencedEntity ) ;
+	public String getAttributeNameForLinkToMany(Entity entity, Entity referencedEntity ) ;
 
     /**
      * Returns the attribute GUI type for the given column 

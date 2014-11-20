@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databases defaultId="0" maxId="4">
+<db dialect="" driver="org.h2.Driver" id="1" isolationLevel="" name="H2 in memory" poolSize="10" typeName="" url="jdbc:h2:mem:test;INIT=RUNSCRIPT FROM 'classpath:sql/initdb1.sql'">
+<property name="user" value="sa"/>
+<property name="password" value="sa"/>
+<metadata catalog="" schema="TEST1" table-name-pattern="%" table-types="TABLE   VIEW  "/>
+</db>
+
+<db dialect="" driver="org.h2.Driver" id="2" isolationLevel="" name="H2 in memory" poolSize="10" typeName="" url="jdbc:h2:mem:test;INIT=RUNSCRIPT FROM 'classpath:sql/initdb2.sql'">
+<property name="user" value="sa"/>
+<property name="password" value="sa"/>
+<metadata catalog="" schema="TEST2" table-name-pattern="%" table-types="TABLE   VIEW  "/>
+</db>
+
+<db dialect="" driver="org.h2.Driver" id="3" isolationLevel="" name="H2 in memory" poolSize="10" typeName="" url="jdbc:h2:mem:test;INIT=RUNSCRIPT FROM 'classpath:sql/initdb3.sql'">
+<property name="user" value="sa"/>
+<property name="password" value="sa"/>
+<metadata catalog="" schema="TEST3" table-name-pattern="%" table-types="TABLE   VIEW  "/>
+</db>
+
+</databases>

@@ -113,15 +113,15 @@ public class RulesTest {
 		inverseSideEntity.storeColumn(buildColumn("CODE", "code", "short"));
 		inverseSideEntity.storeColumn(buildColumn("NAME", "name", "java.lang.String"));
 
-		Assert.assertEquals("company", rules.getAttributeNameForLinkManyToOne(owningSideEntity, inverseSideEntity) ) ;
+		Assert.assertEquals("company", rules.getAttributeNameForLinkToOne(owningSideEntity, inverseSideEntity) ) ;
 		
 		owningSideEntity.storeLink( buildLink("LINK_FK_AAAA_O", "company", RepositoryConst.MAPPING_MANY_TO_ONE ) );
 		
-		Assert.assertEquals("company2", rules.getAttributeNameForLinkManyToOne(owningSideEntity, inverseSideEntity) ) ;
+		Assert.assertEquals("company2", rules.getAttributeNameForLinkToOne(owningSideEntity, inverseSideEntity) ) ;
 		
 		owningSideEntity.storeLink( buildLink("LINK_FK_BBBB_O", "company2", RepositoryConst.MAPPING_MANY_TO_ONE ) );
 		
-		Assert.assertEquals("company3", rules.getAttributeNameForLinkManyToOne(owningSideEntity, inverseSideEntity) ) ;
+		Assert.assertEquals("company3", rules.getAttributeNameForLinkToOne(owningSideEntity, inverseSideEntity) ) ;
 	}
 
 	@Test
@@ -141,23 +141,23 @@ public class RulesTest {
 		referencedEntity.storeColumn(buildColumn("CODE", "code", "short"));
 		referencedEntity.storeColumn(buildColumn("NAME", "name", "java.lang.String"));
 
-		Assert.assertEquals("listOfCompany", rules.getAttributeNameForLinkOneToMany(entity, referencedEntity) ) ;
+		Assert.assertEquals("listOfCompany", rules.getAttributeNameForLinkToMany(entity, referencedEntity) ) ;
 		
 		entity.storeLink( buildLink("LINK_FK_AAAA_I", "listOfCompany", RepositoryConst.MAPPING_ONE_TO_MANY ) );
 		
-		Assert.assertEquals("listOfCompany2", rules.getAttributeNameForLinkOneToMany(entity, referencedEntity) ) ;
+		Assert.assertEquals("listOfCompany2", rules.getAttributeNameForLinkToMany(entity, referencedEntity) ) ;
 		
 		entity.storeLink( buildLink("LINK_FK_BBBB_I", "listOfCompany2", RepositoryConst.MAPPING_ONE_TO_MANY ) );
 		
-		Assert.assertEquals("listOfCompany3", rules.getAttributeNameForLinkOneToMany(entity, referencedEntity) ) ;
+		Assert.assertEquals("listOfCompany3", rules.getAttributeNameForLinkToMany(entity, referencedEntity) ) ;
 
 		Entity referencedEntity2 = new Entity();
 		referencedEntity2.setName("MANAGER");
 		referencedEntity2.setBeanJavaClass("Manager");
 
-		Assert.assertEquals("listOfManager", rules.getAttributeNameForLinkOneToMany(entity, referencedEntity2) ) ;
+		Assert.assertEquals("listOfManager", rules.getAttributeNameForLinkToMany(entity, referencedEntity2) ) ;
 		entity.storeLink( buildLink("LINK_FK_MMMM_I", "listOfManager", RepositoryConst.MAPPING_ONE_TO_MANY ) );
-		Assert.assertEquals("listOfManager2", rules.getAttributeNameForLinkOneToMany(entity, referencedEntity2) ) ;
+		Assert.assertEquals("listOfManager2", rules.getAttributeNameForLinkToMany(entity, referencedEntity2) ) ;
 	}
 
 }

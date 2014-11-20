@@ -29,12 +29,11 @@ import org.telosys.tools.db.model.DatabaseForeignKey;
 import org.telosys.tools.db.model.DatabaseModelManager;
 import org.telosys.tools.db.model.DatabaseTable;
 import org.telosys.tools.db.model.DatabaseTables;
-import org.telosys.tools.repository.config.EntityInformationProvider;
-import org.telosys.tools.repository.config.UserInterfaceInformationProvider;
 import org.telosys.tools.repository.model.Column;
 import org.telosys.tools.repository.model.Entity;
 import org.telosys.tools.repository.model.ForeignKey;
 import org.telosys.tools.repository.model.RepositoryModel;
+import org.telosys.tools.repository.rules.RepositoryRules;
 
 /**
  * @author Laurent GUERIN, Eric LEMELIN
@@ -45,23 +44,22 @@ public class RepositoryUpdator extends RepositoryManager
 {
 	private UpdateLogWriter _updateLogger = null;
 
-//	/**
-//	 * Constructor
-//	 * @param inichk
-//	 * @param classNameProvider
-//	 * @param logger
-//	 * @param updateLogger
-//	 */
-//	public RepositoryUpdator(InitializerChecker inichk, ClassNameProvider classNameProvider, 
+//	public RepositoryUpdator(EntityInformationProvider entityInformationProvider, UserInterfaceInformationProvider uiInfoProvider, 
 //			TelosysToolsLogger logger, UpdateLogWriter updateLogger) 
 //	{
-//		super(inichk, classNameProvider, logger);
+//		super(entityInformationProvider, uiInfoProvider, logger);
 //		_updateLogger = updateLogger;
 //	}
-	public RepositoryUpdator(EntityInformationProvider entityInformationProvider, UserInterfaceInformationProvider uiInfoProvider, 
-			TelosysToolsLogger logger, UpdateLogWriter updateLogger) 
+
+	/**
+	 * Constructor
+	 * @param repositoryRules
+	 * @param logger
+	 * @param updateLogger
+	 */
+	public RepositoryUpdator(RepositoryRules repositoryRules, TelosysToolsLogger logger, UpdateLogWriter updateLogger) 
 	{
-		super(entityInformationProvider, uiInfoProvider, logger);
+		super(repositoryRules, logger);
 		_updateLogger = updateLogger;
 	}
 

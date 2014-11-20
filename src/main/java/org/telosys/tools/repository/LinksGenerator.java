@@ -29,6 +29,7 @@ import org.telosys.tools.repository.model.JoinTable;
 import org.telosys.tools.repository.model.Link;
 import org.telosys.tools.repository.model.RepositoryModel;
 import org.telosys.tools.repository.persistence.util.RepositoryConst;
+import org.telosys.tools.repository.rules.RepositoryRules;
 
 /**
  * Links generator <br>
@@ -38,20 +39,23 @@ import org.telosys.tools.repository.persistence.util.RepositoryConst;
  */
 public class LinksGenerator {
 
-	//private static final String COLLECTION_JAVA_TYPE = "java.util.List";
-	private final TelosysToolsLogger _logger;
+	private final RepositoryRules repositoryRules ;
+	
+	private final TelosysToolsLogger logger;
 
 	/**
 	 * Constructor
+	 * @param repositoryRules
 	 * @param logger
 	 */
-	public LinksGenerator(TelosysToolsLogger logger) {
-		_logger = logger;
+	public LinksGenerator(RepositoryRules repositoryRules, TelosysToolsLogger logger) {
+		this.logger = logger;
+		this.repositoryRules = 	repositoryRules ;
 	}
 	
 	private void log(String msg) {
-		if ( _logger != null ) {
-			_logger.log("[LOG] " + this.getClass().getName() + " : " + msg);
+		if ( logger != null ) {
+			logger.log("[LOG] " + this.getClass().getName() + " : " + msg);
 		}
 	}
 
@@ -103,43 +107,43 @@ public class LinksGenerator {
 			//--- Generate one relation ( 2 links ) for each FK 
 			ForeignKey[] foreignKeys = entity.getForeignKeys();
 			for ( ForeignKey fk : foreignKeys ) {
-				count = count + generateBasicLinks(model, entity, fk);
+				count = count + generateManyToOneLinks(model, entity, fk);
 			}
 		}
 		return count ;
 	}
 
-	/**
-	 * Returns the Java attribute name for the given type <br>
-	 * Returns the same string but with the 1st char in Lower Case 
-	 * ie  "Book" --> "book"
-	 * @param javaType
-	 * @return
-	 * @throws TelosysToolsException
-	 */
-	public String getAttributeName(String javaType) throws TelosysToolsException 
-	{
-		String end = javaType.substring(1);
-		char c = javaType.charAt(0);
-		String firstChar = Character.toString(c);
-		return firstChar.toLowerCase() + end ;
-	}
+//	/**
+//	 * Returns the Java attribute name for the given type <br>
+//	 * Returns the same string but with the 1st char in Lower Case 
+//	 * ie  "Book" --> "book"
+//	 * @param javaType
+//	 * @return
+//	 * @throws TelosysToolsException
+//	 */
+//	private String getAttributeName(String javaType) throws TelosysToolsException 
+//	{
+//		String end = javaType.substring(1);
+//		char c = javaType.charAt(0);
+//		String firstChar = Character.toString(c);
+//		return firstChar.toLowerCase() + end ;
+//	}
 	
-	/**
-	 * Returns the Java attribute name for a collection of the given type <br>
-	 * ie  "Book" --> "listOfBook"
-	 * @param javaType
-	 * @return
-	 * @throws TelosysToolsException
-	 */
-	public String getCollectionAttributeName(String javaType) throws TelosysToolsException {
-		return "listOf" + javaType ;
-	}
+//	/**
+//	 * Returns the Java attribute name for a collection of the given type <br>
+//	 * ie  "Book" --> "listOfBook"
+//	 * @param javaType
+//	 * @return
+//	 * @throws TelosysToolsException
+//	 */
+//	private String getCollectionAttributeName(String javaType) throws TelosysToolsException {
+//		return "listOf" + javaType ;
+//	}
 
-	public String getBasicLinkId(RepositoryModel model, Entity entity, ForeignKey fk, boolean owningSide) throws TelosysToolsException {
-		String end = owningSide ? "O" : "I" ;
-		return "LINK_FK_" + fk.getName() + "_" + end ;
-	}
+//	public String getBasicLinkId(RepositoryModel model, Entity entity, ForeignKey fk, boolean owningSide) throws TelosysToolsException {
+//		String end = owningSide ? "O" : "I" ;
+//		return "LINK_FK_" + fk.getName() + "_" + end ;
+//	}
 	
 	//----------------------------------------------------------------------------------------------------
 	// RELATION "* --> 1" ( "ManyToOne" and "OneToMany" links )
@@ -152,7 +156,7 @@ public class LinksGenerator {
 	 * @return the number of links generated (always 2)
 	 * @throws TelosysToolsException
 	 */
-	private int generateBasicLinks(RepositoryModel model, Entity owningSideEntity, ForeignKey owningSideForeignKey) throws TelosysToolsException 
+	private int generateManyToOneLinks(RepositoryModel model, Entity owningSideEntity, ForeignKey owningSideForeignKey) throws TelosysToolsException 
 	{
 		log("generateBasicLinks()...");
 
@@ -162,18 +166,18 @@ public class LinksGenerator {
 		}
 		
 		//--- Build the 2 link id
-		String owningSideId  = Link.buildId(owningSideForeignKey, true) ;
-		String inverseSideId = Link.buildId(owningSideForeignKey, false) ;
+		String owningSideLinkId  = Link.buildId(owningSideForeignKey, true) ;
+		String inverseSideLinkId = Link.buildId(owningSideForeignKey, false) ;
 
 //		String originAttributeName = getAttributeName( inverseSideEntity.getBeanJavaClass() ) ;
 		
 		//--- Remove the links if they are already in the model
-		model.removeLinkById(inverseSideId);
-		model.removeLinkById(owningSideId);
+		model.removeLinkById(inverseSideLinkId);
+		model.removeLinkById(owningSideLinkId);
 
 		//--- Generates the 2 links 
-		Link owningSideLink = generateBasicLinkOwningSide( owningSideId, owningSideEntity, inverseSideEntity, owningSideForeignKey);
-		generateBasicLinkInverseSide( inverseSideId, owningSideEntity, inverseSideEntity, owningSideForeignKey, owningSideLink);
+		Link owningSideLink = generateManyToOneLinkOwningSide( owningSideLinkId, owningSideEntity, inverseSideEntity, owningSideForeignKey);
+		generateManyToOneLinkInverseSide( inverseSideLinkId, owningSideEntity, inverseSideEntity, owningSideForeignKey, owningSideLink);
 		
 		return 2 ; // 2 links generated
 	}
@@ -187,7 +191,7 @@ public class LinksGenerator {
 	 * @return
 	 * @throws TelosysToolsException
 	 */
-	private Link generateBasicLinkOwningSide( String linkId, Entity owningSideEntity, Entity inverseSideEntity, 
+	private Link generateManyToOneLinkOwningSide( String linkId, Entity owningSideEntity, Entity inverseSideEntity, 
 			ForeignKey owningSideForeignKey  ) throws TelosysToolsException 
 	{		
 		Link link = new Link();
@@ -207,7 +211,10 @@ public class LinksGenerator {
 		
 		link.setTargetEntityJavaType( inverseSideEntity.getBeanJavaClass() ); // ie "Book" 
 		link.setJavaFieldType( inverseSideEntity.getBeanJavaClass() ); // ie "Book" 
-		link.setJavaFieldName( getAttributeName( inverseSideEntity.getBeanJavaClass() ) ); // ie "book"
+		//--- Updated in ver 2.1.1 (the link manages multiple references to the same inverse-side entity)
+		//link.setJavaFieldName( getAttributeName( inverseSideEntity.getBeanJavaClass() ) ); // ie "book"
+		link.setJavaFieldName( repositoryRules.getAttributeNameForLinkToOne(owningSideEntity, inverseSideEntity) ) ; // #LGU v 2.1.1
+
 
 		//--- Store the link in the entity
 		owningSideEntity.storeLink(link);
@@ -224,7 +231,7 @@ public class LinksGenerator {
 	 * @return
 	 * @throws TelosysToolsException
 	 */
-	private Link generateBasicLinkInverseSide(String linkId, Entity owningSideEntity, Entity inverseSideEntity, 
+	private Link generateManyToOneLinkInverseSide(String linkId, Entity owningSideEntity, Entity inverseSideEntity, 
 			ForeignKey owningSideForeignKey, Link owningSideLink ) throws TelosysToolsException 
 	{
 		Link link = new Link();
@@ -245,7 +252,10 @@ public class LinksGenerator {
 		link.setTargetTableName(owningSideForeignKey.getTableName());
 
 		link.setJavaFieldType(RepositoryConst.COLLECTION_JAVA_TYPE); // ie "List"
-		link.setJavaFieldName( "listOf" + owningSideEntity.getBeanJavaClass() ); // ie "listOfBook"
+		
+		//link.setJavaFieldName( "listOf" + owningSideEntity.getBeanJavaClass() ); // ie "listOfBook"
+		link.setJavaFieldName( repositoryRules.getAttributeNameForLinkToMany(inverseSideEntity, owningSideEntity ) ) ; // #LGU v 2.1.1
+		
 		link.setTargetEntityJavaType( owningSideEntity.getBeanJavaClass() ); // ie "Book"
 
 		//--- Store the link in the entity
@@ -344,7 +354,9 @@ public class LinksGenerator {
 		
 		//--- Java attribute for this link
 		link.setJavaFieldType( RepositoryConst.COLLECTION_JAVA_TYPE ); // ie "java.util.List"
-		link.setJavaFieldName( getCollectionAttributeName( inverseSideEntity.getBeanJavaClass() ) ); // ie "listOfBook"
+		//link.setJavaFieldName( getCollectionAttributeName( inverseSideEntity.getBeanJavaClass() ) ); // ie "listOfBook"
+		link.setJavaFieldName( repositoryRules.getAttributeNameForLinkToMany(owningSideEntity, inverseSideEntity) ) ; // #LGU v 2.1.1
+		
 		link.setTargetEntityJavaType( inverseSideEntity.getBeanJavaClass() ); // ie "Book"
 
 		//--- Store the link in the entity
@@ -387,7 +399,9 @@ public class LinksGenerator {
 		
 		//--- Java attribute for this link
 		link.setJavaFieldType( RepositoryConst.COLLECTION_JAVA_TYPE ); // ie "java.util.List"
-		link.setJavaFieldName( getCollectionAttributeName( owningSideEntity.getBeanJavaClass() ) ); // ie "listOfBook"
+		//link.setJavaFieldName( getCollectionAttributeName( owningSideEntity.getBeanJavaClass() ) ); // ie "listOfBook"
+		link.setJavaFieldName( repositoryRules.getAttributeNameForLinkToMany(inverseSideEntity, owningSideEntity ) ) ; // #LGU v 2.1.1
+
 		link.setTargetEntityJavaType( owningSideEntity.getBeanJavaClass() ); // ie "Book"
 
 		//--- Store the link in the entity

@@ -590,4 +590,37 @@ public class Link
 		
 		return sb.toString();
 	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() 
+	{
+		StringBuffer sb = new StringBuffer();
+		sb.append( this.getId() );
+		sb.append( " '"  );
+		sb.append( this.getSourceTableName() );
+		sb.append( "' --> '"  );
+		sb.append( this.getTargetTableName() );
+		sb.append( "' ("  );
+		sb.append( this.getCardinality() );
+		sb.append( " - "  );
+		sb.append( this.isOwningSide() ? "OWNING-SIDE" : "INVERSE-SIDE" );
+		sb.append( ") "  );
+		sb.append( this.getJavaFieldType() );
+		sb.append( " "  );
+		sb.append( this.getJavaFieldName() );
+		
+//		sb.append( this.getCascade() );
+//		sb.append( this.getFetch() );
+//		sb.append( this.getInverseSideOf() );
+//		sb.append( this.getMappedBy() );
+//		sb.append( this.getTargetEntityJavaType() );
+//		sb.append( this.getForeignKeyName() );
+//		sb.append( this.getJoinTableName() );
+//		sb.append( this.getOptional() );
+//		sb.append( this.isUsed() );
+		
+		return sb.toString();
+	}
 }
