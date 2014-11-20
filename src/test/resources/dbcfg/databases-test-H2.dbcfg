@@ -18,4 +18,11 @@
 <metadata catalog="" schema="TEST3" table-name-pattern="%" table-types="TABLE   VIEW  "/>
 </db>
 
+<db dialect="" driver="org.h2.Driver" id="4" isolationLevel="" name="H2 in memory" poolSize="10" typeName="" 
+    url="jdbc:h2:mem:test;INIT=RUNSCRIPT FROM 'classpath:sql/initdb4.sql'">
+<property name="user"     value="sa"/>
+<property name="password" value="sa"/>
+<metadata catalog="" schema="TEST4" table-name-pattern="%" table-types="TABLE   VIEW  "/>
+</db>
+
 </databases>

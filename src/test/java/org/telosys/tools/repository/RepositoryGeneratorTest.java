@@ -168,4 +168,47 @@ public class RepositoryGeneratorTest {
 		checkJavaName(studentLinks[0].getJavaFieldName(),studentLinks[1].getJavaFieldName(), "teacher2", "teacher3" );
 		checkJavaName(teacherLinks[0].getJavaFieldName(),teacherLinks[1].getJavaFieldName(), "listOfStudent2", "listOfStudent3" );		
 	}
+
+	@Test
+	public void test4() throws TelosysToolsException {
+		int databaseID = 4 ;
+		DatabaseConfiguration databaseConfiguration = getDatabaseConfiguration(databaseID);
+		System.out.println("DatabaseConfiguration ready ");
+		RepositoryGenerator repositoryGenerator = new RepositoryGenerator(RepositoryRulesProvider.getRepositoryRules(), new ConsoleLogger());
+		System.out.println("Repository generation... ");
+		RepositoryModel model = repositoryGenerator.generate( databaseConfiguration );
+		
+		printModel(model);
+		Assert.assertTrue(model.getDatabaseId() == databaseID );
+		Assert.assertTrue(model.getNumberOfEntities() == 3 );
+
+		Entity studentEntity = model.getEntityByName("STUDENT");
+		Assert.assertNotNull(studentEntity);
+		Assert.assertFalse( studentEntity.isJoinTable() );
+		
+		Entity teacherEntity = model.getEntityByName("TEACHER");
+		Assert.assertNotNull(teacherEntity);
+		Assert.assertFalse( teacherEntity.isJoinTable() );
+
+		Entity relation1Entity = model.getEntityByName("RELATION1");
+		Assert.assertNotNull(relation1Entity);
+		Assert.assertTrue( relation1Entity.isJoinTable() );
+		
+		
+		Link[] studentLinks = studentEntity.getLinks();
+		System.out.println("STUDENT links : " + studentLinks.length);
+		Assert.assertTrue(studentLinks.length == 3);
+
+		Link[] teacherLinks = teacherEntity.getLinks();
+		System.out.println("TEACHER links : " + teacherLinks.length);
+		Assert.assertTrue(teacherLinks.length == 3);
+		
+		Link[] relation1Links = relation1Entity.getLinks();
+		System.out.println("RELATION1 links : " + relation1Links.length);
+		Assert.assertTrue(relation1Links.length == 0);
+		
+//		checkJavaName(studentLinks[0].getJavaFieldName(),studentLinks[1].getJavaFieldName(), "teacher2", "teacher3" );
+//		checkJavaName(teacherLinks[0].getJavaFieldName(),teacherLinks[1].getJavaFieldName(), "listOfStudent2", "listOfStudent3" );		
+	}
+
 }
