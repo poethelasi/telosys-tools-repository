@@ -52,11 +52,12 @@ public class RepositoryGenerator extends RepositoryManager
 
 	/**
 	 * Constructor
+	 * @param connectionManager
 	 * @param repositoryRules
 	 * @param logger
 	 */
-	public RepositoryGenerator(RepositoryRules repositoryRules, TelosysToolsLogger logger) {
-		super( repositoryRules, logger);
+	public RepositoryGenerator(ConnectionManager connectionManager, RepositoryRules repositoryRules, TelosysToolsLogger logger) {
+		super(connectionManager, repositoryRules, logger);
 	}
 
 //	/**
@@ -83,14 +84,16 @@ public class RepositoryGenerator extends RepositoryManager
 	/**
 	 * Generates the repository model from the given database configuration<br>
 	 * Generates all the entities and all the links between the entities
+	 * 
 	 * @param databaseConfiguration
 	 * @return
 	 * @throws TelosysToolsException
 	 */
 	public RepositoryModel generate(DatabaseConfiguration databaseConfiguration) throws TelosysToolsException 
 	{
-		ConnectionManager connectionManager = new ConnectionManager(logger);
-		Connection connection = connectionManager.getConnection(databaseConfiguration);
+//		ConnectionManager connectionManager = new ConnectionManager(logger);
+//		Connection connection = connectionManager.getConnection(databaseConfiguration);
+		Connection connection = getConnection(databaseConfiguration);
 		
 		//--- STEP 1 : Generates the model entities 
 		RepositoryModel repositoryModel = generateRepository(connection, databaseConfiguration);

@@ -8,13 +8,16 @@ import org.junit.Test;
 import org.telosys.tools.commons.ConsoleLogger;
 import org.telosys.tools.commons.FileUtil;
 import org.telosys.tools.commons.TelosysToolsException;
+import org.telosys.tools.commons.TelosysToolsLogger;
 import org.telosys.tools.commons.dbcfg.DatabaseConfiguration;
 import org.telosys.tools.commons.dbcfg.DatabasesConfigurations;
 import org.telosys.tools.commons.dbcfg.DbConfigManager;
+import org.telosys.tools.commons.jdbc.ConnectionManager;
 import org.telosys.tools.repository.model.Column;
 import org.telosys.tools.repository.model.Entity;
 import org.telosys.tools.repository.model.Link;
 import org.telosys.tools.repository.model.RepositoryModel;
+import org.telosys.tools.repository.rules.RepositoryRules;
 import org.telosys.tools.repository.rules.RepositoryRulesProvider;
 
 public class RepositoryGeneratorTest {
@@ -78,15 +81,27 @@ public class RepositoryGeneratorTest {
 		databaseConfiguration.setJdbcUrl(newJdbcUrl);
 	}
 	
+	private RepositoryGenerator getRepositoryGenerator() throws TelosysToolsException {
+		
+		TelosysToolsLogger logger = new ConsoleLogger() ;
+		ConnectionManager connectionManager = new ConnectionManager(logger);
+		RepositoryRules rules = RepositoryRulesProvider.getRepositoryRules() ;
+		return new RepositoryGenerator(connectionManager, rules, logger);
+	}
+	
 	private int changeDatabaseSchemaAndUpdateRepositoryModel(DatabaseConfiguration databaseConfiguration, 
-				int testId, RepositoryModel repositoryModel) throws TelosysToolsException {
+				int testId, RepositoryModel repositoryModel, TelosysToolsLogger logger) throws TelosysToolsException {
 		//--- Set "alterdbX.sql" for database schema update
 		jdbcUrlWithAlterScript(databaseConfiguration, testId);
 		
 		//--- Update repository model after database schema update
+		ConnectionManager connectionManager = new ConnectionManager(logger);
 		ByteArrayOutputStream baosUpdateLog = new ByteArrayOutputStream();
 		UpdateLogWriter updateLogger = new UpdateLogWriter(baosUpdateLog);
-		RepositoryUpdator repositoryUpdator = new RepositoryUpdator(RepositoryRulesProvider.getRepositoryRules(), new ConsoleLogger(), updateLogger);
+		
+		RepositoryUpdator repositoryUpdator = new RepositoryUpdator(connectionManager,
+				RepositoryRulesProvider.getRepositoryRules(), new ConsoleLogger(), updateLogger);
+		
 		int changesCount = repositoryUpdator.updateRepository(databaseConfiguration, repositoryModel);
 		System.out.println(baosUpdateLog.toString());
 		System.out.println("Changes count = " + changesCount );
@@ -96,10 +111,10 @@ public class RepositoryGeneratorTest {
 	
 	@Test
 	public void test1() throws TelosysToolsException {
-		
+		TelosysToolsLogger logger = new ConsoleLogger() ;
 		DatabaseConfiguration databaseConfiguration = getDatabaseConfiguration(1);
 		System.out.println("DatabaseConfiguration ready ");
-		RepositoryGenerator repositoryGenerator = new RepositoryGenerator(RepositoryRulesProvider.getRepositoryRules(), new ConsoleLogger());
+		RepositoryGenerator repositoryGenerator = getRepositoryGenerator() ;
 		System.out.println("Repository generation... ");
 		RepositoryModel repositoryModel = repositoryGenerator.generate( databaseConfiguration );
 		
@@ -121,7 +136,7 @@ public class RepositoryGeneratorTest {
 //		System.out.println("Changes count = " + changesCount );
 //		System.out.println("Entities count = " + repositoryModel.getNumberOfEntities() );
 		
-		int changesCount = changeDatabaseSchemaAndUpdateRepositoryModel(databaseConfiguration, 1, repositoryModel);
+		int changesCount = changeDatabaseSchemaAndUpdateRepositoryModel(databaseConfiguration, 1, repositoryModel, logger);
 		
 		//--- Check changes
 		Assert.assertTrue(changesCount == 4 );
@@ -144,7 +159,7 @@ public class RepositoryGeneratorTest {
 		int databaseID = 2 ;
 		DatabaseConfiguration databaseConfiguration = getDatabaseConfiguration(databaseID);
 		System.out.println("DatabaseConfiguration ready ");
-		RepositoryGenerator repositoryGenerator = new RepositoryGenerator(RepositoryRulesProvider.getRepositoryRules(), new ConsoleLogger());
+		RepositoryGenerator repositoryGenerator = getRepositoryGenerator() ;
 		System.out.println("Repository generation... ");
 		RepositoryModel model = repositoryGenerator.generate( databaseConfiguration );
 		
@@ -187,7 +202,7 @@ public class RepositoryGeneratorTest {
 		int databaseID = 3 ;
 		DatabaseConfiguration databaseConfiguration = getDatabaseConfiguration(databaseID);
 		System.out.println("DatabaseConfiguration ready ");
-		RepositoryGenerator repositoryGenerator = new RepositoryGenerator(RepositoryRulesProvider.getRepositoryRules(), new ConsoleLogger());
+		RepositoryGenerator repositoryGenerator = getRepositoryGenerator() ;
 		System.out.println("Repository generation... ");
 		RepositoryModel model = repositoryGenerator.generate( databaseConfiguration );
 		
@@ -232,7 +247,7 @@ public class RepositoryGeneratorTest {
 		int databaseID = 4 ;
 		DatabaseConfiguration databaseConfiguration = getDatabaseConfiguration(databaseID);
 		System.out.println("DatabaseConfiguration ready ");
-		RepositoryGenerator repositoryGenerator = new RepositoryGenerator(RepositoryRulesProvider.getRepositoryRules(), new ConsoleLogger());
+		RepositoryGenerator repositoryGenerator = getRepositoryGenerator() ;
 		System.out.println("Repository generation... ");
 		RepositoryModel model = repositoryGenerator.generate( databaseConfiguration );
 		

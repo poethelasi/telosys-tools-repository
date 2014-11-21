@@ -23,8 +23,10 @@ import java.sql.Types;
 import org.telosys.tools.commons.StandardTool;
 import org.telosys.tools.commons.TelosysToolsException;
 import org.telosys.tools.commons.TelosysToolsLogger;
+import org.telosys.tools.commons.dbcfg.DatabaseConfiguration;
 import org.telosys.tools.commons.javatypes.JavaTypes;
 import org.telosys.tools.commons.javatypes.JavaTypesManager;
+import org.telosys.tools.commons.jdbc.ConnectionManager;
 import org.telosys.tools.db.model.DatabaseColumn;
 import org.telosys.tools.db.model.DatabaseForeignKey;
 import org.telosys.tools.db.model.DatabaseForeignKeyColumn;
@@ -46,11 +48,12 @@ import org.telosys.tools.repository.rules.RepositoryRules;
 
 public abstract class RepositoryManager extends StandardTool
 {
+	private final ConnectionManager     connectionManager ;
 //	private final EntityInformationProvider        entityInformationProvider ;
 //	private final UserInterfaceInformationProvider uiInfoProvider ;
-	private final RepositoryRules repositoryRules ;
+	private final RepositoryRules       repositoryRules ;
 	
-	protected final TelosysToolsLogger   logger ;
+	protected final TelosysToolsLogger  logger ;
 
 //	public RepositoryManager(EntityInformationProvider entityInformationProvider, UserInterfaceInformationProvider uiInfoProvider, TelosysToolsLogger logger) 
 //	{
@@ -59,13 +62,30 @@ public abstract class RepositoryManager extends StandardTool
 //		this.uiInfoProvider = uiInfoProvider ;
 //		this.logger = logger;
 //	}
-	protected RepositoryManager(RepositoryRules repositoryRules, TelosysToolsLogger logger) 
+	protected RepositoryManager(ConnectionManager connectionManager, RepositoryRules repositoryRules, TelosysToolsLogger logger) 
 	{
 		super(logger);
+		this.connectionManager = connectionManager ;
 		this.repositoryRules = repositoryRules ;
 		this.logger = logger;
 	}
 
+	/**
+	 * Returns a connection using the given DatabaseConfiguration <br>
+	 * and the ConnectionManager initialized in the constructor
+	 * 
+	 * @param databaseConfiguration
+	 * @return
+	 * @throws TelosysToolsException
+	 */
+	protected Connection getConnection(DatabaseConfiguration databaseConfiguration) throws TelosysToolsException {
+		return this.connectionManager.getConnection(databaseConfiguration) ;
+	}
+
+	/**
+	 * Returns the RepositoryRules initialized in the constructor 
+	 * @return
+	 */
 	protected RepositoryRules getRepositoryRules() {
 		return this.repositoryRules ;
 	}

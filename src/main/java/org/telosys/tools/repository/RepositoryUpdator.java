@@ -55,13 +55,14 @@ public class RepositoryUpdator extends RepositoryManager
 
 	/**
 	 * Constructor
+	 * @param connectionManager
 	 * @param repositoryRules
 	 * @param logger
 	 * @param updateLogger
 	 */
-	public RepositoryUpdator(RepositoryRules repositoryRules, TelosysToolsLogger logger, UpdateLogWriter updateLogger) 
+	public RepositoryUpdator(ConnectionManager connectionManager, RepositoryRules repositoryRules, TelosysToolsLogger logger, UpdateLogWriter updateLogger) 
 	{
-		super(repositoryRules, logger);
+		super(connectionManager, repositoryRules, logger);
 		_updateLogger = updateLogger;
 	}
 
@@ -174,8 +175,9 @@ public class RepositoryUpdator extends RepositoryManager
 	// -----------------------------------------------------------------------------------------------------
 	public int updateRepository( DatabaseConfiguration databaseConfiguration, RepositoryModel repositoryModel ) throws TelosysToolsException 
 	{
-		ConnectionManager connectionManager = new ConnectionManager(logger);
-		Connection connection = connectionManager.getConnection(databaseConfiguration);
+//		ConnectionManager connectionManager = new ConnectionManager(logger);
+//		Connection connection = connectionManager.getConnection(databaseConfiguration);
+		Connection connection = getConnection(databaseConfiguration);
 		
 		return updateRepository( databaseConfiguration, repositoryModel, connection );
 	}
