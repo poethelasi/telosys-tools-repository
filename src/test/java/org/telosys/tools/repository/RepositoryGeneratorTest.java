@@ -1,5 +1,7 @@
 package org.telosys.tools.repository;
 
+import java.io.ByteArrayOutputStream;
+
 import junit.framework.Assert;
 
 import org.junit.Test;
@@ -63,7 +65,33 @@ public class RepositoryGeneratorTest {
 		else {
 			Assert.fail("Unexpected jave name for link '" + javaName1 + "' or '" + javaName2 + "'");
 		}
+	}
+	
+	private void jdbcUrlWithAlterScript(DatabaseConfiguration databaseConfiguration, int testId) {
+		String jdbcUrl = databaseConfiguration.getJdbcUrl();
+		System.out.println("JDBC URL 1 : " + jdbcUrl );
+		int index = jdbcUrl.indexOf(";INIT");
+		String shortJdbcUrl = jdbcUrl.substring(0, index);
+		System.out.println("JDBC URL 2 : " + shortJdbcUrl );
+		String newJdbcUrl = shortJdbcUrl+";INIT=RUNSCRIPT FROM 'classpath:sql/alterdb" + testId + ".sql'" ;
+		System.out.println("JDBC URL 3 : " + newJdbcUrl );
+		databaseConfiguration.setJdbcUrl(newJdbcUrl);
+	}
+	
+	private int changeDatabaseSchemaAndUpdateRepositoryModel(DatabaseConfiguration databaseConfiguration, 
+				int testId, RepositoryModel repositoryModel) throws TelosysToolsException {
+		//--- Set "alterdbX.sql" for database schema update
+		jdbcUrlWithAlterScript(databaseConfiguration, testId);
 		
+		//--- Update repository model after database schema update
+		ByteArrayOutputStream baosUpdateLog = new ByteArrayOutputStream();
+		UpdateLogWriter updateLogger = new UpdateLogWriter(baosUpdateLog);
+		RepositoryUpdator repositoryUpdator = new RepositoryUpdator(RepositoryRulesProvider.getRepositoryRules(), new ConsoleLogger(), updateLogger);
+		int changesCount = repositoryUpdator.updateRepository(databaseConfiguration, repositoryModel);
+		System.out.println(baosUpdateLog.toString());
+		System.out.println("Changes count = " + changesCount );
+		System.out.println("Entities count = " + repositoryModel.getNumberOfEntities() );
+		return changesCount ;
 	}
 	
 	@Test
@@ -73,11 +101,41 @@ public class RepositoryGeneratorTest {
 		System.out.println("DatabaseConfiguration ready ");
 		RepositoryGenerator repositoryGenerator = new RepositoryGenerator(RepositoryRulesProvider.getRepositoryRules(), new ConsoleLogger());
 		System.out.println("Repository generation... ");
-		RepositoryModel model = repositoryGenerator.generate( databaseConfiguration );
+		RepositoryModel repositoryModel = repositoryGenerator.generate( databaseConfiguration );
 		
-		printModel(model);
-		Assert.assertTrue(model.getDatabaseId() == 1 );
-		Assert.assertTrue(model.getNumberOfEntities() == 2 );
+		printModel(repositoryModel);
+		Assert.assertTrue(repositoryModel.getDatabaseId() == 1 );
+		Assert.assertTrue(repositoryModel.getNumberOfEntities() == 2 );
+
+		System.out.println("Repository update... ");
+		
+//		//--- Set "alterdbX.sql" for database schema update
+//		jdbcUrlWithAlterScript(databaseConfiguration, 1);
+//		
+//		//--- Update repository model after database schema update
+//		ByteArrayOutputStream baosUpdateLog = new ByteArrayOutputStream();
+//		UpdateLogWriter updateLogger = new UpdateLogWriter(baosUpdateLog);
+//		RepositoryUpdator repositoryUpdator = new RepositoryUpdator(RepositoryRulesProvider.getRepositoryRules(), new ConsoleLogger(), updateLogger);
+//		int changesCount = repositoryUpdator.updateRepository(databaseConfiguration, repositoryModel);
+//		System.out.println(baosUpdateLog.toString());
+//		System.out.println("Changes count = " + changesCount );
+//		System.out.println("Entities count = " + repositoryModel.getNumberOfEntities() );
+		
+		int changesCount = changeDatabaseSchemaAndUpdateRepositoryModel(databaseConfiguration, 1, repositoryModel);
+		
+		//--- Check changes
+		Assert.assertTrue(changesCount == 4 );
+		Assert.assertTrue(repositoryModel.getNumberOfEntities() == 2 );
+		
+		Entity badgeEntity = repositoryModel.getEntityByName("BADGE") ;
+		Assert.assertNotNull( badgeEntity );
+		Assert.assertNotNull( badgeEntity.getColumn("CODE") );
+		Assert.assertNotNull( badgeEntity.getColumn("NAME") );
+
+		Entity countryEntity = repositoryModel.getEntityByName("COUNTRY") ;
+		Assert.assertNotNull( countryEntity );
+		Assert.assertNotNull( countryEntity.getColumn("BADGE_CODE") );
+		Assert.assertTrue( countryEntity.getForeignKeys().length == 1 );
 	}
 
 	@Test

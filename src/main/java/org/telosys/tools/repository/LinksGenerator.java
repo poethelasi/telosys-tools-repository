@@ -60,7 +60,9 @@ public class LinksGenerator {
 	}
 
 	/**
-	 * Generates all the links from all the Foreign Keys defined in the repository
+	 * Generates all the links from all the Foreign Keys defined in the repository <br>
+	 * Existing links (if any) are removed and re-generate
+	 * 
 	 * @param model the repository to update with generated links
 	 * @return the number of links generated 
 	 * @throws TelosysToolsException 
@@ -84,7 +86,7 @@ public class LinksGenerator {
 	 * @return the number of links generated 
 	 * @throws TelosysToolsException
 	 */
-	public int generateEntityLinks(RepositoryModel model, Entity entity) throws TelosysToolsException 
+	private int generateEntityLinks(RepositoryModel model, Entity entity) throws TelosysToolsException 
 	{
 		log("generateEntityLinks()...");
 		int count = 0 ;

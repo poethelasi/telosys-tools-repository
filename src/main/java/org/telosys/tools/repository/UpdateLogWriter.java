@@ -19,47 +19,56 @@ package org.telosys.tools.repository ;
  * @author Laurent GUERIN
  * 
  */
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 public class UpdateLogWriter
 {
-    private final static int                LF              = 1;
+    private final static int         LF              = 1;
 
-    private final static int                CRLF            = 2;
+    private final static int         CRLF            = 2;
 
-    //--- Type de fin de ligne
-    private int                             _iEndOfLine     = LF;
+    private int                      endOfLine     = LF; // for future use ?
 	
-	private FileOutputStream _fos = null ;
+	//private FileOutputStream _fos = null ;
+	private OutputStream outputStream = null ;
 	
     //-----------------------------------------------------------------------------
     //--- CONSTRUCTORS
     //-----------------------------------------------------------------------------
-    public UpdateLogWriter(File file)
-    {
-        if (file != null)
-        {
-	    	init(file);
+    /**
+     * Constructor for a file logger
+     * @param file
+     */
+    public UpdateLogWriter(File file) {
+        if (file != null) {
+            try {
+                outputStream = new FileOutputStream(file);
+            } 
+            catch (FileNotFoundException ex) {
+            	// Cannot create file
+            	throw new RuntimeException("UpdateLogWriter : Cannot create file '" + file.getAbsolutePath() + "'");
+            }
         }
-        else
-        {
-        	throw new RuntimeException("LogWriter constructor : file parameter is null");
-        	//MsgBox.error("LogWriter constructor : file parameter is null");
+        else {
+        	throw new RuntimeException("UpdateLogWriter constructor : file parameter is null");
         }
     }
     
-    private void init(File file)
-    {
-        try
-        {
-            _fos = new FileOutputStream(file);
-        } catch (FileNotFoundException ex) // Cannot create file
-        {
-        	throw new RuntimeException("LogWriter : Cannot create file '" + file.getAbsolutePath() + "'");
-        	//MsgBox.error("LogWriter : Cannot create file '" + file.getAbsolutePath() + "'");
+    /**
+     * Constructor for logging "in memory"
+     * @param byteArrayOutputStream
+     */
+    public UpdateLogWriter(ByteArrayOutputStream byteArrayOutputStream) {
+        if (byteArrayOutputStream != null) {
+        	outputStream = byteArrayOutputStream ;
+        }
+        else {
+        	throw new RuntimeException("UpdateLogWriter constructor : file parameter is null");
         }
     }
     
@@ -67,38 +76,33 @@ public class UpdateLogWriter
     synchronized public void println( String msg )
     {
     	System.out.println("LogWritter.println (" + msg + ")");
-        if (_fos != null)
-        {
-            try
-            {
-                _fos.write(msg.getBytes());
-                if (_iEndOfLine == CRLF)
-                {
-                	_fos.write('\r');
-                	_fos.write('\n');
+        if (outputStream != null) {
+            try {
+                outputStream.write(msg.getBytes());
+                if (endOfLine == CRLF)  {
+                	outputStream.write('\r');
+                	outputStream.write('\n');
                 }
-                else
-                {
-                	_fos.write('\n');
+                else {
+                	outputStream.write('\n');
                 }
-                _fos.flush();
-            } catch (IOException ex)
-            {
-            	throw new RuntimeException("LogWriter : cannot write (IOException)");
-	        	//MsgBox.error("LogWriter : cannot write (IOException)");
+                outputStream.flush();
+            } 
+            catch (IOException ex) {
+            	throw new RuntimeException("UpdateLogWriter : cannot write (IOException)");
             }
         }
     }
+    
     //-----------------------------------------------------------------------------
     synchronized public void close()
     {
-        if (_fos != null)
-        {
+        if (outputStream != null) {
         	try {
-				_fos.close();
-			} catch (IOException e) {
-				throw new RuntimeException("LogWriter : cannot close (IOException)");
-	        	//MsgBox.error("LogWriter : cannot close (IOException)");
+				outputStream.close();
+			} 
+        	catch (IOException e) {
+				throw new RuntimeException("UpdateLogWriter : cannot close (IOException)");
 			}
         }
     }

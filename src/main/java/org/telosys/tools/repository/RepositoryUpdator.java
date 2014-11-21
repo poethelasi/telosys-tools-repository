@@ -24,6 +24,8 @@ import java.util.List;
 import org.telosys.tools.commons.StrUtil;
 import org.telosys.tools.commons.TelosysToolsException;
 import org.telosys.tools.commons.TelosysToolsLogger;
+import org.telosys.tools.commons.dbcfg.DatabaseConfiguration;
+import org.telosys.tools.commons.jdbc.ConnectionManager;
 import org.telosys.tools.db.model.DatabaseColumn;
 import org.telosys.tools.db.model.DatabaseForeignKey;
 import org.telosys.tools.db.model.DatabaseModelManager;
@@ -170,40 +172,37 @@ public class RepositoryUpdator extends RepositoryManager
 	// -----------------------------------------------------------------------------------------------------
 	// UPDATE REPOSITORY
 	// -----------------------------------------------------------------------------------------------------
-	/**
-	 * Updates the given repository with the database metadata.
-	 * 
-	 * @param con
-	 * @param repositoryModel
-	 * @param sCatalog
-	 * @param sSchema
-	 * @param sTableNamePattern
-	 * @param arrayTableTypes
-	 * @return the number of changes
-	 * @throws TelosysToolsException
-	 */
-	public int updateRepository(Connection con, RepositoryModel repositoryModel, String sCatalog,
-			String sSchema, String sTableNamePattern, String[] arrayTableTypes,
-			String sTableNameInclude, String sTableNameExclude) throws TelosysToolsException 
+	public int updateRepository( DatabaseConfiguration databaseConfiguration, RepositoryModel repositoryModel ) throws TelosysToolsException 
 	{
+		ConnectionManager connectionManager = new ConnectionManager(logger);
+		Connection connection = connectionManager.getConnection(databaseConfiguration);
+		
+		return updateRepository( databaseConfiguration, repositoryModel, connection );
+	}
+	
+	private int updateRepository( DatabaseConfiguration databaseConfiguration, RepositoryModel repositoryModel, 
+			Connection connection ) throws TelosysToolsException 
+	{
+		String catalog           = databaseConfiguration.getMetadataCatalog();
+		String schema            = databaseConfiguration.getMetadataSchema(); 
+		String tableNamePattern  = databaseConfiguration.getMetadataTableNamePattern();
+		String tableTypes[]      = databaseConfiguration.getMetadataTableTypesArray();
+		String tableNameInclude  = databaseConfiguration.getMetadataTableNameInclude();
+		String tableNameExclude  = databaseConfiguration.getMetadataTableNameExclude();
+		
 		int changesCount = 0 ;
-		//_logger.log("--> Update repository ( file = '" + file.getFullPath() + "' )");
-
 		Date now = new Date();
-
 		try {
 			logger.log(" . get meta-data ");
-
 			try {
-
 				logger.log(" . update repository from database tables");
 				_updateLogger.println("Update date : " + now);
 				
 				//--- Load the Database Model
 				DatabaseModelManager manager = new DatabaseModelManager( this.getLogger() );
-				DatabaseTables dbTables = manager.getDatabaseTables(con, sCatalog, sSchema, sTableNamePattern, arrayTableTypes, sTableNameInclude, sTableNameExclude);
+				DatabaseTables dbTables = manager.getDatabaseTables(connection, catalog, schema, 
+						tableNamePattern, tableTypes, tableNameInclude, tableNameExclude);
 
-				//updateRepository(repositoryModel, dbmd, sCatalog, sSchema, sTableNamePattern, arrayTableTypes);
 				changesCount = updateRepository(repositoryModel, dbTables);
 
 			} catch (SQLException e) {
@@ -217,6 +216,53 @@ public class RepositoryUpdator extends RepositoryManager
 		}
 		return changesCount ;
 	}
+	
+//	/**
+//	 * Updates the given repository with the database metadata.
+//	 * @param con
+//	 * @param repositoryModel
+//	 * @param sCatalog
+//	 * @param sSchema
+//	 * @param sTableNamePattern
+//	 * @param arrayTableTypes
+//	 * @param sTableNameInclude
+//	 * @param sTableNameExclude
+//	 * @return
+//	 * @throws TelosysToolsException
+//	 */
+//	public int updateRepository(Connection con, RepositoryModel repositoryModel, String sCatalog,
+//			String sSchema, String sTableNamePattern, String[] arrayTableTypes,
+//			String sTableNameInclude, String sTableNameExclude) throws TelosysToolsException 
+//	{
+//		int changesCount = 0 ;
+//
+//		Date now = new Date();
+//
+//		try {
+//			logger.log(" . get meta-data ");
+//
+//			try {
+//
+//				logger.log(" . update repository from database tables");
+//				_updateLogger.println("Update date : " + now);
+//				
+//				//--- Load the Database Model
+//				DatabaseModelManager manager = new DatabaseModelManager( this.getLogger() );
+//				DatabaseTables dbTables = manager.getDatabaseTables(con, sCatalog, sSchema, sTableNamePattern, arrayTableTypes, sTableNameInclude, sTableNameExclude);
+//
+//				changesCount = updateRepository(repositoryModel, dbTables);
+//
+//			} catch (SQLException e) {
+//				throw new TelosysToolsException("SQLException", e);
+//			} catch (Throwable t) {
+//				throw new TelosysToolsException("Exception", t);
+//			}
+//		}
+//		finally {
+//			_updateLogger.close();
+//		}
+//		return changesCount ;
+//	}
 
 	private int updateRepository(RepositoryModel repositoryModel, DatabaseTables dbTables ) throws SQLException 
 	{
@@ -231,9 +277,7 @@ public class RepositoryUpdator extends RepositoryManager
 		// STEP 1 : Update existing tables and Create new ones
 		//-----------------------------------------------------------------------
 		//--- For each table in the database ...
-		//int iTablesCount = 0;
 		for ( DatabaseTable dbTable : dbTables.getTables() ) {
-			//iTablesCount++;
 			
 			logger.log("   --------------------------------------------------------------");
 			logger.log("   Table '" + dbTable.getTableName() 
