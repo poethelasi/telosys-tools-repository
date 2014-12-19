@@ -15,11 +15,14 @@
  */
 package org.telosys.tools.repository.model;
 
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-public class InverseJoinColumns implements Iterable<JoinColumn>
+public class InverseJoinColumns implements Iterable<JoinColumn>, Serializable
 {
+	private static final long serialVersionUID = 1L;
+	
 	LinkedList<JoinColumn> _joinColumns = new LinkedList<JoinColumn>() ;
 	
 	public InverseJoinColumns() {

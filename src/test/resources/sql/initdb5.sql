@@ -1,8 +1,8 @@
-CREATE SCHEMA IF NOT EXISTS TEST2;
+CREATE SCHEMA IF NOT EXISTS TEST5;
 
-SET SCHEMA TEST2 ;
+SET SCHEMA TEST5 ;
 
--- TEST WITH 2 FK REFERENCING THE SAME TABLE
+-- Many to One
 DROP TABLE IF EXISTS teacher ;
 DROP TABLE IF EXISTS student ;
 
@@ -16,9 +16,7 @@ CREATE TABLE student (
   id INTEGER NOT NULL ,
   first_name VARCHAR(40),
   last_name VARCHAR(40),
-  teacher_code1 INTEGER,
-  teacher_code2 INTEGER,
+  teacher_code INTEGER,
   PRIMARY KEY(id),
-  FOREIGN KEY(teacher_code1) REFERENCES teacher(code),
-  FOREIGN KEY(teacher_code2) REFERENCES teacher(code)
+  CONSTRAINT fk_teacher FOREIGN KEY(teacher_code) REFERENCES teacher(code),
 );

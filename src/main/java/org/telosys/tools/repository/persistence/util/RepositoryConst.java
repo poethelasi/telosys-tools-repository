@@ -58,7 +58,8 @@ public class RepositoryConst {
 	
 	//--------------------------------------------------------------------------------------------------
 
-	public final static SimpleDateFormat DATE_TIME_ISO_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	// v 2.1.1
+	//public final static SimpleDateFormat DATE_TIME_ISO_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	public static final String COLLECTION_JAVA_TYPE = "java.util.List";
 	
@@ -257,13 +258,23 @@ public class RepositoryConst {
 	
 
 	//--------------------------------------------------------------------------------------------------
-	public static Date getDate(final String p_date) {
+	private final static String DATE_TIME_ISO_FORMAT = "yyyy-MM-dd HH:mm:ss" ; // v 2.1.1
+	
+	//public static Date getDate(final String p_date) {
+	public static Date parseDate(final String p_date) { // v 2.1.1
 		Date date = null;
 		try {
-			date = RepositoryConst.DATE_TIME_ISO_FORMAT.parse(p_date);
+			//date = RepositoryConst.DATE_TIME_ISO_FORMAT.parse(p_date);
+			SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_TIME_ISO_FORMAT); // v 2.1.1
+			date = dateFormat.parse(p_date);
 		} catch (ParseException e) {
 			throw new RuntimeException("date parsing impossible" + p_date, e);
 		}
 		return date;
+	}
+	
+	public static String formatDate(final Date date) { // v 2.1.1
+		SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_TIME_ISO_FORMAT);
+		return dateFormat.format(date);
 	}
 }

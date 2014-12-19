@@ -13,31 +13,32 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.telosys.tools.repository.model;
+package org.telosys.tools.repository.changelog;
 
-import java.io.Serializable;
+import org.telosys.tools.repository.model.Column;
 
-public class RelationLinks implements Serializable  {
-
-	private static final long serialVersionUID = 1L;
-
-	private Link owningSideLink = null ;
-
-	private Link inverseSideLink = null ;
-
-	public RelationLinks(Link owningSideLink, Link inverseSideLink) {
+public class ChangeOnColumn {
+	
+	private final ChangeType  changeType ;
+	private final Column      columnBefore ;
+	private final Column      columnAfter ;
+	
+	public ChangeOnColumn(ChangeType changeType, Column columnBefore, Column columnAfter) {
 		super();
-		this.owningSideLink = owningSideLink;
-		this.inverseSideLink = inverseSideLink;
-	}
-
-	public Link getInverseSideLink() {
-		return inverseSideLink;
-	}
-
-	public Link getOwningSideLink() {
-		return owningSideLink;
+		this.changeType   = changeType ;
+		this.columnBefore = columnBefore;
+		this.columnAfter  = columnAfter;
 	}
 	
-	
+	public ChangeType getChangeType() {
+		return this.changeType;
+	}
+
+	public Column getColumnBefore() {
+		return this.columnBefore;
+	}
+
+	public Column getColumnAfter() {
+		return this.columnAfter;
+	}
 }

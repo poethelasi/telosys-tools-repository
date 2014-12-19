@@ -15,12 +15,13 @@
  */
 package org.telosys.tools.repository.model;
 
+import java.io.Serializable;
+
 import org.telosys.tools.commons.DatabaseUtil;
 import org.telosys.tools.commons.JavaTypeUtil;
 import org.telosys.tools.commons.StrUtil;
 import org.telosys.tools.commons.javatypes.JavaTypes;
 import org.telosys.tools.commons.javatypes.JavaTypesManager;
-import org.telosys.tools.commons.jdbctypes.JdbcTypes;
 import org.telosys.tools.commons.jdbctypes.JdbcTypesManager;
 
 /**
@@ -31,15 +32,17 @@ import org.telosys.tools.commons.jdbctypes.JdbcTypesManager;
  * @author Laurent Guerin
  *
  */
-public class Column implements Comparable<Column>
+public class Column implements Comparable<Column>, Serializable 
 {
+	private static final long serialVersionUID = 1L;
+	
 	public final static String SPECIAL_DATE_ONLY      = "D";
 	public final static String SPECIAL_TIME_ONLY      = "T";
 	public final static String SPECIAL_DATE_AND_TIME  = "DT";
 		 
 	public final static String SPECIAL_LONG_TEXT_TRUE = "true";
 	
-	private JdbcTypes _jdbcTypes = JdbcTypesManager.getJdbcTypes() ;
+	//private JdbcTypes _jdbcTypes = JdbcTypesManager.getJdbcTypes() ;
 	
 	//----- DATABASE -----
 	
@@ -118,6 +121,7 @@ public class Column implements Comparable<Column>
 	private TableGenerator tableGenerator = null ;
 	
 	private SequenceGenerator sequenceGenerator = null ;
+	
 	
 	public GeneratedValue getGeneratedValue() {
 		return generatedValue;
@@ -273,14 +277,16 @@ public class Column implements Comparable<Column>
 	}
 
 	public String getJdbcTypeName() {
-		String text = _jdbcTypes.getTextForCode( getJdbcTypeCode() );
+		//String text = _jdbcTypes.getTextForCode( getJdbcTypeCode() );
+		String text = JdbcTypesManager.getJdbcTypes().getTextForCode( getJdbcTypeCode() );
 		return text != null ? text : "???" ;
 	}
 
 
 	public String getJdbcTypeCodeWithText() {
 		int code = getJdbcTypeCode();
-		String text = _jdbcTypes.getTextForCode(code);
+		//String text = _jdbcTypes.getTextForCode(code);
+		String text = JdbcTypesManager.getJdbcTypes().getTextForCode( code );
 		if ( text == null ) text = "???" ;
 		return code + " : " + text.toLowerCase() ;
 	}

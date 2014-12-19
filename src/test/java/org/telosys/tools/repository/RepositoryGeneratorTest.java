@@ -13,6 +13,7 @@ import org.telosys.tools.commons.dbcfg.DatabaseConfiguration;
 import org.telosys.tools.commons.dbcfg.DatabasesConfigurations;
 import org.telosys.tools.commons.dbcfg.DbConfigManager;
 import org.telosys.tools.commons.jdbc.ConnectionManager;
+import org.telosys.tools.repository.changelog.ChangeLog;
 import org.telosys.tools.repository.model.Column;
 import org.telosys.tools.repository.model.Entity;
 import org.telosys.tools.repository.model.Link;
@@ -70,16 +71,16 @@ public class RepositoryGeneratorTest {
 		}
 	}
 	
-	private void jdbcUrlWithAlterScript(DatabaseConfiguration databaseConfiguration, int testId) {
-		String jdbcUrl = databaseConfiguration.getJdbcUrl();
-		System.out.println("JDBC URL 1 : " + jdbcUrl );
-		int index = jdbcUrl.indexOf(";INIT");
-		String shortJdbcUrl = jdbcUrl.substring(0, index);
-		System.out.println("JDBC URL 2 : " + shortJdbcUrl );
-		String newJdbcUrl = shortJdbcUrl+";INIT=RUNSCRIPT FROM 'classpath:sql/alterdb" + testId + ".sql'" ;
-		System.out.println("JDBC URL 3 : " + newJdbcUrl );
-		databaseConfiguration.setJdbcUrl(newJdbcUrl);
-	}
+//	private void jdbcUrlWithAlterScript(DatabaseConfiguration databaseConfiguration, int testId) {
+//		String jdbcUrl = databaseConfiguration.getJdbcUrl();
+//		System.out.println("JDBC URL 1 : " + jdbcUrl );
+//		int index = jdbcUrl.indexOf(";INIT");
+//		String shortJdbcUrl = jdbcUrl.substring(0, index);
+//		System.out.println("JDBC URL 2 : " + shortJdbcUrl );
+//		String newJdbcUrl = shortJdbcUrl+";INIT=RUNSCRIPT FROM 'classpath:sql/alterdb" + testId + ".sql'" ;
+//		System.out.println("JDBC URL 3 : " + newJdbcUrl );
+//		databaseConfiguration.setJdbcUrl(newJdbcUrl);
+//	}
 	
 	private RepositoryGenerator getRepositoryGenerator() throws TelosysToolsException {
 		
@@ -89,29 +90,33 @@ public class RepositoryGeneratorTest {
 		return new RepositoryGenerator(connectionManager, rules, logger);
 	}
 	
-	private int changeDatabaseSchemaAndUpdateRepositoryModel(DatabaseConfiguration databaseConfiguration, 
-				int testId, RepositoryModel repositoryModel, TelosysToolsLogger logger) throws TelosysToolsException {
-		//--- Set "alterdbX.sql" for database schema update
-		jdbcUrlWithAlterScript(databaseConfiguration, testId);
-		
-		//--- Update repository model after database schema update
-		ConnectionManager connectionManager = new ConnectionManager(logger);
-		ByteArrayOutputStream baosUpdateLog = new ByteArrayOutputStream();
-		UpdateLogWriter updateLogger = new UpdateLogWriter(baosUpdateLog);
-		
-		RepositoryUpdator repositoryUpdator = new RepositoryUpdator(connectionManager,
-				RepositoryRulesProvider.getRepositoryRules(), new ConsoleLogger(), updateLogger);
-		
-		int changesCount = repositoryUpdator.updateRepository(databaseConfiguration, repositoryModel);
-		System.out.println(baosUpdateLog.toString());
-		System.out.println("Changes count = " + changesCount );
-		System.out.println("Entities count = " + repositoryModel.getNumberOfEntities() );
-		return changesCount ;
-	}
+//	private ChangeLog changeDatabaseSchemaAndUpdateRepositoryModel(DatabaseConfiguration databaseConfiguration, 
+//				int testId, RepositoryModel repositoryModel, TelosysToolsLogger logger) throws TelosysToolsException {
+//		//--- Set "alterdbX.sql" for database schema update
+//		jdbcUrlWithAlterScript(databaseConfiguration, testId);
+//		
+//		//--- Update repository model after database schema update
+//		ConnectionManager connectionManager = new ConnectionManager(logger);
+//		ByteArrayOutputStream baosUpdateLog = new ByteArrayOutputStream();
+//		UpdateLogWriter updateLogger = new UpdateLogWriter(baosUpdateLog);
+//		
+//		RepositoryUpdator repositoryUpdator = new RepositoryUpdator(connectionManager,
+//				RepositoryRulesProvider.getRepositoryRules(), new ConsoleLogger(), updateLogger);
+//		
+//		//int changesCount = repositoryUpdator.updateRepository(databaseConfiguration, repositoryModel);
+//		ChangeLog changeLog = repositoryUpdator.updateRepository(databaseConfiguration, repositoryModel);
+//		System.out.println(baosUpdateLog.toString());
+//		System.out.println("Repo entities count = " + repositoryModel.getNumberOfEntities() );
+//		System.out.println("ChangeLog number of entities = " + changeLog.getNumberOfEntities() );
+//		System.out.println("ChangeLog number of entities created = " + changeLog.getNumberOfEntitiesCreated() );
+//		System.out.println("ChangeLog number of entities updated = " + changeLog.getNumberOfEntitiesUpdated() );
+//		System.out.println("ChangeLog number of entities deleted = " + changeLog.getNumberOfEntitiesDeleted() );
+//		return changeLog ;
+//	}
 	
 	@Test
 	public void test1() throws TelosysToolsException {
-		TelosysToolsLogger logger = new ConsoleLogger() ;
+//		TelosysToolsLogger logger = new ConsoleLogger() ;
 		DatabaseConfiguration databaseConfiguration = getDatabaseConfiguration(1);
 		System.out.println("DatabaseConfiguration ready ");
 		RepositoryGenerator repositoryGenerator = getRepositoryGenerator() ;
@@ -120,37 +125,27 @@ public class RepositoryGeneratorTest {
 		
 		printModel(repositoryModel);
 		Assert.assertTrue(repositoryModel.getDatabaseId() == 1 );
-		Assert.assertTrue(repositoryModel.getNumberOfEntities() == 2 );
+		Assert.assertEquals(2, repositoryModel.getNumberOfEntities() );
 
-		System.out.println("Repository update... ");
-		
-//		//--- Set "alterdbX.sql" for database schema update
-//		jdbcUrlWithAlterScript(databaseConfiguration, 1);
+//		System.out.println("Repository update... ");
+//		ChangeLog changeLog = changeDatabaseSchemaAndUpdateRepositoryModel(databaseConfiguration, 1, repositoryModel, logger);
 //		
-//		//--- Update repository model after database schema update
-//		ByteArrayOutputStream baosUpdateLog = new ByteArrayOutputStream();
-//		UpdateLogWriter updateLogger = new UpdateLogWriter(baosUpdateLog);
-//		RepositoryUpdator repositoryUpdator = new RepositoryUpdator(RepositoryRulesProvider.getRepositoryRules(), new ConsoleLogger(), updateLogger);
-//		int changesCount = repositoryUpdator.updateRepository(databaseConfiguration, repositoryModel);
-//		System.out.println(baosUpdateLog.toString());
-//		System.out.println("Changes count = " + changesCount );
-//		System.out.println("Entities count = " + repositoryModel.getNumberOfEntities() );
-		
-		int changesCount = changeDatabaseSchemaAndUpdateRepositoryModel(databaseConfiguration, 1, repositoryModel, logger);
-		
-		//--- Check changes
-		Assert.assertTrue(changesCount == 4 );
-		Assert.assertTrue(repositoryModel.getNumberOfEntities() == 2 );
-		
-		Entity badgeEntity = repositoryModel.getEntityByName("BADGE") ;
-		Assert.assertNotNull( badgeEntity );
-		Assert.assertNotNull( badgeEntity.getColumn("CODE") );
-		Assert.assertNotNull( badgeEntity.getColumn("NAME") );
-
-		Entity countryEntity = repositoryModel.getEntityByName("COUNTRY") ;
-		Assert.assertNotNull( countryEntity );
-		Assert.assertNotNull( countryEntity.getColumn("BADGE_CODE") );
-		Assert.assertTrue( countryEntity.getForeignKeys().length == 1 );
+//		//--- Check changes
+//		Assert.assertTrue(changeLog.getNumberOfEntities() == 3 );
+//		Assert.assertTrue(changeLog.getNumberOfEntitiesCreated() == 1 );
+//		Assert.assertTrue(changeLog.getNumberOfEntitiesUpdated() == 1 );
+//		Assert.assertTrue(changeLog.getNumberOfEntitiesDeleted() == 1 );
+//		Assert.assertTrue(repositoryModel.getNumberOfEntities() == 2 );
+//		
+//		Entity badgeEntity = repositoryModel.getEntityByName("BADGE") ;
+//		Assert.assertNotNull( badgeEntity );
+//		Assert.assertNotNull( badgeEntity.getColumn("CODE") );
+//		Assert.assertNotNull( badgeEntity.getColumn("NAME") );
+//
+//		Entity countryEntity = repositoryModel.getEntityByName("COUNTRY") ;
+//		Assert.assertNotNull( countryEntity );
+//		Assert.assertNotNull( countryEntity.getColumn("BADGE_CODE") );
+//		Assert.assertTrue( countryEntity.getForeignKeys().length == 1 );
 	}
 
 	@Test
@@ -282,6 +277,37 @@ public class RepositoryGeneratorTest {
 		
 //		checkJavaName(studentLinks[0].getJavaFieldName(),studentLinks[1].getJavaFieldName(), "teacher2", "teacher3" );
 //		checkJavaName(teacherLinks[0].getJavaFieldName(),teacherLinks[1].getJavaFieldName(), "listOfStudent2", "listOfStudent3" );		
+	}
+
+	@Test
+	public void test5() throws TelosysToolsException {
+		int databaseID = 5 ;
+		DatabaseConfiguration databaseConfiguration = getDatabaseConfiguration(databaseID);
+		System.out.println("DatabaseConfiguration ready ");
+		RepositoryGenerator repositoryGenerator = getRepositoryGenerator() ;
+		System.out.println("Repository generation... ");
+		RepositoryModel model = repositoryGenerator.generate( databaseConfiguration );
+		
+		printModel(model);
+		Assert.assertTrue(model.getDatabaseId() == databaseID );
+		Assert.assertEquals(2, model.getNumberOfEntities() );
+
+		Entity studentEntity = model.getEntityByName("STUDENT");
+		Assert.assertNotNull(studentEntity);
+		Assert.assertFalse( studentEntity.isJoinTable() );
+		
+		Entity teacherEntity = model.getEntityByName("TEACHER");
+		Assert.assertNotNull(teacherEntity);
+		Assert.assertFalse( teacherEntity.isJoinTable() );
+
+		Link[] studentLinks = studentEntity.getLinks();
+		System.out.println("STUDENT links : " + studentLinks.length);
+		Assert.assertEquals(1, studentLinks.length);
+
+		Link[] teacherLinks = teacherEntity.getLinks();
+		System.out.println("TEACHER links : " + teacherLinks.length);
+		Assert.assertEquals(1, teacherLinks.length);
+		
 	}
 
 }

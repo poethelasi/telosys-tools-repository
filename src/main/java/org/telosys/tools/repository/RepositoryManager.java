@@ -101,7 +101,13 @@ public abstract class RepositoryManager extends StandardTool
 		return dbmd;
 	}
 
-	protected void addEntity(RepositoryModel repositoryModel, DatabaseTable dbTable)
+	/**
+	 * Creates an new entity from the given database table and adds it in the repository model
+	 * @param repositoryModel
+	 * @param dbTable
+	 * @return the entity created
+	 */
+	protected Entity addEntity(RepositoryModel repositoryModel, DatabaseTable dbTable)
 	{
 		logger.log("addEntity()...");
 
@@ -127,6 +133,7 @@ public abstract class RepositoryManager extends StandardTool
 		repositoryModel.storeEntity(entity);
 
 		logger.log("addEntity() : entity " + dbTable.getTableName() + "stored");
+		return entity ;
 	}
 	
 	private void addColumns( Entity entity, DatabaseTable dbTable) 

@@ -15,12 +15,16 @@
  */
 package org.telosys.tools.repository.model;
 
+import java.io.Serializable;
+
 /**
  * <sequenceGenerator name="MyGenerator" sequenceName="INV_SEQ" allocationSize="5" />
  * @author S.Labbe
  * 
  */
-public class SequenceGenerator {
+public class SequenceGenerator implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	private String name = null ;
 

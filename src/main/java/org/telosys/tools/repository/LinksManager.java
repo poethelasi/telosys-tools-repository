@@ -19,6 +19,9 @@ import java.util.LinkedList;
 
 import org.telosys.tools.commons.TelosysToolsException;
 import org.telosys.tools.commons.TelosysToolsLogger;
+import org.telosys.tools.repository.changelog.ChangeLog;
+import org.telosys.tools.repository.changelog.ChangeOnEntity;
+import org.telosys.tools.repository.changelog.ChangeOnForeignKey;
 import org.telosys.tools.repository.model.Entity;
 import org.telosys.tools.repository.model.ForeignKey;
 import org.telosys.tools.repository.model.ForeignKeyColumn;
@@ -35,9 +38,9 @@ import org.telosys.tools.repository.rules.RepositoryRules;
  * Links generator <br>
  * Generates inter-entity links from Foreign Keys and Join Tables 
  * 
- * @author S.Labbe, L.Guerin
+ * @author Laurent Guerin
  */
-public class LinksGenerator {
+public class LinksManager {
 
 	private final RepositoryRules repositoryRules ;
 	
@@ -48,7 +51,7 @@ public class LinksGenerator {
 	 * @param repositoryRules
 	 * @param logger
 	 */
-	public LinksGenerator(RepositoryRules repositoryRules, TelosysToolsLogger logger) {
+	public LinksManager(RepositoryRules repositoryRules, TelosysToolsLogger logger) {
 		this.logger = logger;
 		this.repositoryRules = 	repositoryRules ;
 	}
@@ -72,44 +75,76 @@ public class LinksGenerator {
 		log("generateAllLinks()...");
 		
 		int count = 0 ;
-		Entity[] entities = model.getEntities();
-		for ( Entity entity : entities ) {
-			count = count + generateEntityLinks(model, entity);
+		//Entity[] entities = model.getEntities();
+		for ( Entity entity : model.getEntities() ) {
+			count = count + createRelations(model, entity);
 		}
 		return count ;
 	}
-
+	
 	/**
-	 * Generate the links ( owning side and inverse side ) for the given entity
+	 * Removes all the relations regarding the given entity
+	 * @param model
+	 * @param entity
+	 * @return
+	 * @throws TelosysToolsException
+	 */
+	private int removeRelations(RepositoryModel model, Entity entity) throws TelosysToolsException 
+	{
+		log("removeRelations() : entity = " + entity);
+		//--- Remove all the links using this entity 
+		return model.removeLinksByEntityName(entity.getName());
+	}
+	
+	/**
+	 * Removes the relation (2 links) based on the given Foreign Key
+	 * @param model
+	 * @param foreignKey
+	 * @return
+	 * @throws TelosysToolsException
+	 */
+	private int removeRelation(RepositoryModel model, ForeignKey foreignKey) throws TelosysToolsException 
+	{
+		log("removeRelations() : foreignKey = " + foreignKey);
+		//--- Remove all the links using this Foreign Key 
+		return model.removeLinksByForeignKey(foreignKey);
+	}
+	
+	/**
+	 * Generate all the relations ( owning side and inverse side links ) <br>
+	 * for the given entity using its foreign keys (if any) <br>
+	 * The entity can be a 'standard entity' or a 'join table entity'
 	 * @param model
 	 * @param entity
 	 * @return the number of links generated 
 	 * @throws TelosysToolsException
 	 */
-	private int generateEntityLinks(RepositoryModel model, Entity entity) throws TelosysToolsException 
+	private int createRelations(RepositoryModel model, Entity entity) throws TelosysToolsException 
 	{
-		log("generateEntityLinks()...");
+		log("createRelations() : entity = " + entity);
 		int count = 0 ;
 		
 		if ( entity.isJoinTable() )
 		{
+			log("createRelations() : entity is a Join Table ");
 			//--- This entity can be considered as a "Join Table" ( all columns are Foreign Keys )
-			ForeignKey[] foreignKeys = entity.getForeignKeys() ;
-			if ( foreignKeys.length == 2 ) 
-			{
-				//--- Generate a bidirectional "ManyToMany" relation for this "Join Table"
-				ForeignKey owningSideForeignKey  = foreignKeys[0]; // Arbitrary choice
-				ForeignKey inverseSideForeignKey = foreignKeys[1]; // Arbitrary choice
-				count = count + generateManyToManyLinks( model, entity, owningSideForeignKey, inverseSideForeignKey); 				
-			}
-			// else ( a join table with more than 2 FK ) : do nothing !
+//			ForeignKey[] foreignKeys = entity.getForeignKeys() ;
+//			if ( foreignKeys.length == 2 ) 
+//			{
+//				//--- Generate a bidirectional "ManyToMany" relation for this "Join Table"
+//				ForeignKey owningSideForeignKey  = foreignKeys[0]; // Arbitrary choice
+//				ForeignKey inverseSideForeignKey = foreignKeys[1]; // Arbitrary choice
+//				count = count + createRelationManyToMany( model, entity, owningSideForeignKey, inverseSideForeignKey); 				
+//			}
+//			// else ( a join table with more than 2 FK ) : do nothing !
+			count = count + createRelationManyToMany( model, entity);
 		}
 		else
 		{
+			log("createRelations() : entity is standard entity (not a Join Table) ");
 			//--- Generate one relation ( 2 links ) for each FK 
-			ForeignKey[] foreignKeys = entity.getForeignKeys();
-			for ( ForeignKey fk : foreignKeys ) {
-				count = count + generateManyToOneLinks(model, entity, fk);
+			for ( ForeignKey fk : entity.getForeignKeys() ) {
+				count = count + createRelationManyToOne(model, entity, fk);
 			}
 		}
 		return count ;
@@ -151,21 +186,22 @@ public class LinksGenerator {
 	// RELATION "* --> 1" ( "ManyToOne" and "OneToMany" links )
 	//----------------------------------------------------------------------------------------------------
 	/**
-	 * Generates the two links for a "ManyToOne" relation based on the the given Foreign Key
+	 * Creates a "ManyToOne" relation (2 links) based on the the given Foreign Key
 	 * @param model
 	 * @param owningSideEntity : the owning side entity
 	 * @param owningSideForeignKey : the Foreign Key that defines the relation 
 	 * @return the number of links generated (always 2)
 	 * @throws TelosysToolsException
 	 */
-	protected int generateManyToOneLinks(RepositoryModel model, Entity owningSideEntity, ForeignKey owningSideForeignKey) throws TelosysToolsException 
+	private int createRelationManyToOne(RepositoryModel model, Entity owningSideEntity, ForeignKey owningSideForeignKey) throws TelosysToolsException 
 	{
-		log("generateBasicLinks()...");
+		log("createRelationManyToOne() : Owning Side FK = " + owningSideForeignKey);
 
 		Entity inverseSideEntity = model.getEntityByName( owningSideForeignKey.getTableRef() );
 		if ( null == inverseSideEntity ) {
 			throw new TelosysToolsException("No referenced table for Foreign Key '" + owningSideForeignKey.getName() + "'");
 		}
+		log("createRelationManyToOne() : Inverse Side Entity = " + inverseSideEntity);
 		
 		//--- Build the 2 link id
 		String owningSideLinkId  = Link.buildId(owningSideForeignKey, true) ;
@@ -195,7 +231,9 @@ public class LinksGenerator {
 	 */
 	private Link generateManyToOneLinkOwningSide( String linkId, Entity owningSideEntity, Entity inverseSideEntity, 
 			ForeignKey owningSideForeignKey  ) throws TelosysToolsException 
-	{		
+	{
+		log("generateManyToOneLinkOwningSide() : linkId = " + linkId + " "+ owningSideEntity.getName() + " --> " + inverseSideEntity.getName() );
+		
 		Link link = new Link();
 		link.setId(linkId);
 		link.setForeignKeyName( owningSideForeignKey.getName() );
@@ -269,7 +307,34 @@ public class LinksGenerator {
 	// RELATION "* --> *"  ( 2 "ManyToMany" links )
 	//----------------------------------------------------------------------------------------------------
 	/**
-	 * Generates the links for a "Many To Many" relation based on the given "Join Table" entity
+	 * Creates a "Many To Many" relation (2 links) based on the given "Join Table" entity <br>
+	 * The 2 sides links will be generated 
+	 * @param model
+	 * @param joinTableEntity
+	 * @return
+	 * @throws TelosysToolsException
+	 */
+	private int createRelationManyToMany(RepositoryModel model, Entity joinTableEntity) throws TelosysToolsException 
+	{
+		log("createRelationManyToMany()...");
+		int count = 0 ;
+		//--- This entity can be considered as a "Join Table" ( all columns are Foreign Keys )
+		ForeignKey[] foreignKeys = joinTableEntity.getForeignKeys() ;
+		if ( foreignKeys.length == 2 ) {
+			//--- Generate a bidirectional "ManyToMany" relation for this "Join Table"
+			ForeignKey owningSideForeignKey  = foreignKeys[0]; // Arbitrary choice
+			ForeignKey inverseSideForeignKey = foreignKeys[1]; // Arbitrary choice
+			count = createRelationManyToMany( model, joinTableEntity, owningSideForeignKey, inverseSideForeignKey); 				
+		}
+		else {
+			throw new TelosysToolsException("Entity '" + joinTableEntity.getName() 
+					+ "' (Join Table) has " + foreignKeys.length + " Foreign Key(s) (2 FK expected)") ;
+		}
+		return count ;
+	}
+	
+	/**
+	 * Creates a "Many To Many" relation (2 links) based on the given "Join Table" entity <br>
 	 * The 2 sides links will be generated 
 	 * @param model
 	 * @param joinTable
@@ -278,10 +343,10 @@ public class LinksGenerator {
 	 * @return the number of links generated (always 2)
 	 * @throws TelosysToolsException
 	 */
-	protected int generateManyToManyLinks(RepositoryModel model, Entity joinTable, 
+	private int createRelationManyToMany(RepositoryModel model, Entity joinTable, 
 			ForeignKey owningSideForeignKey, ForeignKey inverseSideForeignKey) throws TelosysToolsException 
 	{
-		log("generateManyToManyLinks()...");
+		log("createRelationManyToMany()...");
 
 		//--- Build the 2 id
 		String owningSideId  = Link.buildId(joinTable, true) ;
@@ -432,5 +497,117 @@ public class LinksGenerator {
 		}
 		return joinColumns ;
 	}
+	
+	//-----------------------------------------------------------------------------------------
+	// LINKS UPDATE
+	//-----------------------------------------------------------------------------------------
+	/**
+	 * Updates the model's links according to the given change log
+	 * @param model
+	 * @param changeLog
+	 * @return
+	 * @throws TelosysToolsException
+	 */
+	public int updateLinks(RepositoryModel model, ChangeLog changeLog ) throws TelosysToolsException 
+	{
+		int count = 0 ;
+		//--- For each entity change...
+		for ( ChangeOnEntity change : changeLog.getChanges() ) {
+			switch ( change.getChangeType() ) {
+			case CREATED :
+				//--- An entity as been created
+				Entity entityCreated = change.getEntityCreated() ;
+				log("updateLinks() : entity CREATED = " + entityCreated);
+				//--- Create all the links based on this entity (for a standard Table or a  Join Table )
+				count = count + this.createRelations(model, entityCreated);
+				break;
+			case UPDATED :
+				//--- An entity as been updated
+				Entity entityUpdated = change.getEntityAfter() ;
+				log("updateLinks() : entity UPDATED = " + entityUpdated);
+				count = count + this.updateEntityLinks(model, entityUpdated, change);
+				break;
+			case DELETED :
+				//--- An entity as been deleted
+				Entity entityDeleted = change.getEntityDeleted() ;
+				log("updateLinks() : entity DELETED = " + entityDeleted);
+				//--- Remove all the links using this entity 
+				count = count + this.removeRelations(model, entityDeleted);
+				break;
+			}
+		}
+		return count ;
+	}
+	
+	/**
+	 * Updates all the links for the given entity according with the given 'change'
+	 * @param model
+	 * @param entity
+	 * @param change
+	 * @return
+	 * @throws TelosysToolsException
+	 */
+	private int updateEntityLinks(RepositoryModel model, Entity entity, ChangeOnEntity change ) throws TelosysToolsException 
+	{
+		int count = 0 ;
+		if ( entity.isJoinTable() ) {
+			if ( change.getChangesOnForeignKey().size() > 0 ) {
+				//--- Something has changed in the Foreign Keys
+				//--- 1) Remove existing links
+				model.removeLinksByJoinTableName(entity.getName());
+				//--- 2) Create new links based on the new Foreign Keys
+				count = count + createRelationManyToMany(model, entity);
+			}
+		}
+		else {
+			//--- For each Foreign Key change...
+			for ( ChangeOnForeignKey fkChange : change.getChangesOnForeignKey() ) {
+				switch ( fkChange.getChangeType() ) {
+				case CREATED :
+					//--- A Foreign Key as been created 
+					//--- Generates the relation ( 2 links ) based on the created FK 
+					count = count + this.createRelationManyToOne(model, entity, fkChange.getForeignKeyCreated() );
+					break;
+				case UPDATED :
+					//--- A Foreign Key as been updated 
+					// 1) remove the OLD links
+					//count = count + model.removeLinksByForeignKey(fkChange.getForeignKeyBefore());
+					count = count + this.removeRelation(model, fkChange.getForeignKeyBefore());
+					// 2) create the NEW links
+					count = count + this.createRelationManyToOne(model, entity, fkChange.getForeignKeyAfter() );
+					break;
+				case DELETED :
+					//--- A Foreign Key as been deleted 
+					// linksManager.deleteLinks(model,change.getEntityDeleted() );
+					//count = count + this.removeManyToOneLinks(model, entity, foreignKeyDeleted );
+					//--- Removes the relation ( 2 links ) based on the deleted foreign key
+					//count = count + model.removeLinksByForeignKey(foreignKeyDeleted);
+					count = count + this.removeRelation(model, fkChange.getForeignKeyDeleted());
+					break;
+				}
+			}
+		}
+		return 0 ;
+	}
+	
+//	private int removeManyToOneLinks(RepositoryModel model, Entity owningSideEntity, ForeignKey owningSideForeignKey) throws TelosysToolsException 
+//	{
+//		//log("removeManyToOneLinks()...");
+//
+//		Entity inverseSideEntity = model.getEntityByName( owningSideForeignKey.getTableRef() );
+//		if ( null == inverseSideEntity ) {
+//			return 0 ; // It's possible that the referenced table/entity has been removed
+//		}
+//		
+//		//--- Build the 2 link id
+//		String owningSideLinkId  = Link.buildId(owningSideForeignKey, true) ;
+//		String inverseSideLinkId = Link.buildId(owningSideForeignKey, false) ;
+//
+//		//--- Remove the links if they are already in the model
+//		model.removeLinkById(inverseSideLinkId);
+//		model.removeLinkById(owningSideLinkId);
+//		
+//		return 2 ;
+//	}
 	
 }

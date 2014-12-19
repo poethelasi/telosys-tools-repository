@@ -15,6 +15,8 @@
  */
 package org.telosys.tools.repository.model;
 
+import java.io.Serializable;
+
 /**
  * "joinColumn" model class <br>
  * <joinColumn name="EMPLOYEE_ID" table="" referencedColumnName="ID" unique="true|false" nullable="true|false" updatable="" insertable="" />
@@ -22,7 +24,9 @@ package org.telosys.tools.repository.model;
  * @author slabbe
  * 
  */
-public class JoinColumn {
+public class JoinColumn implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
 
 	private String name;
 

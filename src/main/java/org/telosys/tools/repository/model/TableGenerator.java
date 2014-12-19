@@ -15,12 +15,16 @@
  */
 package org.telosys.tools.repository.model;
 
+import java.io.Serializable;
+
 /**
  * <tableGenerator name="MyGenerator" table="ID_GEN" pkColumnName="ID_NAME" valueColumnName="ID_VAL" pkColumnValue="INV_GEN" />
  * @author S.Labbe
  * 
  */
-public class TableGenerator {
+public class TableGenerator implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	private String name = null ;
 

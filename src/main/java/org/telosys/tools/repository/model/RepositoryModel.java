@@ -156,16 +156,26 @@ public class RepositoryModel
 		return names;
 	}
 	
+	/**
+	 * Returns the entity for the given name, or null if not found
+	 * @param name
+	 * @return
+	 */
 	public Entity getEntityByName(String name) {
-		return (Entity) htEntities.get(name);
+		return htEntities.get(name);
 	}
 	
 	public void storeEntity(Entity entity) {
 		htEntities.put(entity.getName(), entity);
 	}
 	
-	public void removeEntity(String name) {
-		htEntities.remove(name);
+	/**
+	 * Removes the entity having the given name (if any)
+	 * @param name
+	 * @return the entity removed (or null if none)
+	 */
+	public Entity removeEntity(String name) {
+		return htEntities.remove(name);
 	}
 	
 	//-------------------------------------------------------------------------------
@@ -195,7 +205,7 @@ public class RepositoryModel
 
 	//-------------------------------------------------------------------------------
 	/**
-	 * Removes all the links 
+	 * Removes all the links in the model (for all the entities)
 	 */
 	public void removeAllLinks() {
 		Entity [] entities = this.getEntities();
@@ -209,16 +219,80 @@ public class RepositoryModel
 	/**
 	 * Removes the link corresponding to the given id
 	 * @param id
+	 * @return 1 if the link has been found and removed, 0 if the link has not been found
 	 */
-	public void removeLinkById(String id) {
+	public int removeLinkById(String id) {
+		int count = 0 ;
 		Link link = getLinkById(id);
 		if ( link != null ) {
 			//--- Remove link 
 			Entity entity = getEntityByName( link.getSourceTableName() );
 			if ( entity != null ) {
-				entity.removeLink(link);
+				count = entity.removeLink(link);
 			}
 		}
+		return count ;
+	}
+	
+	/**
+	 * Removes all the links using the given entity name (as source entity or target entity)
+	 * @param entityName
+	 * @return the number of links removed
+	 * @since 2.1.1
+	 */
+	public int removeLinksByEntityName(String entityName) {
+		int count = 0 ;
+		for ( Entity entity : this.getEntities() ) {
+			for ( Link link : entity.getLinks() ) {
+				if ( entityName.equals( link.getSourceTableName() ) || entityName.equals( link.getTargetTableName() ) ) {
+					count = count + entity.removeLink(link);
+				}
+			}
+		}
+		return count ;
+	}
+	
+	/**
+	 * Removes the links based on the given Foreign Key
+	 * @param foreignKey
+	 * @return the number of links removes (usually 2)
+	 */
+	public int removeLinksByForeignKey(ForeignKey foreignKey) {
+		int count = 0 ;
+		//--- Build the 2 link id
+		String owningSideLinkId  = Link.buildId(foreignKey, true) ;
+		String inverseSideLinkId = Link.buildId(foreignKey, false) ;
+		//--- Remove the links if they are already in the model
+		count = count + this.removeLinkById(inverseSideLinkId);
+		count = count + this.removeLinkById(owningSideLinkId);
+
+		return count ;
+	}
+	
+	//-------------------------------------------------------------------------------
+	/**
+	 * Removes all the links built on the given "join table" name <br>
+	 * Each "join table" is supposed to have 2 links in the model (or 0 if not used)
+	 * @param joinTableName
+	 * @return the number of links deleted (0 or 2 expected)
+	 * @since 2.1.1
+	 */
+	public int removeLinksByJoinTableName(String joinTableName) {
+		int count = 0 ;
+		if ( joinTableName != null ) {
+			for ( Entity entity : this.getEntities() ) {
+				for ( Link link : entity.getLinks() ) {
+					String jtName = link.getJoinTableName() ;
+					if ( jtName != null ) {
+						if ( jtName.equals(joinTableName) ) {
+							entity.removeLink(link);
+							count++;
+						}
+					}
+				}
+			}
+		}
+		return count ;
 	}
 	//-------------------------------------------------------------------------------
 	/**

@@ -99,8 +99,11 @@ public class RepositoryGenerator extends RepositoryManager
 		RepositoryModel repositoryModel = generateRepository(connection, databaseConfiguration);
 		
 		//--- STEP 2 : Generates the links between entities 
-		LinksGenerator linksGenerator = new LinksGenerator(getRepositoryRules(), getLogger() );
-		linksGenerator.generateAllLinks(repositoryModel);
+//		LinksGenerator linksGenerator = new LinksGenerator(getRepositoryRules(), getLogger() );
+//		linksGenerator.generateAllLinks(repositoryModel);
+		// v 2.1.1
+		LinksManager linksManager = new LinksManager(getRepositoryRules(), getLogger() );
+		linksManager.generateAllLinks(repositoryModel);
 		
 		return repositoryModel ;
 	}
