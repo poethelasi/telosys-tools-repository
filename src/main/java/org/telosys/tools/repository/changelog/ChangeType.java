@@ -13,31 +13,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.telosys.tools.repository.model;
+package org.telosys.tools.repository.changelog;
 
-import java.io.Serializable;
-
-public class RelationLinks implements Serializable  {
-
-	private static final long serialVersionUID = 1L;
-
-	private Link owningSideLink = null ;
-
-	private Link inverseSideLink = null ;
-
-	public RelationLinks(Link owningSideLink, Link inverseSideLink) {
-		super();
-		this.owningSideLink = owningSideLink;
-		this.inverseSideLink = inverseSideLink;
-	}
-
-	public Link getInverseSideLink() {
-		return inverseSideLink;
-	}
-
-	public Link getOwningSideLink() {
-		return owningSideLink;
-	}
-	
-	
+public enum ChangeType {
+	CREATED , UPDATED, DELETED ;
 }

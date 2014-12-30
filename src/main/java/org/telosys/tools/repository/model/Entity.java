@@ -15,9 +15,12 @@
  */
 package org.telosys.tools.repository.model;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * "Entity" model class ( a Database Table mapped to a Java Class ) <br>
@@ -31,8 +34,9 @@ import java.util.Hashtable;
  * @author Laurent Guerin
  *
  */
-public class Entity implements Comparable<Entity>
+public class Entity implements Comparable<Entity>, Serializable 
 {
+	private static final long serialVersionUID = 1L;
 
 	private String name ;
 	
@@ -44,18 +48,28 @@ public class Entity implements Comparable<Entity>
 	
 	private String beanJavaClass ;
 	
-// REMOVED in ver 2.0.7
-//	private String listJavaClass ; 
-//	
-//	private String daoJavaClass ;
-//
-//	private String converterJavaClass ;
-	
 	private Hashtable<String,Column>     columns     = new Hashtable<String,Column>() ; 
 
 	private Hashtable<String,ForeignKey> foreignKeys = new Hashtable<String,ForeignKey>() ;
 
 	private Hashtable<String,Link>       links       = new Hashtable<String,Link>() ;
+
+	
+	/**
+	 * Default constructor 
+	 */
+	public Entity() {
+		super();
+	}
+
+	/**
+	 * Constructor 
+	 * @param name
+	 */
+	public Entity(String name) {
+		super();
+		this.name = name;
+	}
 
 	/**
 	 * Returns true if the entity can be considered as a "Join Table" <br>
@@ -180,51 +194,6 @@ public class Entity implements Comparable<Entity>
 	}
 
 	//--------------------------------------------------------------------------
-//	
-//	/**
-//	 * Returns the short name of the bean convertor Java Class ( without the package ) <br>
-//	 * Example : "BookMapper"
-//	 * @return
-//	 */
-//	public String getConverterJavaClass() {
-//		return converterJavaClass;
-//	}
-//
-//	public void setConverterJavaClass(String covertorJavaClass) {
-//		this.converterJavaClass = covertorJavaClass;
-//	}
-
-	//--------------------------------------------------------------------------
-//	
-//	/**
-//	 * Returns the short name of the bean DAO Java Class ( without the package ) <br>
-//	 * Example : "BookDAO"
-//	 * @return
-//	 */
-//	public String getDaoJavaClass() {
-//		return daoJavaClass;
-//	}
-//
-//	public void setDaoJavaClass(String daoJavaClass) {
-//		this.daoJavaClass = daoJavaClass;
-//	}
-
-	//--------------------------------------------------------------------------
-	
-//	/**
-//	 * Returns the short name of the bean list Java Class ( without the package ) <br>
-//	 * Example : "BookList"
-//	 * @return
-//	 */
-//	public String getListJavaClass() {
-//		return listJavaClass;
-//	}
-//
-//	public void setListJavaClass(String listJavaClass) {
-//		this.listJavaClass = listJavaClass;
-//	}
-
-	//--------------------------------------------------------------------------
 	// COLUMNS management
 	//--------------------------------------------------------------------------
 	
@@ -328,6 +297,22 @@ public class Entity implements Comparable<Entity>
 	{
 		return (Link[]) links.values().toArray(new Link[links.size()]);
 	}
+
+	/**
+	 * Returns all the links referencing the given entity name
+	 * @return
+	 * @since 2.1.1
+	 */
+	public List<Link> getLinksTo(String entityName)
+	{
+		LinkedList<Link> selectedLinks = new LinkedList<Link>();
+		for ( Link link : links.values() ) {
+			if ( link.getTargetTableName().equals(entityName) ) {
+				selectedLinks.add(link);
+			}
+		}
+		return selectedLinks;
+	}
 	
 	/**
 	 * Returns all the links of the entity
@@ -361,9 +346,10 @@ public class Entity implements Comparable<Entity>
 	 * Remove the given link from the entity
 	 * @param link
 	 */
-	public void removeLink(Link link)
+	public int removeLink(Link link)
 	{
-		links.remove( link.getId() );
+		Link linkRemoved = links.remove( link.getId() );
+		return linkRemoved != null ? 1 : 0 ;
 	}
 
 	/**
@@ -391,6 +377,19 @@ public class Entity implements Comparable<Entity>
 			}
 		}
 		return 0;
+	}
+
+	@Override
+	public String toString() {
+		return  name 
+				+ "|"  + catalog 
+				+ "|"   + schema 
+				+ "|" + databaseType
+				+ "|" + beanJavaClass 
+				+ "|columns=" + columns.size()
+				+ "|foreignKeys=" + foreignKeys.size() 
+				+ "|links=" + links.size() 
+				;
 	}
 	
 }

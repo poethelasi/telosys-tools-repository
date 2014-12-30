@@ -15,12 +15,16 @@
  */
 package org.telosys.tools.repository.model;
 
+import java.io.Serializable;
+
 /**
  * <generatedValue strategy="auto|identity|sequence|table" generator="MyGenerator" />
  * @author S.Labbe
  * 
  */
-public class GeneratedValue {
+public class GeneratedValue implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
 
 	private String strategy = null ;
 

@@ -15,14 +15,17 @@
  */
 package org.telosys.tools.repository.model;
 
+import java.io.Serializable;
+
 
 /**
  * "JoinTable" model class <br>
  *
  * @author slabbe
  */
-public class JoinTable // extends JoinFKCollection 
+public class JoinTable implements Serializable 
 {
+	private static final long serialVersionUID = 1L;
 
 	private String name ;
 

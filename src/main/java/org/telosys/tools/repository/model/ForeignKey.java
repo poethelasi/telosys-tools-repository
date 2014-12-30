@@ -15,14 +15,17 @@
  */
 package org.telosys.tools.repository.model;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Hashtable;
 
 import org.telosys.tools.commons.StrUtil;
 
-public class ForeignKey implements Comparable<ForeignKey>
+public class ForeignKey implements Comparable<ForeignKey>, Serializable
 {
+	private static final long serialVersionUID = 1L;
+
 	private String name ;
 	
 	private Hashtable<String, ForeignKeyColumn> foreignKeyColumns = new Hashtable<String,ForeignKeyColumn>() ;
@@ -169,6 +172,11 @@ public class ForeignKey implements Comparable<ForeignKey>
 			}
 		}
 		return 0;
+	}
+
+	@Override
+	public String toString() {
+		return  name + "|" + foreignKeyColumns.size() ;
 	}
 
 }

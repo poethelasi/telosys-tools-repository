@@ -15,11 +15,14 @@
  */
 package org.telosys.tools.repository.model;
 
+import java.io.Serializable;
+
 import org.telosys.tools.commons.StrUtil;
 import org.telosys.tools.commons.jdbctypes.MetadataUtil;
 
-public class ForeignKeyColumn implements Comparable<ForeignKeyColumn>
+public class ForeignKeyColumn implements Comparable<ForeignKeyColumn>, Serializable
 {
+	private static final long serialVersionUID = 1L;
 
 	private String _tableName ;
 	
@@ -124,19 +127,20 @@ public class ForeignKeyColumn implements Comparable<ForeignKeyColumn>
 		_updateRuleCode = v;
 	}
 
-	//-------------------------------------------------------------------------------
-	public boolean sameStrings(String s1, String s2) 
-	{
-		if ( null == s1 )
-		{
-			if ( null == s2 ) return true ;
-		}
-		else
-		{
-			if ( null == s2 ) return false ;
-		}
-		return s1.equals(s2);
-	}
+//	//-------------------------------------------------------------------------------
+// removed in ver 2.1.1
+//	public boolean sameStrings(String s1, String s2) 
+//	{
+//		if ( null == s1 )
+//		{
+//			if ( null == s2 ) return true ;
+//		}
+//		else
+//		{
+//			if ( null == s2 ) return false ;
+//		}
+//		return s1.equals(s2);
+//	}
 
 	//-------------------------------------------------------------------------------
 	public boolean equals(Object o) 

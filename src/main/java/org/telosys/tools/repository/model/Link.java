@@ -15,6 +15,8 @@
  */
 package org.telosys.tools.repository.model;
 
+import java.io.Serializable;
+
 import org.telosys.tools.commons.StrUtil;
 import org.telosys.tools.repository.persistence.util.RepositoryConst;
 
@@ -25,8 +27,10 @@ import org.telosys.tools.repository.persistence.util.RepositoryConst;
  *
  */
 //public class Link extends JoinFKCollection 
-public class Link 
+public class Link implements Serializable 
 {
+	private static final long serialVersionUID = 1L;
+	
 	private String  id;
 
 	private boolean used = true; // flag : used or not used
