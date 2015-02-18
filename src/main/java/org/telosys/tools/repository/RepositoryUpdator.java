@@ -194,8 +194,21 @@ public class RepositoryUpdator extends RepositoryManager
 		
 		return changeLog ;
 	}
+
+	protected ChangeLog updateRepository( DatabaseConfiguration databaseConfiguration, RepositoryModel repositoryModel, Connection connection ) throws TelosysToolsException 
+	{
+		//--- STEP 1 : Updates the repository from the current database meta-data
+		//return updateRepository( databaseConfiguration, repositoryModel, connection );
+		ChangeLog changeLog = updateStep1( databaseConfiguration, repositoryModel, connection );
+
+		//--- STEP 2 : Updates the links between entities ( since v 2.1.1 )
+		LinksManager linksManager = new LinksManager(getRepositoryRules(), getLogger() );
+		linksManager.updateLinks(repositoryModel, changeLog);
+		
+		return changeLog ;
+	}
 	
-	private ChangeLog updateRepository( DatabaseConfiguration databaseConfiguration, RepositoryModel repositoryModel, 
+	private ChangeLog updateStep1( DatabaseConfiguration databaseConfiguration, RepositoryModel repositoryModel, 
 			Connection connection ) throws TelosysToolsException 
 	{
 		ChangeLog changeLog = null ;

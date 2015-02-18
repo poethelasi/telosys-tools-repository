@@ -67,6 +67,18 @@ public class ChangeLog {
 		return selection ;
 	}
 	
+	public ChangeOnEntity getChangeByEntityName(String entityName) {
+		ChangeOnEntity changeFound = null ;
+		if ( entityName == null ) throw new IllegalArgumentException("Entity name is null");
+		for ( ChangeOnEntity change : list ) {
+			if ( entityName.equals(change.getEntityName()) ) {
+				if ( changeFound != null ) throw new RuntimeException("Duplicated name '" + entityName +"' in changeLog");
+				changeFound = change ;
+			}
+		}
+		return changeFound ;
+	}
+	
 	/**
 	 * Returns the number of all entities (created, updated, deleted)
 	 * @return

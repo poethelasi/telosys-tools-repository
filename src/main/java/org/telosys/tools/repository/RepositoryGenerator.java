@@ -107,6 +107,31 @@ public class RepositoryGenerator extends RepositoryManager
 		
 		return repositoryModel ;
 	}
+
+	/**
+	 * Generates the repository model from the given database configuration using the given connection <br>
+	 * Generates all the entities and all the links between the entities <br>
+	 * This method is supposed to used only in test cases
+	 * 
+	 * @param databaseConfiguration
+	 * @param connection
+	 * @return
+	 * @throws TelosysToolsException
+	 */
+	protected RepositoryModel generate(DatabaseConfiguration databaseConfiguration, Connection connection) throws TelosysToolsException 
+	{
+		//--- STEP 1 : Generates the model entities 
+		RepositoryModel repositoryModel = generateRepository(connection, databaseConfiguration);
+		
+		//--- STEP 2 : Generates the links between entities 
+//		LinksGenerator linksGenerator = new LinksGenerator(getRepositoryRules(), getLogger() );
+//		linksGenerator.generateAllLinks(repositoryModel);
+		// v 2.1.1
+		LinksManager linksManager = new LinksManager(getRepositoryRules(), getLogger() );
+		linksManager.generateAllLinks(repositoryModel);
+		
+		return repositoryModel ;
+	}
 	
 	/**
 	 * Generates the repository model from the given database

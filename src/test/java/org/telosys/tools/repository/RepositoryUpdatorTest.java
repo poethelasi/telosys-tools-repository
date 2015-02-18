@@ -1,193 +1,57 @@
 package org.telosys.tools.repository;
 
-import java.io.ByteArrayOutputStream;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.List;
 
-import junit.framework.Assert;
-
 import org.junit.Test;
-import org.telosys.tools.commons.ConsoleLogger;
-import org.telosys.tools.commons.FileUtil;
 import org.telosys.tools.commons.TelosysToolsException;
-import org.telosys.tools.commons.TelosysToolsLogger;
-import org.telosys.tools.commons.dbcfg.DatabaseConfiguration;
-import org.telosys.tools.commons.dbcfg.DatabasesConfigurations;
-import org.telosys.tools.commons.dbcfg.DbConfigManager;
-import org.telosys.tools.commons.jdbc.ConnectionManager;
 import org.telosys.tools.repository.changelog.ChangeLog;
 import org.telosys.tools.repository.changelog.ChangeOnEntity;
 import org.telosys.tools.repository.changelog.ChangeOnForeignKey;
 import org.telosys.tools.repository.changelog.ChangeType;
-import org.telosys.tools.repository.model.Column;
 import org.telosys.tools.repository.model.Entity;
 import org.telosys.tools.repository.model.Link;
 import org.telosys.tools.repository.model.RepositoryModel;
-import org.telosys.tools.repository.rules.RepositoryRules;
-import org.telosys.tools.repository.rules.RepositoryRulesProvider;
 
-public class RepositoryUpdatorTest {
+public class RepositoryUpdatorTest extends AbstractTestCase {
 	
-	private class UpdateResult {
-		private final RepositoryModel repositoryModel ;
-		private final ChangeLog changeLog ;
-		public UpdateResult(RepositoryModel repositoryModel, ChangeLog changeLog) {
-			super();
-			this.repositoryModel = repositoryModel;
-			this.changeLog = changeLog;
-		}
-		public RepositoryModel getRepositoryModel() {
-			return repositoryModel;
-		}
-		public ChangeLog getChangeLog() {
-			return changeLog;
-		}
-		
-	}
-	
-	private DatabaseConfiguration getDatabaseConfiguration(int databaseId) throws TelosysToolsException {
-		System.out.println("================================================================================");
-		DbConfigManager dbConfigManager = new DbConfigManager( FileUtil.getFileByClassPath("/dbcfg/databases-test-H2.dbcfg") );
-		DatabasesConfigurations databasesConfigurations = dbConfigManager.load();
-		DatabaseConfiguration dbConfig = databasesConfigurations.getDatabaseConfiguration(databaseId);
-		if ( dbConfig == null ) {
-			throw new RuntimeException("No database configuration for database id #" + databaseId);
-		}
-		return dbConfig ;
-	}
-
-	private void printModel (RepositoryModel model)  {
-		System.out.println("Model generated : " );
-		System.out.println("Database ID = " + model.getDatabaseId() );
-		
-		System.out.println("Number of entities = " + model.getNumberOfEntities() );
-		String[] entitiesNames = model.getEntitiesNames();
-		for ( String name : entitiesNames ) {
-			System.out.println("Entity name = '" + name + "'");
-			Entity entity = model.getEntityByName(name);
-			Column[] columns = entity.getColumns();
-			for ( Column c : columns ) {
-				System.out.println(" . Column : " + c );
-			}
-			Link[] links = entity.getLinks();
-			for ( Link link : links ) {
-				System.out.println(" . Link : "  + link);
-				System.out.println(" . " + link.getJavaFieldName() );
-			}
-		}
-	}
-	
-	private void checkJavaName(String javaName1, String javaName2, String expectedName1, String expectedName2 ) {
-		System.out.println("Check Java names : '" + javaName1 + "', '" + javaName2 + "' expected : '" + expectedName1 + "', '" + expectedName2 +"'");
-		Assert.assertTrue( expectedName1.equals( javaName1 ) || expectedName2.equals( javaName1 ) );
-		Assert.assertTrue( expectedName1.equals( javaName2 ) || expectedName2.equals( javaName2 ) );
-		if ( expectedName1.equals( javaName1 ) ) {
-			Assert.assertEquals(expectedName2, javaName2);
-		}
-		else if ( expectedName2.equals( javaName1 ) ) {
-			Assert.assertEquals(expectedName1, javaName2);
-		}
-		else {
-			Assert.fail("Unexpected jave name for link '" + javaName1 + "' or '" + javaName2 + "'");
-		}
-	}
-	
-	private void jdbcUrlWithAlterScript(DatabaseConfiguration databaseConfiguration, int testId) {
-		String jdbcUrl = databaseConfiguration.getJdbcUrl();
-		System.out.println("JDBC URL 1 : " + jdbcUrl );
-		int index = jdbcUrl.indexOf(";INIT");
-		String shortJdbcUrl = jdbcUrl.substring(0, index);
-		System.out.println("JDBC URL 2 : " + shortJdbcUrl );
-		String newJdbcUrl = shortJdbcUrl+";INIT=RUNSCRIPT FROM 'classpath:sql/alterdb" + testId + ".sql'" ;
-		System.out.println("JDBC URL 3 : " + newJdbcUrl );
-		databaseConfiguration.setJdbcUrl(newJdbcUrl);
-	}
-	
-	private RepositoryGenerator getRepositoryGenerator() throws TelosysToolsException {
-		
-		TelosysToolsLogger logger = new ConsoleLogger() ;
-		ConnectionManager connectionManager = new ConnectionManager(logger);
-		RepositoryRules rules = RepositoryRulesProvider.getRepositoryRules() ;
-		return new RepositoryGenerator(connectionManager, rules, logger);
-	}
-	
-	private UpdateResult generateThenUpdateModel(int databaseId) throws TelosysToolsException {
-		TelosysToolsLogger logger = new ConsoleLogger() ;
-		DatabaseConfiguration databaseConfiguration = getDatabaseConfiguration(databaseId);
-		System.out.println("DatabaseConfiguration ready (id="+databaseId+")");
-		RepositoryGenerator repositoryGenerator = getRepositoryGenerator() ;
-		System.out.println("Repository generation... ");
-		RepositoryModel repositoryModel = repositoryGenerator.generate( databaseConfiguration );
-		System.out.println("Repository update... ");
-		ChangeLog changeLog = changeDatabaseSchemaAndUpdateRepositoryModel(databaseConfiguration, databaseId, repositoryModel, logger);
-		new UpdateResult(repositoryModel, changeLog);
-		return new UpdateResult(repositoryModel, changeLog);
-	}
-	
-	private ChangeLog changeDatabaseSchemaAndUpdateRepositoryModel(DatabaseConfiguration databaseConfiguration, 
-				int testId, RepositoryModel repositoryModel, TelosysToolsLogger logger) throws TelosysToolsException {
-		//--- Set "alterdbX.sql" for database schema update
-		jdbcUrlWithAlterScript(databaseConfiguration, testId);
-		
-		//--- Update repository model after database schema update
-		ConnectionManager connectionManager = new ConnectionManager(logger);
-		ByteArrayOutputStream baosUpdateLog = new ByteArrayOutputStream();
-		UpdateLogWriter updateLogger = new UpdateLogWriter(baosUpdateLog);
-		
-		RepositoryUpdator repositoryUpdator = new RepositoryUpdator(connectionManager,
-				RepositoryRulesProvider.getRepositoryRules(), new ConsoleLogger(), updateLogger);
-		
-		//int changesCount = repositoryUpdator.updateRepository(databaseConfiguration, repositoryModel);
-		ChangeLog changeLog = repositoryUpdator.updateRepository(databaseConfiguration, repositoryModel);
-		System.out.println(baosUpdateLog.toString());
-		System.out.println("Repo entities count = " + repositoryModel.getNumberOfEntities() );
-		System.out.println("ChangeLog number of entities = " + changeLog.getNumberOfEntities() );
-		System.out.println("ChangeLog number of entities created = " + changeLog.getNumberOfEntitiesCreated() );
-		System.out.println("ChangeLog number of entities updated = " + changeLog.getNumberOfEntitiesUpdated() );
-		System.out.println("ChangeLog number of entities deleted = " + changeLog.getNumberOfEntitiesDeleted() );
-		return changeLog ;
-	}
-	
-	@Test
-	public void test1() throws TelosysToolsException {
-		UpdateResult result = generateThenUpdateModel(1);
-		ChangeLog changeLog = result.getChangeLog();
-		RepositoryModel repositoryModel = result.getRepositoryModel();
-		
-		//--- Check changes
-		Assert.assertTrue(changeLog.getNumberOfEntities() == 3 );
-		Assert.assertTrue(changeLog.getNumberOfEntitiesCreated() == 1 );
-		Assert.assertTrue(changeLog.getNumberOfEntitiesUpdated() == 1 );
-		Assert.assertTrue(changeLog.getNumberOfEntitiesDeleted() == 1 );
-		Assert.assertTrue(repositoryModel.getNumberOfEntities() == 2 );
-		
-		Entity badgeEntity = repositoryModel.getEntityByName("BADGE") ;
-		Assert.assertNotNull( badgeEntity );
-		Assert.assertNotNull( badgeEntity.getColumn("CODE") );
-		Assert.assertNotNull( badgeEntity.getColumn("NAME") );
-
-		Entity countryEntity = repositoryModel.getEntityByName("COUNTRY") ;
-		Assert.assertNotNull( countryEntity );
-		Assert.assertNotNull( countryEntity.getColumn("BADGE_CODE") );
-		Assert.assertTrue( countryEntity.getForeignKeys().length == 1 );
-	}
-
 	@Test
 	public void test2() throws TelosysToolsException {
-		UpdateResult result = generateThenUpdateModel(2);
+		printSeparator("test2");
+		//--------------------------------------------------------------------
+		// Script 2 :
+		// Init  : Tables "teacher", "student"
+		// Alter : No change
+		//--------------------------------------------------------------------
+		UpdateResult result = generateAndUpdateRepositoryModel(2);
+		
 		ChangeLog changeLog = result.getChangeLog();
 		RepositoryModel repositoryModel = result.getRepositoryModel();
 		
 		//--- Check changes (NO CHANGE)
-		Assert.assertTrue(changeLog.getNumberOfEntities() == 0 );
-		Assert.assertTrue(changeLog.getNumberOfEntitiesCreated() == 0 );
-		Assert.assertTrue(changeLog.getNumberOfEntitiesUpdated() == 0 );
-		Assert.assertTrue(changeLog.getNumberOfEntitiesDeleted() == 0 );
-		Assert.assertTrue(repositoryModel.getNumberOfEntities() == 2 );
+		assertTrue(changeLog.getNumberOfEntities() == 0 );
+		assertTrue(changeLog.getNumberOfEntitiesCreated() == 0 );
+		assertTrue(changeLog.getNumberOfEntitiesUpdated() == 0 );
+		assertTrue(changeLog.getNumberOfEntitiesDeleted() == 0 );
+		assertTrue(repositoryModel.getNumberOfEntities() == 2 );
 	}
 
 	@Test
 	public void test5() throws TelosysToolsException {
-		UpdateResult result = generateThenUpdateModel(5);
+		printSeparator("test5");
+		//--------------------------------------------------------------------
+		// Script 5 :
+		// Init  : Tables "teacher", "student"
+		// Alter : Create tables "badge", "team"
+		//         "teacher" : add column "badge_code" ( FK on badge )
+		//         "student" : remove FK on "teacher"
+		//--------------------------------------------------------------------
+		UpdateResult result = generateAndUpdateRepositoryModel(5);
+		
 		ChangeLog changeLog = result.getChangeLog();
 		RepositoryModel repositoryModel = result.getRepositoryModel();
 		
@@ -195,11 +59,11 @@ public class RepositoryUpdatorTest {
 		printChangeLog(changeLog ) ;
 		
 		//--- Check changes (NO CHANGE)
-		Assert.assertEquals(4, changeLog.getNumberOfEntities() );
-		Assert.assertEquals(2, changeLog.getNumberOfEntitiesCreated() );
-		Assert.assertEquals(2, changeLog.getNumberOfEntitiesUpdated() );
-		Assert.assertEquals(0, changeLog.getNumberOfEntitiesDeleted() );
-		Assert.assertEquals(4, repositoryModel.getNumberOfEntities() );
+		assertEquals(4, changeLog.getNumberOfEntities() ); // 4 entities changed (created, updated,... )
+		assertEquals(2, changeLog.getNumberOfEntitiesCreated() ); // 2 entities created
+		assertEquals(2, changeLog.getNumberOfEntitiesUpdated() ); // 2 entities updated
+		assertEquals(0, changeLog.getNumberOfEntitiesDeleted() ); // 0 entities deleted
+		assertEquals(4, repositoryModel.getNumberOfEntities() );
 		
 		//--- Links in the updated model 
 		printLinks(repositoryModel.getEntityByName("STUDENT").getLinks());
@@ -207,21 +71,56 @@ public class RepositoryUpdatorTest {
 		printLinks(repositoryModel.getEntityByName("BADGE").getLinks());
 		printLinks(repositoryModel.getEntityByName("TEAM").getLinks());
 		
-		List<ChangeOnEntity> entitiesUpdate = changeLog.getChangesByType(ChangeType.UPDATED);
-		Assert.assertEquals(2, entitiesUpdate.size() );
-		ChangeOnEntity changeOnEntity = entitiesUpdate.get(0);
-		Entity entityBefore = changeOnEntity.getEntityBefore();
-		Assert.assertNotNull(entityBefore);
-		Assert.assertEquals(1, entityBefore.getForeignKeys().length );
-		Assert.assertEquals(1, entityBefore.getLinks().length ); // Inverse side link
+		//--- Entities created 
+		List<ChangeOnEntity> entitiesCreated = changeLog.getChangesByType(ChangeType.CREATED);
+		printEntitiesChanged(entitiesCreated);
+		assertEquals(2, entitiesCreated.size() ); // 2 entities created
+
+		ChangeOnEntity badgeChange = changeLog.getChangeByEntityName("BADGE");
+		assertNotNull(badgeChange);
+		assertEquals(ChangeType.CREATED, badgeChange.getChangeType());
+		ChangeOnEntity teamChange = changeLog.getChangeByEntityName("TEAM");
+		assertNotNull(teamChange);
+		assertEquals(ChangeType.CREATED, teamChange.getChangeType());
+		//printEntityChanged(badgeChange);
 		
-		Entity entityAfter = changeOnEntity.getEntityAfter();
-//		Assert.assertNotNull(entityAfter);
-//		Assert.assertEquals(1, entityAfter.getForeignKeys().length);
-//		Assert.assertEquals(2, entityAfter.getLinks().length ); // Inverse side link
-//		Assert.assertEquals(1, repositoryModel.getEntityByName("STUDENT").getLinks().length ); // Owning side unchanged
-//		Assert.assertEquals(2, repositoryModel.getEntityByName("TEACHER").getLinks().length ); // 2 inv (Student+Team) + Owning side(badge)
-//		Assert.assertEquals(0, repositoryModel.getEntityByName("BADGE").getLinks().length ); // Inverse side
+		//--- Entities UPDATED 
+		List<ChangeOnEntity> entitiesUpdated = changeLog.getChangesByType(ChangeType.UPDATED);
+		printEntitiesChanged(entitiesUpdated);
+		assertEquals(2, entitiesUpdated.size() ); // 2 entities updated
+
+		ChangeOnEntity teacherChange = changeLog.getChangeByEntityName("TEACHER");
+		assertNotNull(teacherChange);
+		assertEquals(ChangeType.UPDATED, teacherChange.getChangeType());
+		ChangeOnEntity studentChange = changeLog.getChangeByEntityName("STUDENT");
+		assertNotNull(studentChange);
+		assertEquals(ChangeType.UPDATED, studentChange.getChangeType());
+
+		//ChangeOnEntity firstEntityUpdated = entitiesUpdated.get(0);
+		
+		//--- Entity "STUDENT BEFORE/AFTER"
+		Entity studentBefore = studentChange.getEntityBefore();
+		assertNotNull(studentBefore);
+		assertEquals(1, studentBefore.getForeignKeys().length ); // One FK
+		assertEquals(1, studentBefore.getLinks().length ); // Owning side link for FK 
+		Entity studentAfter = studentChange.getEntityAfter();
+		assertNotNull(studentAfter);
+		assertEquals(0, studentAfter.getForeignKeys().length );// One FK removed 
+		assertEquals(1, studentAfter.getLinks().length ); // Inverse side link
+
+		//--- Entity "TEACHER BEFORE/AFTER"
+		Entity teacherBefore = teacherChange.getEntityBefore();
+		assertNotNull(teacherBefore);
+		assertEquals(0, teacherBefore.getForeignKeys().length ); // No FK
+		assertEquals(1, teacherBefore.getLinks().length ); // Inverse side link
+		Entity teacherAfter = teacherChange.getEntityAfter();
+		assertNotNull(teacherAfter);
+		assertEquals(1, teacherAfter.getForeignKeys().length );// One FK added 
+		assertEquals(1, teacherBefore.getLinks().length ); // Owning side link for FK
+
+//		assertEquals(1, repositoryModel.getEntityByName("STUDENT").getLinks().length ); // Owning side unchanged
+//		assertEquals(2, repositoryModel.getEntityByName("TEACHER").getLinks().length ); // 2 inv (Student+Team) + Owning side(badge)
+//		assertEquals(0, repositoryModel.getEntityByName("BADGE").getLinks().length ); // Inverse side
 	}
 
 	/**
@@ -230,7 +129,9 @@ public class RepositoryUpdatorTest {
 	 */
 	@Test
 	public void test6() throws TelosysToolsException {
-		UpdateResult result = generateThenUpdateModel(6);
+		printSeparator("test6");
+		UpdateResult result = generateAndUpdateRepositoryModel(6);
+
 		ChangeLog changeLog = result.getChangeLog();
 		RepositoryModel repositoryModel = result.getRepositoryModel();
 		
@@ -238,26 +139,26 @@ public class RepositoryUpdatorTest {
 		printChangeLog(changeLog ) ;
 		
 		//--- Check changes (NO CHANGE)
-		Assert.assertEquals(1, changeLog.getNumberOfEntities() );
-		Assert.assertEquals(0, changeLog.getNumberOfEntitiesCreated() );
-		Assert.assertEquals(0, changeLog.getNumberOfEntitiesUpdated() );
-		Assert.assertEquals(1, changeLog.getNumberOfEntitiesDeleted() );
-		Assert.assertEquals(1, repositoryModel.getNumberOfEntities() );
+		assertEquals(1, changeLog.getNumberOfEntities() );
+		assertEquals(0, changeLog.getNumberOfEntitiesCreated() );
+		assertEquals(0, changeLog.getNumberOfEntitiesUpdated() );
+		assertEquals(1, changeLog.getNumberOfEntitiesDeleted() );
+		assertEquals(1, repositoryModel.getNumberOfEntities() );
 		
-		Assert.assertNull(repositoryModel.getEntityByName("STUDENT")); // Deleted
-		Assert.assertNotNull(repositoryModel.getEntityByName("TEACHER")); // Still present
+		assertNull(repositoryModel.getEntityByName("STUDENT")); // Deleted
+		assertNotNull(repositoryModel.getEntityByName("TEACHER")); // Still present
 		
 		//--- Links in the updated model 
 		printLinks(repositoryModel.getEntityByName("TEACHER").getLinks());
 		
 		List<ChangeOnEntity> entitiesDeleted = changeLog.getChangesByType(ChangeType.DELETED);
-		Assert.assertEquals(1, entitiesDeleted.size() );
+		assertEquals(1, entitiesDeleted.size() );
 		ChangeOnEntity changeOnEntity = entitiesDeleted.get(0);
 		Entity entityDeleted = changeOnEntity.getEntityDeleted();
-		Assert.assertNotNull(entityDeleted);
-		Assert.assertEquals(1, entityDeleted.getForeignKeys().length );
+		assertNotNull(entityDeleted);
+		assertEquals(1, entityDeleted.getForeignKeys().length );
 		
-		Assert.assertEquals(0, repositoryModel.getEntityByName("TEACHER").getLinks().length ); // 0 Link 
+		assertEquals(0, repositoryModel.getEntityByName("TEACHER").getLinks().length ); // 0 Link 
 	}
 	
 	/**
@@ -266,7 +167,9 @@ public class RepositoryUpdatorTest {
 	 */
 	@Test
 	public void test8() throws TelosysToolsException {
-		UpdateResult result = generateThenUpdateModel(8);
+		printSeparator("test8");
+		UpdateResult result = generateAndUpdateRepositoryModel(8);
+
 		ChangeLog changeLog = result.getChangeLog();
 		RepositoryModel repositoryModel = result.getRepositoryModel();
 		
@@ -274,11 +177,11 @@ public class RepositoryUpdatorTest {
 		printChangeLog(changeLog ) ;
 		
 		//--- Check changes 
-		Assert.assertEquals(1, changeLog.getNumberOfEntities() ); // 1 change
-		Assert.assertEquals(1, changeLog.getNumberOfEntitiesCreated() );
-		Assert.assertEquals(0, changeLog.getNumberOfEntitiesUpdated() );
-		Assert.assertEquals(0, changeLog.getNumberOfEntitiesDeleted() );
-		Assert.assertEquals(3, repositoryModel.getNumberOfEntities() ); // 3 in the model
+		assertEquals(1, changeLog.getNumberOfEntities() ); // 1 change
+		assertEquals(1, changeLog.getNumberOfEntitiesCreated() );
+		assertEquals(0, changeLog.getNumberOfEntitiesUpdated() );
+		assertEquals(0, changeLog.getNumberOfEntitiesDeleted() );
+		assertEquals(3, repositoryModel.getNumberOfEntities() ); // 3 in the model
 		
 		//--- Links in the updated model 
 		printLinks(repositoryModel.getEntityByName("STUDENT").getLinks()); 
@@ -286,72 +189,63 @@ public class RepositoryUpdatorTest {
 		printLinks(repositoryModel.getEntityByName("TEAM").getLinks()); // the new entity
 		
 		List<ChangeOnEntity> changesOnEntitiesCreated = changeLog.getChangesByType(ChangeType.CREATED);
-		Assert.assertEquals(1, changesOnEntitiesCreated.size() );
+		assertEquals(1, changesOnEntitiesCreated.size() );
 		ChangeOnEntity changeOnEntity = changesOnEntitiesCreated.get(0);
 		Entity entityCreated = changeOnEntity.getEntityCreated();
-		Assert.assertNotNull(entityCreated);
-		Assert.assertEquals(1, entityCreated.getForeignKeys().length );
-		Assert.assertEquals(1, entityCreated.getLinks().length ); // Inverse side link
+		assertNotNull(entityCreated);
+		assertEquals(1, entityCreated.getForeignKeys().length );
+		assertEquals(1, entityCreated.getLinks().length ); // Inverse side link
 
 		//--- Links in the updated model
 		
 		//--- "STUDENT" links (unchanged)
 		Link[] studentLinks = repositoryModel.getEntityByName("STUDENT").getLinks();
-		Assert.assertEquals(1, studentLinks.length ); 
-		Assert.assertEquals(true, studentLinks[0].isOwningSide() );
-		Assert.assertEquals(true, studentLinks[0].isTypeManyToOne() );
-		Assert.assertEquals(true, studentLinks[0].isBasedOnForeignKey() );
-		Assert.assertEquals("TEACHER", studentLinks[0].getTargetTableName() );
+		assertEquals(1, studentLinks.length ); 
+		assertEquals(true, studentLinks[0].isOwningSide() );
+		assertEquals(true, studentLinks[0].isTypeManyToOne() );
+		assertEquals(true, studentLinks[0].isBasedOnForeignKey() );
+		assertEquals("TEACHER", studentLinks[0].getTargetTableName() );
 		
 		//--- "TEAM" links (created with the entity)
 		Link[] teamLinks = repositoryModel.getEntityByName("TEAM").getLinks();
-		Assert.assertEquals(1, teamLinks.length ); 
-		Assert.assertEquals(true, teamLinks[0].isOwningSide() );
-		Assert.assertEquals(true, teamLinks[0].isTypeManyToOne() );
-		Assert.assertEquals(true, teamLinks[0].isBasedOnForeignKey() );
-		Assert.assertEquals("TEACHER", teamLinks[0].getTargetTableName() );
+		assertEquals(1, teamLinks.length ); 
+		assertEquals(true, teamLinks[0].isOwningSide() );
+		assertEquals(true, teamLinks[0].isTypeManyToOne() );
+		assertEquals(true, teamLinks[0].isBasedOnForeignKey() );
+		assertEquals("TEACHER", teamLinks[0].getTargetTableName() );
 
 		//--- "TEACHER" links : one more link ( inverse side / list of students )
 		Link[] teacherLinks = repositoryModel.getEntityByName("TEACHER").getLinks();
-		Assert.assertEquals(2, teacherLinks.length ); 
+		assertEquals(2, teacherLinks.length ); 
 		
 		List<Link> linksToStudent = repositoryModel.getEntityByName("TEACHER").getLinksTo("STUDENT");
-		Assert.assertEquals(1, linksToStudent.size() ); 
+		assertEquals(1, linksToStudent.size() ); 
 		Link linkToStudent = linksToStudent.get(0);
-		Assert.assertEquals(true, linkToStudent.isInverseSide() );
-		Assert.assertEquals(true, linkToStudent.isTypeOneToMany() );
-		Assert.assertEquals("STUDENT", linkToStudent.getTargetTableName() );
+		assertEquals(true, linkToStudent.isInverseSide() );
+		assertEquals(true, linkToStudent.isTypeOneToMany() );
+		assertEquals("STUDENT", linkToStudent.getTargetTableName() );
 
 		List<Link> linksToTeam = repositoryModel.getEntityByName("TEACHER").getLinksTo("TEAM");
-		Assert.assertEquals(1, linksToTeam.size() ); 
+		assertEquals(1, linksToTeam.size() ); 
 		Link linkToTeam = linksToTeam.get(0);
-		Assert.assertEquals(true, linkToTeam.isInverseSide() );
-		Assert.assertEquals(true, linkToTeam.isTypeOneToMany() );
-		Assert.assertEquals("TEAM", linkToTeam.getTargetTableName() );
+		assertEquals(true, linkToTeam.isInverseSide() );
+		assertEquals(true, linkToTeam.isTypeOneToMany() );
+		assertEquals("TEAM", linkToTeam.getTargetTableName() );
 	}
 
 	//===================================================================================================
-	private void checkEntitiesCreated(ChangeLog changeLog) {
-		List<ChangeOnEntity> entitiesUpdate = changeLog.getChangesByType(ChangeType.UPDATED);
-		Assert.assertTrue(entitiesUpdate.size() == 1 );
-		ChangeOnEntity changeOnEntity = entitiesUpdate.get(0);
-		Entity entityBefore = changeOnEntity.getEntityBefore();
-		Assert.assertNotNull(entityBefore);
-		Assert.assertTrue(entityBefore.getForeignKeys().length == 0);
-		Assert.assertTrue(entityBefore.getLinks().length == 1); // Inverse side link
-	}
 	
 	private void checkChangeLog(ChangeLog changeLog, RepositoryModel repositoryModel ) {
 		for ( ChangeOnEntity change : changeLog.getChanges() ) {
 			switch ( change.getChangeType() ) {
 			case CREATED :
-				Assert.assertTrue( repositoryModel.getEntityByName(change.getEntityCreated().getName()) == change.getEntityCreated() );
+				assertTrue( repositoryModel.getEntityByName(change.getEntityCreated().getName()) == change.getEntityCreated() );
 				break;
 			case UPDATED :
-				Assert.assertTrue( repositoryModel.getEntityByName(change.getEntityAfter().getName()) == change.getEntityAfter() );
+				assertTrue( repositoryModel.getEntityByName(change.getEntityAfter().getName()) == change.getEntityAfter() );
 				break;
 			case DELETED :
-				Assert.assertTrue( repositoryModel.getEntityByName(change.getEntityDeleted().getName()) == null );
+				assertTrue( repositoryModel.getEntityByName(change.getEntityDeleted().getName()) == null );
 				break;
 			}
 		}
@@ -382,4 +276,33 @@ public class RepositoryUpdatorTest {
 		}
 	}
 	
+	private void printEntitiesChanged(List<ChangeOnEntity> entitiesChanged) {
+		System.out.println("--- LIST OF ENTITIES CHANGED : " );
+		for ( ChangeOnEntity entityChanged : entitiesChanged ) {
+			printEntityChanged(entityChanged);
+		}
+	}
+	
+	private void printEntityChanged(ChangeOnEntity entityChanged) {
+		System.out.println("ENTITY CHANGED : " );
+		System.out.println(" . name         : " + entityChanged.getEntityName() ) ;
+		System.out.println(" . change type  : " + entityChanged.getChangeType() ) ;
+		switch ( entityChanged.getChangeType() ) {
+		case CREATED :
+			System.out.println("ENTITY CREATED : " );
+			printEntity( entityChanged.getEntityCreated() );
+			break;
+		case DELETED :
+			System.out.println("ENTITY DELETED : " );
+			printEntity( entityChanged.getEntityDeleted() );
+			break;
+		case UPDATED :
+			System.out.println("ENTITY UPDATED / BEFORE : " );
+			printEntity( entityChanged.getEntityBefore() );
+			System.out.println("ENTITY UPDATED / AFTER : " );
+			printEntity( entityChanged.getEntityAfter() );
+			break;
+		}
+	}
+
 }

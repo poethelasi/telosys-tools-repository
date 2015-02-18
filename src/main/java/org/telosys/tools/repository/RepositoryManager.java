@@ -79,7 +79,12 @@ public abstract class RepositoryManager extends StandardTool
 	 * @throws TelosysToolsException
 	 */
 	protected Connection getConnection(DatabaseConfiguration databaseConfiguration) throws TelosysToolsException {
-		return this.connectionManager.getConnection(databaseConfiguration) ;
+		if ( this.connectionManager != null ) {
+			return this.connectionManager.getConnection(databaseConfiguration) ;
+		}
+		else {
+			throw new TelosysToolsException("Cannot get connection (no connection manager)");
+		}
 	}
 
 	/**

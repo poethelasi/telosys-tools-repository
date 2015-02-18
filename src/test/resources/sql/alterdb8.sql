@@ -1,4 +1,4 @@
-SET SCHEMA TEST8 ;
+-- SET SCHEMA TEST8 ;
 
 -- 1 entity created
 CREATE TABLE team ( 

@@ -1,4 +1,4 @@
-SET SCHEMA TEST5 ;
+-- SET SCHEMA TEST5 ;
 
 -- 1 entity created
 CREATE TABLE badge ( 

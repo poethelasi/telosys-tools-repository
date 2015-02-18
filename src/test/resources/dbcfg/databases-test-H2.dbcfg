@@ -1,12 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <databases defaultId="0" maxId="4">
-<db dialect="" driver="org.h2.Driver" id="1" isolationLevel="" name="H2 in memory" poolSize="10" typeName="" 
-     url="jdbc:h2:mem:test;INIT=RUNSCRIPT FROM 'classpath:sql/initdb1.sql'">
-<property name="user" value="sa"/>
-<property name="password" value="sa"/>
-<metadata catalog="" schema="TEST1" table-name-pattern="%" table-types="TABLE   VIEW  "/>
+
+<!--
+<db  id="0"
+     url="jdbc:h2:mem:mydb;DB_CLOSE_DELAY=0"
+     driver="org.h2.Driver" 
+     name="H2 in memory" poolSize="10" isolationLevel="" typeName="" dialect="" >
+  <property name="user"     value="sa"/>
+  <property name="password" value="sa"/>
+  <metadata catalog="!" schema="SCHEMA1" table-name-pattern="%" table-types="TABLE   VIEW  "/>
+</db>
+-->
+
+<db  id="1" 
+     url="jdbc:h2:mem:test;DB_CLOSE_DELAY=0"
+     driver="org.h2.Driver" 
+     name="H2 in memory" poolSize="10" isolationLevel="" typeName="" dialect="" >
+  <property name="user"     value="sa"/>
+  <property name="password" value="sa"/>
+  <metadata catalog="!" schema="!" table-name-pattern="%" table-types="TABLE   VIEW  "/>
 </db>
 
+<!--
 <db dialect="" driver="org.h2.Driver" id="2" isolationLevel="" name="H2 in memory" poolSize="10" typeName="" 
      url="jdbc:h2:mem:test;INIT=RUNSCRIPT FROM 'classpath:sql/initdb2.sql'">
 <property name="user" value="sa"/>
@@ -48,5 +63,5 @@
 <property name="password" value="sa"/>
 <metadata catalog="" schema="TEST8" table-name-pattern="%" table-types="TABLE   VIEW  "/>
 </db>
-
+-->
 </databases>
