@@ -479,7 +479,8 @@ public class RepositoryUpdator extends RepositoryManager
 			if ( foreignKey != null ) 
 			{
 				// The FK exists => update it if it has changed
-				if ( ! foreignKey.equals( newForeignKey ) )
+				//if ( ! foreignKey.equals( newForeignKey ) )
+				if ( ! foreignKey.isIdentical( newForeignKey ) )
 				{
 					// 
 					entity.storeForeignKey(newForeignKey);

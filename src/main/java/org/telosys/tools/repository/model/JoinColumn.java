@@ -48,18 +48,19 @@ public class JoinColumn implements Serializable {
 		return name + "#" + referencedColumnName;
 	}
 
-	/**
-	 * Control functionnal equality of JoinFK
-	 * @param otherJoinFK
-	 * @return if param link is equal to current link
-	 */
-	public boolean equals(final JoinColumn otherJoinColumn) {
-		if (this.getCheckSum().equals(otherJoinColumn.getCheckSum())) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+// Unreliable & Unused (removed in v 2.1.1 )
+//	/**
+//	 * Control functionnal equality of JoinFK
+//	 * @param otherJoinFK
+//	 * @return if param link is equal to current link
+//	 */
+//	public boolean equals(final JoinColumn otherJoinColumn) {
+//		if (this.getCheckSum().equals(otherJoinColumn.getCheckSum())) {
+//			return true;
+//		} else {
+//			return false;
+//		}
+//	}
 	
 	public String getName() {
 		return name;

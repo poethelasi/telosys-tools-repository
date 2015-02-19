@@ -129,7 +129,8 @@ public class ForeignKey implements Comparable<ForeignKey>, Serializable
 	}
 	
 	//-------------------------------------------------------------------------------
-	public boolean equals(Object o) 
+	//public boolean equals(Object o) // unreliable
+	public boolean isIdentical(ForeignKey o)  // v 2.1.1	
 	{
 		if ( null == o ) return false ;
 		if ( this == o ) return true ;
@@ -151,7 +152,8 @@ public class ForeignKey implements Comparable<ForeignKey>, Serializable
 			ForeignKeyColumn c1 = thisColumns[i];
 			ForeignKeyColumn c2 = otherColumns[i];
 			//--- Not the same fk colum 
-			if ( ! c1.equals(c2) ) return false ;
+			//if ( ! c1.equals(c2) ) return false ;
+			if ( ! c1.isIdentical(c2) ) return false ;  // v 2.1.1	
 		}
 		
 		//--- No difference

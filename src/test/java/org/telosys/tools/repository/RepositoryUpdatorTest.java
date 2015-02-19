@@ -33,7 +33,8 @@ public class RepositoryUpdatorTest extends AbstractTestCase {
 		RepositoryModel repositoryModel = result.getRepositoryModel();
 		
 		//--- Check changes (NO CHANGE)
-		assertTrue(changeLog.getNumberOfEntities() == 0 );
+		//assertTrue(changeLog.getNumberOfEntities() == 0 );
+		assertEquals(0, changeLog.getNumberOfEntities());
 		assertTrue(changeLog.getNumberOfEntitiesCreated() == 0 );
 		assertTrue(changeLog.getNumberOfEntitiesUpdated() == 0 );
 		assertTrue(changeLog.getNumberOfEntitiesDeleted() == 0 );

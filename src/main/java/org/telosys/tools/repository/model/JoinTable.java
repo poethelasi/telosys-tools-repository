@@ -90,22 +90,23 @@ public class JoinTable implements Serializable
 		return name;
 	}
 
-	/**
-	 * Control functionnal equality of link
-	 * @param otherLink
-	 * @return if param link is equal to current link
-	 */
-	public boolean equals(final JoinTable joinTable) {
-		// considers that the comparison of the name of the join table is sufficient to establish the equity of JoinTable
-		if (joinTable != null) {
-			if (joinTable.getCheckSum().equals(this.getCheckSum())) {
-				return true;
-			} else {
-				return false;
-			}
-		} else {
-			return false;
-		}
-	}
+// Unreliable & Unused (removed in v 2.1.1 )
+//	/**
+//	 * Control functionnal equality of link
+//	 * @param otherLink
+//	 * @return if param link is equal to current link
+//	 */
+//	public boolean equals(final JoinTable joinTable) {
+//		// considers that the comparison of the name of the join table is sufficient to establish the equity of JoinTable
+//		if (joinTable != null) {
+//			if (joinTable.getCheckSum().equals(this.getCheckSum())) {
+//				return true;
+//			} else {
+//				return false;
+//			}
+//		} else {
+//			return false;
+//		}
+//	}
 	
 }

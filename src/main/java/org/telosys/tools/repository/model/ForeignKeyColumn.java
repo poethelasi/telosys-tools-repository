@@ -143,7 +143,8 @@ public class ForeignKeyColumn implements Comparable<ForeignKeyColumn>, Serializa
 //	}
 
 	//-------------------------------------------------------------------------------
-	public boolean equals(Object o) 
+	//public boolean equals(Object o) // unreliable
+	public boolean isIdentical(ForeignKeyColumn o)  // v 2.1.1
 	{
 		if ( null == o ) return false ;
 		if ( this == o ) return true ;

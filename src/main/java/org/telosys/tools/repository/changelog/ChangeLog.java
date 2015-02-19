@@ -34,8 +34,8 @@ public class ChangeLog {
 	 */
 	public void log(ChangeOnEntity changeOnEntity) {
 		if ( changeOnEntity.getChangeType() == ChangeType.CREATED ) {
-			check( changeOnEntity.getChangesOnColumn().size() == 0, "Entity CREATED must not have changes on columns" );
-			check( changeOnEntity.getChangesOnForeignKey().size() == 0, "Entity CREATED imust not have changes on foreign keys" );
+			check( changeOnEntity.getChangesOnColumn().size()     == 0, "Entity CREATED must not have changes on columns" );
+			check( changeOnEntity.getChangesOnForeignKey().size() == 0, "Entity CREATED must not have changes on foreign keys" );
 		}
 		list.add(changeOnEntity);
 	}
