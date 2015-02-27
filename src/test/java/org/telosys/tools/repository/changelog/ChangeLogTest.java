@@ -1,17 +1,17 @@
 package org.telosys.tools.repository.changelog;
 
-import java.util.List;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import static org.junit.Assert.*;
+import java.util.List;
 
 import org.junit.Test;
 import org.telosys.tools.commons.TelosysToolsException;
-import org.telosys.tools.repository.changelog.ChangeLog;
-import org.telosys.tools.repository.changelog.ChangeOnColumn;
-import org.telosys.tools.repository.changelog.ChangeOnEntity;
-import org.telosys.tools.repository.changelog.ChangeType;
 import org.telosys.tools.repository.model.Column;
 import org.telosys.tools.repository.model.Entity;
+import org.telosys.tools.repository.model.ForeignKey;
 
 public class ChangeLogTest {
 	
@@ -103,6 +103,42 @@ public class ChangeLogTest {
 		for ( ChangeOnEntity change : updatedList ) {
 			assertTrue( change.getChangesOnColumn().size() == 1 ) ;
 		}
+	}
+
+	@Test
+	public void testUpdatedWithFK() throws TelosysToolsException {
+		
+		System.out.println("testUpdatedWithFK");
+
+		Entity entityUpdatedBefore = new Entity();
+		Entity entityUpdatedAfter  = new Entity();
+		ChangeOnEntity changeOnEntity = new ChangeOnEntity(ChangeType.UPDATED, entityUpdatedBefore, entityUpdatedAfter);
+		assertTrue( changeOnEntity.getEntityBefore() == entityUpdatedBefore );
+		assertTrue( changeOnEntity.getEntityAfter()  == entityUpdatedAfter );
+		assertEquals(0, changeOnEntity.getNumberOfChanges() );
+		
+//		Column columnBefore = new Column();
+//		Column columnAfter  = new Column();
+//		changeOnEntity.addChangeOnColumn( new ChangeOnColumn(ChangeType.UPDATED, columnBefore, columnAfter ) );
+//		changeLog.log(changeOnEntity);
+//		assertNotNull( changeLog.getChangesByType(ChangeType.UPDATED).size() == 1 );
+		
+		//--- Foreign Key created
+		ForeignKey fk = new ForeignKey();
+		ChangeOnForeignKey changeOnForeignKey = new ChangeOnForeignKey(ChangeType.CREATED, null, fk);
+		changeOnEntity.addChangeOnForeignKey(changeOnForeignKey);
+		assertEquals(1, changeOnEntity.getNumberOfChanges() );
+		
+		ChangeLog changeLog = new ChangeLog();
+		changeLog.log(changeOnEntity);
+		assertEquals(1, changeOnEntity.getNumberOfChanges() );
+		
+		List<ChangeOnEntity> updatedList = changeLog.getChangesByType(ChangeType.UPDATED);
+		assertEquals(1, updatedList.size() );
+		changeOnEntity = updatedList.get(0);
+		assertEquals(0, changeOnEntity.getChangesOnColumn().size());
+		assertEquals(1, changeOnEntity.getChangesOnForeignKey().size());
+		assertEquals(1, changeOnEntity.getNumberOfChanges() );
 	}
 
 	@Test

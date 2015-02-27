@@ -5,12 +5,16 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
+import java.util.List;
 
 import org.telosys.tools.commons.ConsoleLogger;
 import org.telosys.tools.commons.TelosysToolsException;
 import org.telosys.tools.commons.TelosysToolsLogger;
 import org.telosys.tools.commons.jdbc.ConnectionManager;
 import org.telosys.tools.repository.changelog.ChangeLog;
+import org.telosys.tools.repository.changelog.ChangeOnColumn;
+import org.telosys.tools.repository.changelog.ChangeOnEntity;
+import org.telosys.tools.repository.changelog.ChangeOnForeignKey;
 import org.telosys.tools.repository.model.Column;
 import org.telosys.tools.repository.model.Entity;
 import org.telosys.tools.repository.model.Link;
@@ -152,5 +156,66 @@ public abstract class AbstractTestCase {
 			fail("Unexpected jave name for link '" + javaName1 + "' or '" + javaName2 + "'");
 		}
 	}
+
+	protected void printChangeLog(ChangeLog changeLog ) {
+		System.out.println("----------------------------------------" );
+		System.out.println("CHANGE LOG : " );
+		System.out.println("Date : " + changeLog.getDate() );
+		System.out.println("Number of entities : " + changeLog.getNumberOfEntities() );
+		System.out.println("Number of entities created : " + changeLog.getNumberOfEntitiesCreated() );
+		System.out.println("Number of entities updated : " + changeLog.getNumberOfEntitiesUpdated() );
+		System.out.println("Number of entities deleted : " + changeLog.getNumberOfEntitiesDeleted() );
+		
+		for ( ChangeOnEntity change : changeLog.getChanges() ) {
+			System.out.println("- Entity : " + change.getEntityName() + " change type '" + change.getChangeType() + "'");
+			System.out.println("  . before = " + change.getEntityBefore());
+			System.out.println("  . after  = " + change.getEntityAfter());
+			
+			System.out.println(" Changes on Columns : " );
+			for ( ChangeOnColumn changeOnColumn : change.getChangesOnColumn() ) {
+				System.out.println("- Column : " + changeOnColumn.getChangeType()  );
+				System.out.println("  . column before = " + changeOnColumn.getColumnBefore() );
+				System.out.println("  . column after  = " + changeOnColumn.getColumnAfter() );
+			}
+			
+			System.out.println(" Changes on Foreign Keys : " );
+			for ( ChangeOnForeignKey changeOnFK : change.getChangesOnForeignKey() ) {
+				System.out.println("- FK : " + changeOnFK.getChangeType() );
+				System.out.println("  . column before = " + changeOnFK.getForeignKeyBefore() );
+				System.out.println("  . column after  = " + changeOnFK.getForeignKeyAfter() );
+			}
+		}
+		System.out.println("----------------------------------------" );
+	}
+	
+	protected void printEntitiesChanged(List<ChangeOnEntity> entitiesChanged) {
+		System.out.println("--- LIST OF ENTITIES CHANGED : " );
+		for ( ChangeOnEntity entityChanged : entitiesChanged ) {
+			printEntityChanged(entityChanged);
+		}
+	}
+	
+	protected void printEntityChanged(ChangeOnEntity entityChanged) {
+		System.out.println("ENTITY CHANGED : " );
+		System.out.println(" . name         : " + entityChanged.getEntityName() ) ;
+		System.out.println(" . change type  : " + entityChanged.getChangeType() ) ;
+		switch ( entityChanged.getChangeType() ) {
+		case CREATED :
+			System.out.println("ENTITY CREATED : " );
+			printEntity( entityChanged.getEntityCreated() );
+			break;
+		case DELETED :
+			System.out.println("ENTITY DELETED : " );
+			printEntity( entityChanged.getEntityDeleted() );
+			break;
+		case UPDATED :
+			System.out.println("ENTITY UPDATED / BEFORE : " );
+			printEntity( entityChanged.getEntityBefore() );
+			System.out.println("ENTITY UPDATED / AFTER : " );
+			printEntity( entityChanged.getEntityAfter() );
+			break;
+		}
+	}
+
 
 }

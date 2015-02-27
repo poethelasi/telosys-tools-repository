@@ -36,11 +36,13 @@ public class ChangeOnEntity {
 
 	private final List<ChangeOnColumn>     changesOnColumns     = new LinkedList<ChangeOnColumn>();
 	private final List<ChangeOnForeignKey> changesOnForeignKeys = new LinkedList<ChangeOnForeignKey>();
+	private boolean databaseTypeHasChanged = false ; 
 
 	private void check(boolean expression, String errorMessage ) {
 		if ( expression != true ) throw new RuntimeException(errorMessage);
 	}
 
+	//----------------------------------------------------------------------------------------------------------
 	/**
 	 * Constructor 
 	 * @param changeType
@@ -74,6 +76,7 @@ public class ChangeOnEntity {
 		}
 	}
 	
+	//----------------------------------------------------------------------------------------------------------
 	/**
 	 * Returns the change type ( CREATED / UPDATED / DELETED )
 	 * @return
@@ -123,17 +126,55 @@ public class ChangeOnEntity {
 		return this.entityBefore;
 	}
 	
-	protected void addChangeOnColumn(ChangeOnColumn changeOnColumn) {
+	//----------------------------------------------------------------------------------------------------------
+	/**
+	 * Add a "column change" for this entity
+	 * @param changeOnColumn
+	 */
+	public void addChangeOnColumn(ChangeOnColumn changeOnColumn) {
 		changesOnColumns.add(changeOnColumn);
 	}
+	
+	/**
+	 * Returns the list of all the changes on columns for this entity
+	 * @return
+	 */
 	public List<ChangeOnColumn> getChangesOnColumn() {
 		return changesOnColumns ;
 	}
 
-	protected void addChangeOnForeignKey(ChangeOnForeignKey changeOnForeignKey) {
+	//----------------------------------------------------------------------------------------------------------
+	/**
+	 * Add a "foreign key change" for this entity
+	 * @param changeOnForeignKey
+	 */
+	public void addChangeOnForeignKey(ChangeOnForeignKey changeOnForeignKey) {
 		changesOnForeignKeys.add(changeOnForeignKey);
 	}
+	
+	/**
+	 * Returns the list of all the changes on FOREIGN KEYS for this entity
+	 * @return
+	 */
 	public List<ChangeOnForeignKey> getChangesOnForeignKey() {
 		return changesOnForeignKeys ;
+	}
+
+	//----------------------------------------------------------------------------------------------------------
+	public void setDatabaseTypeHasChanged(boolean value) {
+		databaseTypeHasChanged = value ;
+	}
+	public boolean isDatabaseTypeHasChanged() {
+		return databaseTypeHasChanged ;
+	}
+	
+	//----------------------------------------------------------------------------------------------------------
+	/**
+	 * Return the number of changes for this entity <br>
+	 * Number of changes on column + number of changes on FK + database type change
+	 * @return
+	 */
+	public int getNumberOfChanges() {
+		return changesOnColumns.size() + changesOnForeignKeys.size() + ( databaseTypeHasChanged ? 1 : 0 );
 	}
 }

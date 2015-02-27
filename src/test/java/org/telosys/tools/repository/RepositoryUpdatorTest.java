@@ -11,7 +11,6 @@ import org.junit.Test;
 import org.telosys.tools.commons.TelosysToolsException;
 import org.telosys.tools.repository.changelog.ChangeLog;
 import org.telosys.tools.repository.changelog.ChangeOnEntity;
-import org.telosys.tools.repository.changelog.ChangeOnForeignKey;
 import org.telosys.tools.repository.changelog.ChangeType;
 import org.telosys.tools.repository.model.Entity;
 import org.telosys.tools.repository.model.Link;
@@ -256,53 +255,6 @@ public class RepositoryUpdatorTest extends AbstractTestCase {
 		for ( Link link : links ) {
 			System.out.println(" . Link : "  + link);
 			System.out.println(" . " + link.getJavaFieldName() );
-		}
-	}
-
-	private void printChangeLog(ChangeLog changeLog ) {
-		System.out.println("CHANGE LOG : " );
-		System.out.println("Date : " + changeLog.getDate() );
-		System.out.println("Number of entities : " + changeLog.getNumberOfEntities() );
-		System.out.println("Number of entities created : " + changeLog.getNumberOfEntitiesCreated() );
-		System.out.println("Number of entities updated : " + changeLog.getNumberOfEntitiesUpdated() );
-		System.out.println("Number of entities deleted : " + changeLog.getNumberOfEntitiesDeleted() );
-		
-		for ( ChangeOnEntity change : changeLog.getChanges() ) {
-			System.out.println("- Entity : " + change.getEntityName() + " change type '" + change.getChangeType() + "'");
-			System.out.println(" before = " + change.getEntityBefore());
-			System.out.println(" after  = " + change.getEntityAfter());
-			for ( ChangeOnForeignKey changeOnFK : change.getChangesOnForeignKey() ) {
-				System.out.println("- FK : " + changeOnFK.getForeignKeyName() + " " + changeOnFK.getChangeType() );
-			}
-		}
-	}
-	
-	private void printEntitiesChanged(List<ChangeOnEntity> entitiesChanged) {
-		System.out.println("--- LIST OF ENTITIES CHANGED : " );
-		for ( ChangeOnEntity entityChanged : entitiesChanged ) {
-			printEntityChanged(entityChanged);
-		}
-	}
-	
-	private void printEntityChanged(ChangeOnEntity entityChanged) {
-		System.out.println("ENTITY CHANGED : " );
-		System.out.println(" . name         : " + entityChanged.getEntityName() ) ;
-		System.out.println(" . change type  : " + entityChanged.getChangeType() ) ;
-		switch ( entityChanged.getChangeType() ) {
-		case CREATED :
-			System.out.println("ENTITY CREATED : " );
-			printEntity( entityChanged.getEntityCreated() );
-			break;
-		case DELETED :
-			System.out.println("ENTITY DELETED : " );
-			printEntity( entityChanged.getEntityDeleted() );
-			break;
-		case UPDATED :
-			System.out.println("ENTITY UPDATED / BEFORE : " );
-			printEntity( entityChanged.getEntityBefore() );
-			System.out.println("ENTITY UPDATED / AFTER : " );
-			printEntity( entityChanged.getEntityAfter() );
-			break;
 		}
 	}
 

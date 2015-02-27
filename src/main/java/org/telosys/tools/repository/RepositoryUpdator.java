@@ -33,7 +33,9 @@ import org.telosys.tools.db.model.DatabaseModelManager;
 import org.telosys.tools.db.model.DatabaseTable;
 import org.telosys.tools.db.model.DatabaseTables;
 import org.telosys.tools.repository.changelog.ChangeLog;
+import org.telosys.tools.repository.changelog.ChangeOnColumn;
 import org.telosys.tools.repository.changelog.ChangeOnEntity;
+import org.telosys.tools.repository.changelog.ChangeOnForeignKey;
 import org.telosys.tools.repository.changelog.ChangeType;
 import org.telosys.tools.repository.model.Column;
 import org.telosys.tools.repository.model.Entity;
@@ -70,8 +72,7 @@ public class RepositoryUpdator extends RepositoryManager
 		_updateLogger = updateLogger;
 	}
 
-	private Column addEntityAttribute(Entity entity, DatabaseColumn dbColumn ) 
-	{
+	private Column addEntityAttribute(Entity entity, DatabaseColumn dbColumn ) 	{
 		Column column = buildColumn( dbColumn ) ;
 		
 		//--- Add the "column" to the "entity"
@@ -79,31 +80,34 @@ public class RepositoryUpdator extends RepositoryManager
 		return column;
 	}
 
-	private int updateEntityAttribute(Column column, DatabaseColumn col) 
-	{
+	/**
+	 * Updates the given column from the database column
+	 * @param column
+	 * @param dbColumn
+	 * @return the number of updates done
+	 */
+	private int updateEntityAttribute(Column column, DatabaseColumn dbColumn) {
 		int r = 0;
 
 		//--- Update the column 
-		r = r + updateDbType(column, col.getDbTypeName()); // Database native type		
-		r = r + updateTypeCode(column, col.getJdbcTypeCode()); // JDBC type code 
-		r = r + updateNotNull(column, col.getNotNullAsString()); // Not null
-		r = r + updateSize(column, col.getSize()); // Size
-		r = r + updateComment(column, col.getComment()); // Database comment - v 2.1.1 #LCH 
+		r = r + updateDbType(column,   dbColumn.getDbTypeName()); // Database native type		
+		r = r + updateTypeCode(column, dbColumn.getJdbcTypeCode()); // JDBC type code 
+		r = r + updateNotNull(column,  dbColumn.getNotNullAsString()); // Not null
+		r = r + updateSize(column,     dbColumn.getSize()); // Size
+		r = r + updateComment(column,  dbColumn.getComment()); // Database comment - v 2.1.1 #LCH 
 
-//		// --- If this column is in the Table Primary Key
-		r = r + updatePrimaryKey(column, col.isInPrimaryKey()); // Column in Primary Key
+		//--- If this column is in the Table Primary Key
+		r = r + updatePrimaryKey(column, dbColumn.isInPrimaryKey()); // Column in Primary Key
 		
-		// TODO 
+		// other updates (in the future ?)
 		// . default value
-		// . comment
 		// . auto incremented
 		// . in foreign key
 
 		return r;
 	}
 
-	private int updateTypeCode( Column column, int iDbTypeCode) 
-	{
+	private int updateTypeCode( Column column, int iDbTypeCode) {
 		int r = 0;
 		int i = column.getJdbcTypeCode();
 		if ( i != iDbTypeCode ) {
@@ -114,8 +118,7 @@ public class RepositoryUpdator extends RepositoryManager
 		return r;
 	}
 
-	private int updateDbType( Column column, String sDbType ) 
-	{
+	private int updateDbType( Column column, String sDbType ) {
 		int r = 0;
 		String s = column.getDatabaseTypeName();
 		if ( ! s.equals(sDbType) ) {
@@ -126,8 +129,7 @@ public class RepositoryUpdator extends RepositoryManager
 		return r;
 	}
 
-	private int updateNotNull( Column column, String sNotNull) 
-	{
+	private int updateNotNull( Column column, String sNotNull) {
 		int r = 0;
 		String s = column.getDatabaseNotNullAsString();
 		if ( ! s.equals(sNotNull) ) {
@@ -138,8 +140,7 @@ public class RepositoryUpdator extends RepositoryManager
 		return r;
 	}
 
-	private int updateSize( Column column, int iSize) 
-	{
+	private int updateSize( Column column, int iSize) {
 		int r = 0;
 		if ( column.getDatabaseSize() != iSize ) 
 		{
@@ -150,8 +151,8 @@ public class RepositoryUpdator extends RepositoryManager
 		return r;
 	}
 
-	private int updateComment( Column column, String sComment)  // Database comment - v 2.1.1 #LCH 
-	{
+	private int updateComment( Column column, String sComment) {
+		// Database comment - v 2.1.1 #LCH 
 		int r = 0;
 		if ( ! column.getDatabaseComment().equals(sComment) )
 		{
@@ -162,8 +163,7 @@ public class RepositoryUpdator extends RepositoryManager
 		return r;
 	}
 
-	private int updatePrimaryKey( Column column, boolean isPrimaryKey) 
-	{
+	private int updatePrimaryKey( Column column, boolean isPrimaryKey) {
 		int r = 0;
 		if ( column.isPrimaryKey() != isPrimaryKey )
 		{
@@ -328,16 +328,21 @@ public class RepositoryUpdator extends RepositoryManager
 				//------------------------------------------------------------------
 				//   ENTITY FOUND IN MODEL => UPDATE ENTITY
 				//------------------------------------------------------------------
-				Entity entityBefore = ObjectUtil.deepCopy(entity);
+				//Entity entityBefore = ObjectUtil.deepCopy(entity);
 				_updateLogger.println(" Table '" + sTableName + "' found in repository");
-				int entityChanges = updateEntity(repositoryModel, dbTable, entity);
-				if (entityChanges > 0) {
-					_updateLogger.println(" (*) table '" + sTableName + "' updated : " + entityChanges + " change(s)");
-					changeLog.log(new ChangeOnEntity(ChangeType.UPDATED, entityBefore, entity));
+				//int entityChanges = updateEntity(repositoryModel, dbTable, entity);
+				ChangeOnEntity changeOnEntity = updateEntity(repositoryModel, dbTable, entity);
+				//if (entityChanges > 0) {
+				if ( changeOnEntity.getNumberOfChanges() > 0 ) {
+					//_updateLogger.println(" (*) table '" + sTableName + "' updated : " + entityChanges + " change(s)");
+					_updateLogger.println(" (*) table '" + sTableName + "' updated : " + changeOnEntity.getNumberOfChanges() + " change(s)");
+					//changeLog.log(new ChangeOnEntity(ChangeType.UPDATED, entityBefore, entity));
+					changeLog.log(changeOnEntity);
 				} else {
 					_updateLogger.println(" (=) table '" + sTableName + "' unchanged");
 				}
-				changesCount = changesCount + entityChanges ;
+				//changesCount = changesCount + entityChanges ;
+				changesCount = changesCount + changeOnEntity.getNumberOfChanges() ;
 			} else {
 				//------------------------------------------------------------------
 				//   ENTITY NOT FOUND IN MODEL => CREATE ENTITY  (NEW)
@@ -374,12 +379,13 @@ public class RepositoryUpdator extends RepositoryManager
 		return changeLog ;
 	}
 	
-	private int updateEntity( RepositoryModel repositoryModel, DatabaseTable dbTable, Entity entity) throws SQLException 
-	{
+	//private int updateEntity( RepositoryModel repositoryModel, DatabaseTable dbTable, Entity entity) throws SQLException 
+	private ChangeOnEntity updateEntity( RepositoryModel repositoryModel, DatabaseTable dbTable, Entity entity) {
+		
 		//Entity entityBefore = new Entity(entity);
 		Entity entityBefore = ObjectUtil.deepCopy(entity);
-		new ChangeOnEntity(ChangeType.UPDATED, entityBefore, entity);
-		int changeCount = 0;
+		ChangeOnEntity changeOnEntity = new ChangeOnEntity(ChangeType.UPDATED, entityBefore, entity);
+		//int changeCount = 0;
 		//--------------------------------------------------------------------------------
 		// 0) added in ver 2.0.7 
 		//--------------------------------------------------------------------------------
@@ -395,28 +401,30 @@ public class RepositoryUpdator extends RepositoryManager
 				if ( tableType.equals(originalType) == false ) {
 					// The type has changed => Update type
 					entity.setDatabaseType(tableType);
-					changeCount++;
+					changeOnEntity.setDatabaseTypeHasChanged(true);
+					//changeCount++;
 					_updateLogger.println(" . Type has changed '" + originalType + "' --> '" + tableType + "'");
 				}
 			}
 		}
 		
 		//--------------------------------------------------------------------------------
-		// 1) remove the colums that doesn't exist in the Database 
+		// 1) remove the columns that doesn't exist in the Database 
 		//--------------------------------------------------------------------------------
 		//--- For each column in the repository ...
-		Column[] columns = entity.getColumns();
-		for (int i = 0; i < columns.length; i++) 
-		{
-			Column e = columns[i];
-			String sColumnName = e.getDatabaseName();
+//		Column[] columns = entity.getColumns();
+//		for (int i = 0; i < columns.length; i++) 
+//		{
+//			Column column = columns[i];
+		for ( Column column : entity.getColumns() ) { 
+			String sColumnName = column.getDatabaseName();
 			// Does it still exist in the DATABASE ?
-			if ( null == dbTable.getColumnByName(sColumnName) )
-			{
-				//--- This column doesn't exist in the DB => remove it from the repo
-				entity.removeColumn(e);
-				changeCount++;
-				_updateLogger.println(" . Column '" + sColumnName + "' removed");
+			if ( null == dbTable.getColumnByName(sColumnName) ) {
+				//--- This column doesn't exist in the DB => remove it from the model
+				entity.removeColumn(column);
+				changeOnEntity.addChangeOnColumn( new ChangeOnColumn(ChangeType.DELETED, column, null) );
+				//changeCount++;
+				_updateLogger.println(" . Column '" + sColumnName + "' deleted");
 			}
 		}
 
@@ -424,18 +432,19 @@ public class RepositoryUpdator extends RepositoryManager
 		// 2) remove the foreign keys that doesn't exist in the Database 
 		//--------------------------------------------------------------------------------
 		//--- For each fk in the repository ...
-		ForeignKey[] fkeys = entity.getForeignKeys();
-		for (int i = 0; i < fkeys.length; i++) 
-		{
-			ForeignKey fk = fkeys[i];
+//		ForeignKey[] fkeys = entity.getForeignKeys();
+//		for (int i = 0; i < fkeys.length; i++) 
+//		{
+//			ForeignKey fk = fkeys[i];
+		for ( ForeignKey fk : entity.getForeignKeys() ) {
 			String sFkName = fk.getName();
 			// Does it still exist in the DATABASE ?
-			if ( null == dbTable.getForeignKeyByName(sFkName) )
-			{
-				//--- This FK doesn't exist in the DB => remove it from the repo
+			if ( null == dbTable.getForeignKeyByName(sFkName) ) {
+				//--- This FK doesn't exist in the DB => remove it from the model
 				entity.removeForeignKey(fk);
-				changeCount++;
-				_updateLogger.println(" . Foreign key '" + sFkName + "' removed");
+				changeOnEntity.addChangeOnForeignKey( new ChangeOnForeignKey(ChangeType.DELETED, fk, null) );
+				//changeCount++;
+				_updateLogger.println(" . Foreign key '" + sFkName + "' deleted");
 			}
 		}
 
@@ -443,22 +452,29 @@ public class RepositoryUpdator extends RepositoryManager
 		// 3) UPDATE existing COLUMNS if necessary and ADD new ones
 		//--------------------------------------------------------------------------------
 		//--- For each column of the table in the DataBase ...
-		List<DatabaseColumn> dbColumns = dbTable.getColumns();
-		for ( DatabaseColumn dbColumn : dbColumns ) {
+//		List<DatabaseColumn> dbColumns = dbTable.getColumns();
+//		for ( DatabaseColumn dbColumn : dbColumns ) {
+		for ( DatabaseColumn dbColumn : dbTable.getColumns() ) {
 			String sColumnName = dbColumn.getColumnName();
 			
 			//--- Search this column in the REPOSITORY
 			Column column = entity.getColumn(sColumnName);
 			if ( column != null ) 
 			{
-				// The column exists => update it
-				changeCount = changeCount + updateEntityAttribute(column, dbColumn);
-
+				//--- The column exists => update it
+				//changeCount = changeCount + updateEntityAttribute(column, dbColumn);
+				
+				Column columnBefore = ObjectUtil.deepCopy(column);
+				if ( updateEntityAttribute(column, dbColumn) > 0 ) {
+					changeOnEntity.addChangeOnColumn( new ChangeOnColumn(ChangeType.UPDATED, columnBefore, column ) );
+					_updateLogger.println(" . Column '" + sColumnName + "' updated");
+				}
 			} else {
-				// The column doesn't exist => add it
+				//--- The column doesn't exist => add it
 				column = addEntityAttribute(entity, dbColumn);
+				changeOnEntity.addChangeOnColumn( new ChangeOnColumn(ChangeType.CREATED, null, column ) );
 				_updateLogger.println(" . Column '" + sColumnName + "' added");
-				changeCount++;
+				//changeCount++;
 			}
 			//--- If this column is a member of a Foreign Key
 			//setFkAttribute(sColumnName, column, listFK);
@@ -484,7 +500,8 @@ public class RepositoryUpdator extends RepositoryManager
 				{
 					// 
 					entity.storeForeignKey(newForeignKey);
-					changeCount++;
+					changeOnEntity.addChangeOnForeignKey( new ChangeOnForeignKey(ChangeType.UPDATED, foreignKey, newForeignKey) );
+					//changeCount++;
 					_updateLogger.println(" . Foreign key '" + sFkName + "' updated");
 				}
 			}
@@ -492,13 +509,16 @@ public class RepositoryUpdator extends RepositoryManager
 			{
 				// The FK doesn't exist => add it to the list
 				entity.storeForeignKey(newForeignKey);
-				changeCount++;
+				changeOnEntity.addChangeOnForeignKey( new ChangeOnForeignKey(ChangeType.CREATED, null, newForeignKey) );
+				//changeCount++;
 				_updateLogger.println(" . Foreign key '" + sFkName + "' added");
 			}
 		}
 
 		//--- Number of changes
-		return changeCount;
+		//return changeCount;
+		//--- Return all the changes for this entity
+		return changeOnEntity ;
 	}
 	
 	private boolean checkTableExistsInDatabase(String sTableName, LinkedList<String> databaseTables) {

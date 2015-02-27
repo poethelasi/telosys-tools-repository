@@ -23,6 +23,12 @@ public class ChangeOnColumn {
 	private final Column      columnBefore ;
 	private final Column      columnAfter ;
 	
+	/**
+	 * Constructor
+	 * @param changeType
+	 * @param columnBefore
+	 * @param columnAfter
+	 */
 	public ChangeOnColumn(ChangeType changeType, Column columnBefore, Column columnAfter) {
 		super();
 		this.changeType   = changeType ;
