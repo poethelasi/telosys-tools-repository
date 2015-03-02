@@ -20,7 +20,6 @@ public class DatabaseInMemory {
 	
 	private final int databaseId ;
 	private final DatabaseConfiguration databaseConfiguration ;
-	//private final ConnectionManager connectionManager;
 	private Connection connection = null ;
 	private final TelosysToolsLogger logger ;
 	
@@ -34,7 +33,6 @@ public class DatabaseInMemory {
 		this.databaseId = databasesConfigurations.getDatabaseDefaultId() ;
 		this.databaseConfiguration = databasesConfigurations.getDatabaseConfiguration() ;
 		this.logger = new ConsoleLogger();
-		//this.connectionManager = new ConnectionManager( this.logger );
 		ConnectionManager connectionManager = new ConnectionManager( this.logger );
 		this.connection = connectionManager.getConnection(databaseConfiguration);
 	}
@@ -50,7 +48,6 @@ public class DatabaseInMemory {
 		this.databaseId = databaseId;
 		this.databaseConfiguration = databasesConfigurations.getDatabaseConfiguration(databaseId);
 		this.logger = new ConsoleLogger();
-		//this.connectionManager = new ConnectionManager( this.logger );
 		ConnectionManager connectionManager = new ConnectionManager( this.logger );
 		this.connection = connectionManager.getConnection(databaseConfiguration);
 	}

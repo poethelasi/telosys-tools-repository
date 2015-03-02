@@ -142,6 +142,13 @@ public abstract class AbstractTestCase {
 		return new RepositoryUpdator(connectionManager, rules, logger, updateLogger);
 	}
 	
+	/**
+	 * Checks each given java name is one of the given expected names 
+	 * @param javaName1
+	 * @param javaName2
+	 * @param expectedName1
+	 * @param expectedName2
+	 */
 	protected void checkJavaName(String javaName1, String javaName2, String expectedName1, String expectedName2 ) {
 		System.out.println("Check Java names : '" + javaName1 + "', '" + javaName2 + "' expected : '" + expectedName1 + "', '" + expectedName2 +"'");
 		assertTrue( expectedName1.equals( javaName1 ) || expectedName2.equals( javaName1 ) );

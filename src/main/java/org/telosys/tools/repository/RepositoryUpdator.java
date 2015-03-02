@@ -175,11 +175,11 @@ public class RepositoryUpdator extends RepositoryManager
 	// UPDATE REPOSITORY
 	// -----------------------------------------------------------------------------------------------------
 	/**
-	 * Updates the given "RepositoryModel" from the database defined in the "DatabaseConfiguration"
+	 * Updates the given "RepositoryModel" from the database defined in the "DatabaseConfiguration" <br>
 	 * 
-	 * @param databaseConfiguration
-	 * @param repositoryModel
-	 * @return
+	 * @param databaseConfiguration the DatabaseConfiguration to be used
+	 * @param repositoryModel the RepositoryModel to be updated
+	 * @return the ChangeLog holding all the changes
 	 * @throws TelosysToolsException
 	 */
 	public ChangeLog updateRepository( DatabaseConfiguration databaseConfiguration, RepositoryModel repositoryModel ) throws TelosysToolsException 
