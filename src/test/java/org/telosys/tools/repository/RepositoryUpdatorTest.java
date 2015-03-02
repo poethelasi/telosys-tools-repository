@@ -32,12 +32,11 @@ public class RepositoryUpdatorTest extends AbstractTestCase {
 		RepositoryModel repositoryModel = result.getRepositoryModel();
 		
 		//--- Check changes (NO CHANGE)
-		//assertTrue(changeLog.getNumberOfEntities() == 0 );
 		assertEquals(0, changeLog.getNumberOfEntities());
-		assertTrue(changeLog.getNumberOfEntitiesCreated() == 0 );
-		assertTrue(changeLog.getNumberOfEntitiesUpdated() == 0 );
-		assertTrue(changeLog.getNumberOfEntitiesDeleted() == 0 );
-		assertTrue(repositoryModel.getNumberOfEntities() == 2 );
+		assertEquals(0, changeLog.getNumberOfEntitiesCreated() );
+		assertEquals(0, changeLog.getNumberOfEntitiesUpdated() );
+		assertEquals(0, changeLog.getNumberOfEntitiesDeleted() );
+		assertEquals(2, repositoryModel.getNumberOfEntities() );
 	}
 
 	@Test
@@ -106,7 +105,7 @@ public class RepositoryUpdatorTest extends AbstractTestCase {
 		Entity studentAfter = studentChange.getEntityAfter();
 		assertNotNull(studentAfter);
 		assertEquals(0, studentAfter.getForeignKeys().length );// One FK removed 
-		assertEquals(1, studentAfter.getLinks().length ); // Inverse side link
+		assertEquals(0, studentAfter.getLinks().length ); 
 
 		//--- Entity "TEACHER BEFORE/AFTER"
 		Entity teacherBefore = teacherChange.getEntityBefore();
@@ -118,9 +117,11 @@ public class RepositoryUpdatorTest extends AbstractTestCase {
 		assertEquals(1, teacherAfter.getForeignKeys().length );// One FK added 
 		assertEquals(1, teacherBefore.getLinks().length ); // Owning side link for FK
 
-//		assertEquals(1, repositoryModel.getEntityByName("STUDENT").getLinks().length ); // Owning side unchanged
-//		assertEquals(2, repositoryModel.getEntityByName("TEACHER").getLinks().length ); // 2 inv (Student+Team) + Owning side(badge)
-//		assertEquals(0, repositoryModel.getEntityByName("BADGE").getLinks().length ); // Inverse side
+		//--- Result in the model
+		assertEquals(0, repositoryModel.getEntityByName("STUDENT").getLinks().length ); // No link
+		assertEquals(2, repositoryModel.getEntityByName("TEACHER").getLinks().length ); // Inverse side (from TEAM) + Owning side(to BADGE)
+		assertEquals(1, repositoryModel.getEntityByName("BADGE").getLinks().length ); // Inverse side (from TEACHER)
+		assertEquals(1, repositoryModel.getEntityByName("TEAM").getLinks().length ); // Owning side (to TEACHER)
 	}
 
 	/**

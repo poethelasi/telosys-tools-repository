@@ -49,19 +49,16 @@ import org.telosys.tools.repository.rules.RepositoryRules;
 public abstract class RepositoryManager extends StandardTool
 {
 	private final ConnectionManager     connectionManager ;
-//	private final EntityInformationProvider        entityInformationProvider ;
-//	private final UserInterfaceInformationProvider uiInfoProvider ;
 	private final RepositoryRules       repositoryRules ;
 	
 	protected final TelosysToolsLogger  logger ;
 
-//	public RepositoryManager(EntityInformationProvider entityInformationProvider, UserInterfaceInformationProvider uiInfoProvider, TelosysToolsLogger logger) 
-//	{
-//		super(logger);
-//		this.entityInformationProvider = entityInformationProvider;
-//		this.uiInfoProvider = uiInfoProvider ;
-//		this.logger = logger;
-//	}
+	/**
+	 * Constructor
+	 * @param connectionManager
+	 * @param repositoryRules
+	 * @param logger
+	 */
 	protected RepositoryManager(ConnectionManager connectionManager, RepositoryRules repositoryRules, TelosysToolsLogger logger) 
 	{
 		super(logger);
@@ -87,6 +84,17 @@ public abstract class RepositoryManager extends StandardTool
 		}
 	}
 
+	protected void closeConnection(Connection connection) throws TelosysToolsException {
+		if ( connection != null ) {
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				throw new TelosysToolsException("Cannot close connection (SQLException)", e);
+			}
+		}
+	}
+
+	
 	/**
 	 * Returns the RepositoryRules initialized in the constructor 
 	 * @return
@@ -289,10 +297,6 @@ public abstract class RepositoryManager extends StandardTool
 			foreignKeyColumn.setTableRef( dbFkCol.getPkTableName() );
 			foreignKeyColumn.setColumnRef( dbFkCol.getPkColumnName() );
 			
-//			foreignKeyColumn.setUpdateRule( String.valueOf(dbFkCol.getUpdateRule()) );
-//			foreignKeyColumn.setDeleteRule( String.valueOf(dbFkCol.getDeleteRule()) );
-//			foreignKeyColumn.setDeferrable( String.valueOf(dbFkCol.getDeferrability()) );
-			// v 2.0.7
 			foreignKeyColumn.setUpdateRuleCode( dbFkCol.getUpdateRule() );
 			foreignKeyColumn.setDeleteRuleCode( dbFkCol.getDeleteRule() );
 			foreignKeyColumn.setDeferrableCode( dbFkCol.getDeferrability() );

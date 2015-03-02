@@ -44,6 +44,10 @@ import org.telosys.tools.repository.model.RepositoryModel;
 import org.telosys.tools.repository.rules.RepositoryRules;
 
 /**
+ * Service that manages the repository model updates <br>
+ * Detects the database changes and updates the repository model <br>
+ * including the links since v 2.1.1
+ * 
  * @author Laurent GUERIN, Eric LEMELIN
  * 
  */
@@ -51,13 +55,6 @@ import org.telosys.tools.repository.rules.RepositoryRules;
 public class RepositoryUpdator extends RepositoryManager
 {
 	private UpdateLogWriter _updateLogger = null;
-
-//	public RepositoryUpdator(EntityInformationProvider entityInformationProvider, UserInterfaceInformationProvider uiInfoProvider, 
-//			TelosysToolsLogger logger, UpdateLogWriter updateLogger) 
-//	{
-//		super(entityInformationProvider, uiInfoProvider, logger);
-//		_updateLogger = updateLogger;
-//	}
 
 	/**
 	 * Constructor
@@ -177,16 +174,28 @@ public class RepositoryUpdator extends RepositoryManager
 	// -----------------------------------------------------------------------------------------------------
 	// UPDATE REPOSITORY
 	// -----------------------------------------------------------------------------------------------------
-//	public int updateRepository( DatabaseConfiguration databaseConfiguration, RepositoryModel repositoryModel ) throws TelosysToolsException 
+	/**
+	 * Updates the given "RepositoryModel" from the database defined in the "DatabaseConfiguration"
+	 * 
+	 * @param databaseConfiguration
+	 * @param repositoryModel
+	 * @return
+	 * @throws TelosysToolsException
+	 */
 	public ChangeLog updateRepository( DatabaseConfiguration databaseConfiguration, RepositoryModel repositoryModel ) throws TelosysToolsException 
 	{
-//		ConnectionManager connectionManager = new ConnectionManager(logger);
-//		Connection connection = connectionManager.getConnection(databaseConfiguration);
 		Connection connection = getConnection(databaseConfiguration);
 		
+//		//--- STEP 1 : Updates the repository from the current database meta-data
+//		ChangeLog changeLog = updateRepository( databaseConfiguration, repositoryModel, connection );
+//
+//		//--- STEP 2 : Updates the links between entities ( since v 2.1.1 )
+//		LinksManager linksManager = new LinksManager(getRepositoryRules(), getLogger() );
+//		linksManager.updateLinks(repositoryModel, changeLog);
+		
 		//--- STEP 1 : Updates the repository from the current database meta-data
-		//return updateRepository( databaseConfiguration, repositoryModel, connection );
-		ChangeLog changeLog = updateRepository( databaseConfiguration, repositoryModel, connection );
+		ChangeLog changeLog = updateRepositoryStep1( databaseConfiguration, repositoryModel, connection );
+		closeConnection(connection);
 
 		//--- STEP 2 : Updates the links between entities ( since v 2.1.1 )
 		LinksManager linksManager = new LinksManager(getRepositoryRules(), getLogger() );
@@ -195,20 +204,30 @@ public class RepositoryUpdator extends RepositoryManager
 		return changeLog ;
 	}
 
-	protected ChangeLog updateRepository( DatabaseConfiguration databaseConfiguration, RepositoryModel repositoryModel, Connection connection ) throws TelosysToolsException 
-	{
-		//--- STEP 1 : Updates the repository from the current database meta-data
-		//return updateRepository( databaseConfiguration, repositoryModel, connection );
-		ChangeLog changeLog = updateStep1( databaseConfiguration, repositoryModel, connection );
-
-		//--- STEP 2 : Updates the links between entities ( since v 2.1.1 )
-		LinksManager linksManager = new LinksManager(getRepositoryRules(), getLogger() );
-		linksManager.updateLinks(repositoryModel, changeLog);
-		
-		return changeLog ;
-	}
+//	private ChangeLog updateRepository( DatabaseConfiguration databaseConfiguration, RepositoryModel repositoryModel, Connection connection ) throws TelosysToolsException 
+//	{
+//		//--- STEP 1 : Updates the repository from the current database meta-data
+//		ChangeLog changeLog = updateStep1( databaseConfiguration, repositoryModel, connection );
+//
+//		//--- STEP 2 : Updates the links between entities ( since v 2.1.1 )
+//		LinksManager linksManager = new LinksManager(getRepositoryRules(), getLogger() );
+//		linksManager.updateLinks(repositoryModel, changeLog);
+//		
+//		return changeLog ;
+//	}
 	
-	private ChangeLog updateStep1( DatabaseConfiguration databaseConfiguration, RepositoryModel repositoryModel, 
+	/**
+	 * First step of the update<br>
+	 * Updates entities, columns and foreign keys from the current database meta-data <br>
+	 * The links are not processed in this step
+	 * 
+	 * @param databaseConfiguration
+	 * @param repositoryModel
+	 * @param connection
+	 * @return
+	 * @throws TelosysToolsException
+	 */
+	private ChangeLog updateRepositoryStep1( DatabaseConfiguration databaseConfiguration, RepositoryModel repositoryModel, 
 			Connection connection ) throws TelosysToolsException 
 	{
 		ChangeLog changeLog = null ;
@@ -220,7 +239,6 @@ public class RepositoryUpdator extends RepositoryManager
 		String tableNameInclude  = databaseConfiguration.getMetadataTableNameInclude();
 		String tableNameExclude  = databaseConfiguration.getMetadataTableNameExclude();
 		
-		//int changesCount = 0 ;
 		Date now = new Date();
 		try {
 			logger.log(" . get meta-data ");
@@ -233,8 +251,7 @@ public class RepositoryUpdator extends RepositoryManager
 				DatabaseTables dbTables = manager.getDatabaseTables(connection, catalog, schema, 
 						tableNamePattern, tableTypes, tableNameInclude, tableNameExclude);
 
-				//changesCount = updateRepository(repositoryModel, dbTables);
-				changeLog = updateRepository(repositoryModel, dbTables);
+				changeLog = updateRepositoryStep1FromTables(repositoryModel, dbTables);
 
 			} catch (SQLException e) {
 				throw new TelosysToolsException("SQLException", e);
@@ -245,58 +262,10 @@ public class RepositoryUpdator extends RepositoryManager
 		finally {
 			_updateLogger.close();
 		}
-		//return changesCount ;
 		return changeLog ;
 	}
 	
-//	/**
-//	 * Updates the given repository with the database metadata.
-//	 * @param con
-//	 * @param repositoryModel
-//	 * @param sCatalog
-//	 * @param sSchema
-//	 * @param sTableNamePattern
-//	 * @param arrayTableTypes
-//	 * @param sTableNameInclude
-//	 * @param sTableNameExclude
-//	 * @return
-//	 * @throws TelosysToolsException
-//	 */
-//	public int updateRepository(Connection con, RepositoryModel repositoryModel, String sCatalog,
-//			String sSchema, String sTableNamePattern, String[] arrayTableTypes,
-//			String sTableNameInclude, String sTableNameExclude) throws TelosysToolsException 
-//	{
-//		int changesCount = 0 ;
-//
-//		Date now = new Date();
-//
-//		try {
-//			logger.log(" . get meta-data ");
-//
-//			try {
-//
-//				logger.log(" . update repository from database tables");
-//				_updateLogger.println("Update date : " + now);
-//				
-//				//--- Load the Database Model
-//				DatabaseModelManager manager = new DatabaseModelManager( this.getLogger() );
-//				DatabaseTables dbTables = manager.getDatabaseTables(con, sCatalog, sSchema, sTableNamePattern, arrayTableTypes, sTableNameInclude, sTableNameExclude);
-//
-//				changesCount = updateRepository(repositoryModel, dbTables);
-//
-//			} catch (SQLException e) {
-//				throw new TelosysToolsException("SQLException", e);
-//			} catch (Throwable t) {
-//				throw new TelosysToolsException("Exception", t);
-//			}
-//		}
-//		finally {
-//			_updateLogger.close();
-//		}
-//		return changesCount ;
-//	}
-
-	private ChangeLog updateRepository(RepositoryModel repositoryModel, DatabaseTables dbTables ) throws SQLException 
+	private ChangeLog updateRepositoryStep1FromTables(RepositoryModel repositoryModel, DatabaseTables dbTables ) throws SQLException 
 	{
 		ChangeLog changeLog = new ChangeLog() ;
 		
@@ -323,25 +292,18 @@ public class RepositoryUpdator extends RepositoryManager
 			_updateLogger.println(" ");
 			Entity entity = repositoryModel.getEntityByName(sTableName);
 			
-			if ( entity != null ) 
-			{
+			if ( entity != null ) {
 				//------------------------------------------------------------------
 				//   ENTITY FOUND IN MODEL => UPDATE ENTITY
 				//------------------------------------------------------------------
-				//Entity entityBefore = ObjectUtil.deepCopy(entity);
 				_updateLogger.println(" Table '" + sTableName + "' found in repository");
-				//int entityChanges = updateEntity(repositoryModel, dbTable, entity);
 				ChangeOnEntity changeOnEntity = updateEntity(repositoryModel, dbTable, entity);
-				//if (entityChanges > 0) {
 				if ( changeOnEntity.getNumberOfChanges() > 0 ) {
-					//_updateLogger.println(" (*) table '" + sTableName + "' updated : " + entityChanges + " change(s)");
 					_updateLogger.println(" (*) table '" + sTableName + "' updated : " + changeOnEntity.getNumberOfChanges() + " change(s)");
-					//changeLog.log(new ChangeOnEntity(ChangeType.UPDATED, entityBefore, entity));
 					changeLog.log(changeOnEntity);
 				} else {
 					_updateLogger.println(" (=) table '" + sTableName + "' unchanged");
 				}
-				//changesCount = changesCount + entityChanges ;
 				changesCount = changesCount + changeOnEntity.getNumberOfChanges() ;
 			} else {
 				//------------------------------------------------------------------
@@ -360,8 +322,7 @@ public class RepositoryUpdator extends RepositoryManager
 		//-----------------------------------------------------------------------
 		//--- For each table in the repository ...
 		String[] tableNames = repositoryModel.getEntitiesNames();
-		for (int i = 0; i < tableNames.length; i++) 
-		{
+		for (int i = 0; i < tableNames.length; i++) {
 			String sTableName = tableNames[i];
 			if (checkTableExistsInDatabase(sTableName, databaseTables) != true) {
 				//--- This table in the repository no longer exists in the database
@@ -374,18 +335,13 @@ public class RepositoryUpdator extends RepositoryManager
 				changesCount++;
 			}
 		}
-		
-		//return changesCount ;
 		return changeLog ;
 	}
 	
-	//private int updateEntity( RepositoryModel repositoryModel, DatabaseTable dbTable, Entity entity) throws SQLException 
 	private ChangeOnEntity updateEntity( RepositoryModel repositoryModel, DatabaseTable dbTable, Entity entity) {
 		
-		//Entity entityBefore = new Entity(entity);
 		Entity entityBefore = ObjectUtil.deepCopy(entity);
 		ChangeOnEntity changeOnEntity = new ChangeOnEntity(ChangeType.UPDATED, entityBefore, entity);
-		//int changeCount = 0;
 		//--------------------------------------------------------------------------------
 		// 0) added in ver 2.0.7 
 		//--------------------------------------------------------------------------------
@@ -402,7 +358,6 @@ public class RepositoryUpdator extends RepositoryManager
 					// The type has changed => Update type
 					entity.setDatabaseType(tableType);
 					changeOnEntity.setDatabaseTypeHasChanged(true);
-					//changeCount++;
 					_updateLogger.println(" . Type has changed '" + originalType + "' --> '" + tableType + "'");
 				}
 			}
@@ -412,10 +367,6 @@ public class RepositoryUpdator extends RepositoryManager
 		// 1) remove the columns that doesn't exist in the Database 
 		//--------------------------------------------------------------------------------
 		//--- For each column in the repository ...
-//		Column[] columns = entity.getColumns();
-//		for (int i = 0; i < columns.length; i++) 
-//		{
-//			Column column = columns[i];
 		for ( Column column : entity.getColumns() ) { 
 			String sColumnName = column.getDatabaseName();
 			// Does it still exist in the DATABASE ?
@@ -423,7 +374,6 @@ public class RepositoryUpdator extends RepositoryManager
 				//--- This column doesn't exist in the DB => remove it from the model
 				entity.removeColumn(column);
 				changeOnEntity.addChangeOnColumn( new ChangeOnColumn(ChangeType.DELETED, column, null) );
-				//changeCount++;
 				_updateLogger.println(" . Column '" + sColumnName + "' deleted");
 			}
 		}
@@ -432,10 +382,6 @@ public class RepositoryUpdator extends RepositoryManager
 		// 2) remove the foreign keys that doesn't exist in the Database 
 		//--------------------------------------------------------------------------------
 		//--- For each fk in the repository ...
-//		ForeignKey[] fkeys = entity.getForeignKeys();
-//		for (int i = 0; i < fkeys.length; i++) 
-//		{
-//			ForeignKey fk = fkeys[i];
 		for ( ForeignKey fk : entity.getForeignKeys() ) {
 			String sFkName = fk.getName();
 			// Does it still exist in the DATABASE ?
@@ -443,7 +389,6 @@ public class RepositoryUpdator extends RepositoryManager
 				//--- This FK doesn't exist in the DB => remove it from the model
 				entity.removeForeignKey(fk);
 				changeOnEntity.addChangeOnForeignKey( new ChangeOnForeignKey(ChangeType.DELETED, fk, null) );
-				//changeCount++;
 				_updateLogger.println(" . Foreign key '" + sFkName + "' deleted");
 			}
 		}
@@ -452,8 +397,6 @@ public class RepositoryUpdator extends RepositoryManager
 		// 3) UPDATE existing COLUMNS if necessary and ADD new ones
 		//--------------------------------------------------------------------------------
 		//--- For each column of the table in the DataBase ...
-//		List<DatabaseColumn> dbColumns = dbTable.getColumns();
-//		for ( DatabaseColumn dbColumn : dbColumns ) {
 		for ( DatabaseColumn dbColumn : dbTable.getColumns() ) {
 			String sColumnName = dbColumn.getColumnName();
 			
@@ -462,8 +405,6 @@ public class RepositoryUpdator extends RepositoryManager
 			if ( column != null ) 
 			{
 				//--- The column exists => update it
-				//changeCount = changeCount + updateEntityAttribute(column, dbColumn);
-				
 				Column columnBefore = ObjectUtil.deepCopy(column);
 				if ( updateEntityAttribute(column, dbColumn) > 0 ) {
 					changeOnEntity.addChangeOnColumn( new ChangeOnColumn(ChangeType.UPDATED, columnBefore, column ) );
@@ -474,7 +415,6 @@ public class RepositoryUpdator extends RepositoryManager
 				column = addEntityAttribute(entity, dbColumn);
 				changeOnEntity.addChangeOnColumn( new ChangeOnColumn(ChangeType.CREATED, null, column ) );
 				_updateLogger.println(" . Column '" + sColumnName + "' added");
-				//changeCount++;
 			}
 			//--- If this column is a member of a Foreign Key
 			//setFkAttribute(sColumnName, column, listFK);
@@ -495,13 +435,11 @@ public class RepositoryUpdator extends RepositoryManager
 			if ( foreignKey != null ) 
 			{
 				// The FK exists => update it if it has changed
-				//if ( ! foreignKey.equals( newForeignKey ) )
 				if ( ! foreignKey.isIdentical( newForeignKey ) )
 				{
 					// 
 					entity.storeForeignKey(newForeignKey);
 					changeOnEntity.addChangeOnForeignKey( new ChangeOnForeignKey(ChangeType.UPDATED, foreignKey, newForeignKey) );
-					//changeCount++;
 					_updateLogger.println(" . Foreign key '" + sFkName + "' updated");
 				}
 			}
@@ -510,13 +448,9 @@ public class RepositoryUpdator extends RepositoryManager
 				// The FK doesn't exist => add it to the list
 				entity.storeForeignKey(newForeignKey);
 				changeOnEntity.addChangeOnForeignKey( new ChangeOnForeignKey(ChangeType.CREATED, null, newForeignKey) );
-				//changeCount++;
 				_updateLogger.println(" . Foreign key '" + sFkName + "' added");
 			}
 		}
-
-		//--- Number of changes
-		//return changeCount;
 		//--- Return all the changes for this entity
 		return changeOnEntity ;
 	}
