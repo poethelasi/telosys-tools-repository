@@ -11,8 +11,8 @@
         <groupId>org.telosys.tools</groupId>
         <artifactId>telosys-tools-parent</artifactId>
         <version>3.0.0</version>
-<!--         <relativePath>../telosys-tools-parent/pom.xml</relativePath>
- -->    </parent>
+        <relativePath>../telosys-tools-parent/pom.xml</relativePath>
+    </parent>
 
 
 	<dependencies>
