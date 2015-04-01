@@ -18,9 +18,9 @@ package org.telosys.tools.repository.persistence.commande;
 import java.util.Iterator;
 import java.util.List;
 
-import org.telosys.tools.repository.model.JoinColumns;
-import org.telosys.tools.repository.model.JoinTable;
-import org.telosys.tools.repository.model.Link;
+import org.telosys.tools.repository.model.JoinColumnInDbModel;
+import org.telosys.tools.repository.model.JoinTableInDbModel;
+import org.telosys.tools.repository.model.LinkInDbModel;
 import org.telosys.tools.repository.persistence.util.CommandException;
 import org.telosys.tools.repository.persistence.util.ProcessContext;
 import org.telosys.tools.repository.persistence.util.RepositoryConst;
@@ -32,20 +32,21 @@ public class CommandElementLink extends AbstractCommand implements ICommandConte
 		final Element elem = processContext.getElement();
 
 		// Transform element
-		final Link link = RepositoryConst.LINK_WRAPPER.getLink(elem);
+		final LinkInDbModel link = RepositoryConst.LINK_WRAPPER.getLink(elem);
 
 		final ProcessContext processContextNext = genericChildProcess(iCommandManager, elem);
 
 		List<?> objs = processContextNext.getList();
 		for (Iterator<?> iterator = objs.iterator(); iterator.hasNext();) {
 			Object obj = iterator.next();
-//			if (obj instanceof JoinFK) {
-//				link.storeJoinFK((JoinFK) obj);
-//			} else 
-			if (obj instanceof JoinTable) {
-				link.setJoinTable((JoinTable) obj);
-			} else if (obj instanceof JoinColumns) {
-				link.setJoinColumns( (JoinColumns) obj );
+			if (obj instanceof JoinTableInDbModel) {
+				link.setJoinTable((JoinTableInDbModel) obj);
+//			} else if (obj instanceof JoinColumnsInDbModel) {
+//				link.setJoinColumns( (JoinColumnsInDbModel) obj );
+			} else if (obj instanceof List<?>) { // v 3.0.0
+				@SuppressWarnings("unchecked")
+				List<JoinColumnInDbModel> joinColumns = (List<JoinColumnInDbModel>) obj ; 
+				link.setJoinColumns( joinColumns ); 
 			} else {
 				throw new CommandException("Unsupported child on Link : " + obj.getClass());
 			}

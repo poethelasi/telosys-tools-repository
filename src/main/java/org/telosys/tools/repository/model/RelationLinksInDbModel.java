@@ -17,25 +17,25 @@ package org.telosys.tools.repository.model;
 
 import java.io.Serializable;
 
-public class RelationLinks implements Serializable  {
+public class RelationLinksInDbModel implements Serializable  {
 
 	private static final long serialVersionUID = 1L;
 
-	private Link owningSideLink = null ;
+	private LinkInDbModel owningSideLink = null ;
 
-	private Link inverseSideLink = null ;
+	private LinkInDbModel inverseSideLink = null ;
 
-	public RelationLinks(Link owningSideLink, Link inverseSideLink) {
+	public RelationLinksInDbModel(LinkInDbModel owningSideLink, LinkInDbModel inverseSideLink) {
 		super();
 		this.owningSideLink = owningSideLink;
 		this.inverseSideLink = inverseSideLink;
 	}
 
-	public Link getInverseSideLink() {
+	public LinkInDbModel getInverseSideLink() {
 		return inverseSideLink;
 	}
 
-	public Link getOwningSideLink() {
+	public LinkInDbModel getOwningSideLink() {
 		return owningSideLink;
 	}
 	

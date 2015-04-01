@@ -15,20 +15,20 @@
  */
 package org.telosys.tools.repository.persistence.wrapper;
 
-import org.telosys.tools.repository.model.ForeignKey;
+import org.telosys.tools.repository.model.ForeignKeyInDbModel;
 import org.telosys.tools.repository.persistence.util.RepositoryConst;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class ForeignKeyWrapper {
 
-	public ForeignKey getForeignKey(final Element xmlElement) {
-		final ForeignKey foreignKey = new ForeignKey();
+	public ForeignKeyInDbModel getForeignKey(final Element xmlElement) {
+		final ForeignKeyInDbModel foreignKey = new ForeignKeyInDbModel();
 		foreignKey.setName(xmlElement.getAttribute(RepositoryConst.FK_NAME) );
 		return foreignKey;
 	}
 
-	public Element getXmlDesc(final ForeignKey foreignKey, final Document doc) {
+	public Element getXmlDesc(final ForeignKeyInDbModel foreignKey, final Document doc) {
 		final Element xmlElement = doc.createElement(RepositoryConst.FK);
 		xmlElement.setAttribute(RepositoryConst.FK_NAME, foreignKey.getName());
 		return xmlElement;

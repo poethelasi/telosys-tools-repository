@@ -23,6 +23,8 @@ import org.telosys.tools.commons.StrUtil;
 import org.telosys.tools.commons.javatypes.JavaTypes;
 import org.telosys.tools.commons.javatypes.JavaTypesManager;
 import org.telosys.tools.commons.jdbctypes.JdbcTypesManager;
+import org.telosys.tools.generic.model.Attribute;
+import org.telosys.tools.generic.model.DateType;
 
 /**
  * Column of a table/entity in the Repository Model <br>
@@ -32,13 +34,13 @@ import org.telosys.tools.commons.jdbctypes.JdbcTypesManager;
  * @author Laurent Guerin
  *
  */
-public class Column implements Comparable<Column>, Serializable 
+public class AttributeInDbModel implements Comparable<AttributeInDbModel>, Serializable, Attribute
 {
 	private static final long serialVersionUID = 1L;
 	
-	public final static String SPECIAL_DATE_ONLY      = "D";
-	public final static String SPECIAL_TIME_ONLY      = "T";
-	public final static String SPECIAL_DATE_AND_TIME  = "DT";
+//	public final static String SPECIAL_DATE_ONLY      = "D";
+//	public final static String SPECIAL_TIME_ONLY      = "T";
+//	public final static String SPECIAL_DATE_AND_TIME  = "DT";
 		 
 	public final static String SPECIAL_LONG_TEXT_TRUE = "true";
 	
@@ -54,7 +56,8 @@ public class Column implements Comparable<Column>, Serializable
 	
 	private boolean _bDatabaseNotNull  = false ; // dbNotNull="true|false" ( false by default )
 	
-	private boolean _bPrimaryKey       = false ; // primaryKey="true|false" ( false by default )
+	//private boolean _bPrimaryKey       = false ; // primaryKey="true|false" ( false by default )
+	private boolean _bKeyElement        = false ; // primaryKey="true|false" ( false by default ) // v 3.0.0
 	
 	private boolean _bForeignKey       = false ; // foreignKey="true|false" ( false by default )
 
@@ -72,11 +75,11 @@ public class Column implements Comparable<Column>, Serializable
 	
 	//----- JAVA -----
 
-	private String  _sJavaName    = null ;  // javaName=""
+	private String  _sName        = null ;  // javaName=""
 	
-	private String  _sJavaType    = null ;  // javaType="int|...." 
+	private String  _sFullType    = null ;  // javaType="int|...." 
 	
-	private boolean _bJavaNotNull = false ;  // javaNotNull="true|false" 
+	private boolean _bNotNull = false ;  // javaNotNull="true|false" 
 	
 	private String  _sJavaDefaultValue = null ;  // javaDefaultValue="..." 
 	
@@ -90,12 +93,15 @@ public class Column implements Comparable<Column>, Serializable
 	private boolean _bLongText = false ;  //  
 	private boolean _bNotEmpty = false ;  // notEmpty="true|false" 
 	private boolean _bNotBlank = false ;  // notBlank="true|false" 
-	private String  _sMinLength = null ;
-	private String  _sMaxLength = null ;
+//	private String  _sMinLength = null ;
+//	private String  _sMaxLength = null ;
+	private Integer  _iMinLength = null ;
+	private Integer  _iMaxLength = null ;
 	private String  _sPattern   = null ;
 	
 	//----- SPECIAL DATA for DATE & TIME -----
-	private String  _sDateType = null ; // "D", "T" or "DT" ( see constants )
+//	private String  _sDateType = null ; // "D", "T" or "DT" ( see constants )
+	private DateType dateType = null ; // enumeration - ver 3.0.0
 	private boolean _bDatePast   = false ;
 	private boolean _bDateFuture = false ;
 	private boolean _bDateBefore = false ;
@@ -104,8 +110,10 @@ public class Column implements Comparable<Column>, Serializable
 	private String  _sDateAfterValue  = null ;
 	
 	//----- SPECIAL DATA for NUMERIC -----
-	private String  _sMinValue = null ;
-	private String  _sMaxValue = null ;
+//	private String  _sMinValue = null ;
+//	private String  _sMaxValue = null ;
+	private Integer _iMinValue = null ;
+	private Integer _iMaxValue = null ;
 	
 	//----- SPECIAL DATA for BOOLEAN -----
 	private String  _sBooleanTrueValue  = null ; // the special value for TRUE 
@@ -116,39 +124,40 @@ public class Column implements Comparable<Column>, Serializable
 
 	//----- SPECIAL DATA for key generation -----
 	
-	private GeneratedValue generatedValue = null ;
+	private GeneratedValueInDbModel generatedValue = null ;
 	
-	private TableGenerator tableGenerator = null ;
+	private TableGeneratorInDbModel tableGenerator = null ;
 	
-	private SequenceGenerator sequenceGenerator = null ;
+	private SequenceGeneratorInDbModel sequenceGenerator = null ;
 	
+	//-----------------------------------------------------------------------------
 	
-	public GeneratedValue getGeneratedValue() {
+	public GeneratedValueInDbModel getGeneratedValue() {
 		return generatedValue;
 	}
 
-	public void setGeneratedValue(GeneratedValue generatedValue) {
+	public void setGeneratedValue(GeneratedValueInDbModel generatedValue) {
 		this.generatedValue = generatedValue;
 	}
 
-	public TableGenerator getTableGenerator() {
+	public TableGeneratorInDbModel getTableGenerator() {
 		return tableGenerator;
 	}
 
-	public void setTableGenerator(TableGenerator tableGenerator) {
+	public void setTableGenerator(TableGeneratorInDbModel tableGenerator) {
 		this.tableGenerator = tableGenerator;
 	}
 
-	public SequenceGenerator getSequenceGenerator() {
+	public SequenceGeneratorInDbModel getSequenceGenerator() {
 		return sequenceGenerator;
 	}
 
-	public void setSequenceGenerator(SequenceGenerator sequenceGenerator) {
+	public void setSequenceGenerator(SequenceGeneratorInDbModel sequenceGenerator) {
 		this.sequenceGenerator = sequenceGenerator;
 	}
 
 	//-----------------------------------------------------------------------------
-
+	@Override
 	public String getDatabaseName() {
 		return _sDatabaseName ;
 	}
@@ -159,35 +168,43 @@ public class Column implements Comparable<Column>, Serializable
 
 	//-----------------------------------------------------------------------------
 
-	public void setPrimaryKey(boolean b) {
-		_bPrimaryKey = b ;
+//	public void setPrimaryKey(boolean b) {
+//		_bPrimaryKey = b ;
+//	}
+//	public boolean isPrimaryKey() {
+//		return _bPrimaryKey ;
+//	}
+	public void setKeyElement(boolean b) { // v 3.0.0
+		_bKeyElement = b ;
 	}
-
-	public boolean isPrimaryKey() {
-		return _bPrimaryKey ;
+	@Override
+	public boolean isKeyElement() { // v 3.0.0
+		return _bKeyElement ;
 	}
 
 	//-----------------------------------------------------------------------------
-
 	public void setForeignKey(boolean b) {
 		_bForeignKey = b ;
 	}
-
-	public boolean isForeignKey() {
-		return _bForeignKey ;
+//	public boolean isForeignKey() {
+//		return _bForeignKey ;
+//	}
+	@Override
+	public boolean isUsedInForeignKey() { // v 3.0.0
+		return _bForeignKey;
 	}
-
+	
 	//-----------------------------------------------------------------------------
 
 	public void setAutoIncremented(boolean b) {
 		_bAutoIncremented = b ;
 	}
 
+	@Override
 	public boolean isAutoIncremented() {
 		return _bAutoIncremented ;
 	}
 
-	
 	//-----------------------------------------------------------------------------
 
 	public void setDatabaseNotNull(boolean flag) {
@@ -198,6 +215,7 @@ public class Column implements Comparable<Column>, Serializable
 		_bDatabaseNotNull = "true".equalsIgnoreCase(flag) ;
 	}
 
+	@Override
 	public boolean isDatabaseNotNull() {
 		return _bDatabaseNotNull ;
 	}
@@ -210,7 +228,8 @@ public class Column implements Comparable<Column>, Serializable
 	public void setDatabaseSize(int size) {
 		_iDatabaseSize = size ;
 	}
-	public int getDatabaseSize() {
+	@Override
+	public Integer getDatabaseSize() {
 		return _iDatabaseSize ;
 	}
 
@@ -231,11 +250,11 @@ public class Column implements Comparable<Column>, Serializable
 	}
 	
 	//-----------------------------------------------------------------------------
-
-	/**
-	 * Returns the database default value 
-	 * @return
-	 */
+//	/**
+//	 * Returns the database default value 
+//	 * @return
+//	 */
+	@Override
 	public String getDatabaseDefaultValue() { // #LGU 10/08/2011
 		return _sDatabaseDefaultValue;
 	}
@@ -250,10 +269,11 @@ public class Column implements Comparable<Column>, Serializable
 
 	//-----------------------------------------------------------------------------
 
-	/**
-	 * Returns the column comment 
-	 * @return comment
-	 */
+//	/**
+//	 * Returns the column comment 
+//	 * @return comment
+//	 */
+	@Override
 	public String getDatabaseComment() {
 		return _sDatabaseComment;
 	}
@@ -268,7 +288,8 @@ public class Column implements Comparable<Column>, Serializable
 	
 	//-----------------------------------------------------------------------------
 
-	public int getJdbcTypeCode() {
+	@Override
+	public Integer getJdbcTypeCode() {
 		return _iJdbcTypeCode ;
 	}
 
@@ -276,12 +297,12 @@ public class Column implements Comparable<Column>, Serializable
 		_iJdbcTypeCode = typeCode ;
 	}
 
+	@Override
 	public String getJdbcTypeName() {
 		//String text = _jdbcTypes.getTextForCode( getJdbcTypeCode() );
 		String text = JdbcTypesManager.getJdbcTypes().getTextForCode( getJdbcTypeCode() );
 		return text != null ? text : "???" ;
 	}
-
 
 	public String getJdbcTypeCodeWithText() {
 		int code = getJdbcTypeCode();
@@ -298,7 +319,11 @@ public class Column implements Comparable<Column>, Serializable
      * Examples : INTEGER, VARCHAR, NUMBER, CHAR, etc... 
 	 * @return
 	 */
-	public String getDatabaseTypeName() {
+//	public String getDatabaseTypeName() {
+//		return _sDatabaseTypeName;
+//	}
+	@Override
+	public String getDatabaseType() { // ver 3.0.0
 		return _sDatabaseTypeName;
 	}
 	
@@ -317,14 +342,21 @@ public class Column implements Comparable<Column>, Serializable
 
 	//-----------------------------------------------------------------------------
 
-	public String getJavaName() {
-		return _sJavaName;
-	}
+//	public String getJavaName() {
+//		return _sJavaName;
+//	}
+//	public void setJavaName(String s) {
+//		_sJavaName = s ;
+//	}
 
-	public void setJavaName(String s) {
-		_sJavaName = s ;
+	@Override
+	public String getName() { // v 3.0.0
+		return _sName;
 	}
-
+	public void setName(String s) { // v 3.0.0
+		_sName = s ;
+	}
+	
 	//-----------------------------------------------------------------------------
 	
 	/**
@@ -332,11 +364,13 @@ public class Column implements Comparable<Column>, Serializable
 	 * e.g. : "boolean", "java.lang.Boolean", "java.util.Date", etc...
 	 * @return
 	 */
-	public String getJavaType() {
-		String sType = _sJavaType ;
+//	public String getJavaType() {
+	@Override
+	public String getFullType() { // v 3.0.0
 		
+		String sType = _sFullType ;
 		
-		// Backward compatibility with old repository
+		//--- Backward compatibility with old repository
 		
 		JavaTypes javaTypes = JavaTypesManager.getJavaTypes();
 		if ( javaTypes.getTypeIndex(sType) < 0 )
@@ -350,25 +384,46 @@ public class Column implements Comparable<Column>, Serializable
 			return sType ;
 		}
 	}
+	
+//	public void setJavaType(String s) {
+	public void setFullType(String s) { // v 3.0.0
+		_sFullType = s ;
+	}
 
-	public void setJavaType(String s) {
-		_sJavaType = s ;
+	@Override
+	public String getSimpleType() {
+		// TODO Auto-generated method stub
+		// TODO : really useful ?
+		return null;
 	}
 
 	//-----------------------------------------------------------------------------
-	/**
-	 * Returns the Java bean default value if any 
-	 * @return the default value ( "0", "false" ) or null if none
-	 */
-	public String getJavaDefaultValue() {
+//	/**
+//	 * Returns the Java bean default value if any 
+//	 * @return the default value ( "0", "false" ) or null if none
+//	 */
+//	public String getJavaDefaultValue() {
+//		return _sJavaDefaultValue ;
+//	}
+	@Override
+	public String getDefaultValue() { // ver 3.0.0
 		return _sJavaDefaultValue ;
 	}
 	/**
-	 * Set the Java bean default value
-	 * @param s the default value ( "0", "false" )
+	 * Set the default value for the attribute
+	 * @param s the default value ( eg : "0", "false" )
 	 */
-	public void setJavaDefaultValue(String s) {
+//	public void setJavaDefaultValue(String s) {
+//		_sJavaDefaultValue = s ;
+//	}
+	public void setDefaultValue(String s) {
 		_sJavaDefaultValue = s ;
+	}
+
+	//-----------------------------------------------------------------------------
+	@Override
+	public String getInitialValue() { // v 3.0.0
+		return null; // Not yet implemented 
 	}
 
 	//-----------------------------------------------------------------------------
@@ -378,7 +433,8 @@ public class Column implements Comparable<Column>, Serializable
 	 */
 	public boolean isJavaTypeBoolean() 
 	{
-		return JavaTypeUtil.isCategoryBoolean( getJavaType() ) ;
+		//return JavaTypeUtil.isCategoryBoolean( getJavaType() ) ;
+		return JavaTypeUtil.isCategoryBoolean( getFullType() ) ;  // v 3.0.0
 	}
 	
 	/**
@@ -387,7 +443,8 @@ public class Column implements Comparable<Column>, Serializable
 	 */
 	public boolean isJavaTypeString() 
 	{
-		return JavaTypeUtil.isCategoryString( getJavaType() ) ;
+		//return JavaTypeUtil.isCategoryString( getJavaType() ) ;
+		return JavaTypeUtil.isCategoryString( getFullType() ) ; // v 3.0.0
 	}
 
 	/**
@@ -398,7 +455,8 @@ public class Column implements Comparable<Column>, Serializable
 	 */
 	public boolean isJavaTypeNumber() 
 	{
-		return JavaTypeUtil.isCategoryNumber( getJavaType() ) ;
+		//return JavaTypeUtil.isCategoryNumber( getJavaType() ) ;
+		return JavaTypeUtil.isCategoryNumber( getFullType() ) ; // v 3.0.0
 	}
 	
 	/**
@@ -408,7 +466,8 @@ public class Column implements Comparable<Column>, Serializable
 	 */
 	public boolean isJavaTypeDateOrTime() 
 	{
-		return JavaTypeUtil.isCategoryDateOrTime( getJavaType() ) ;
+		//return JavaTypeUtil.isCategoryDateOrTime( getJavaType() ) ;
+		return JavaTypeUtil.isCategoryDateOrTime( getFullType() ) ; // v 3.0.0
 	}
 	
 	/**
@@ -417,19 +476,29 @@ public class Column implements Comparable<Column>, Serializable
 	 */
 	public boolean isJavaPrimitiveType()
 	{
-		return JavaTypeUtil.isPrimitiveType( getJavaType() );
+		//return JavaTypeUtil.isPrimitiveType( getJavaType() );
+		return JavaTypeUtil.isPrimitiveType( getFullType() ); // v 3.0.0
 	}
 
 	//-----------------------------------------------------------------------------
-	public boolean getJavaNotNull() {
-		return _bJavaNotNull;
+//	public boolean getJavaNotNull() {
+//		return _bJavaNotNull;
+//	}
+	@Override
+	public boolean isNotNull() { // v 3.0.0
+		return _bNotNull;
 	}
-	public void setJavaNotNull(boolean v) {
-		_bJavaNotNull = v ;
+//	public void setJavaNotNull(boolean v) {
+	public void setNotNull(boolean v) {  // v 3.0.0
+		_bNotNull = v ;
 	}
 
 	//-----------------------------------------------------------------------------
-	public boolean getNotEmpty() {
+//	public boolean getNotEmpty() {
+//		return _bNotEmpty;
+//	}
+	@Override
+	public boolean isNotEmpty() { // v 3.0.0
 		return _bNotEmpty;
 	}
 	public void setNotEmpty(boolean v) {
@@ -437,25 +506,44 @@ public class Column implements Comparable<Column>, Serializable
 	}
 
 	//-----------------------------------------------------------------------------
-	public boolean getNotBlank() {
+//	public boolean getNotBlank() {
+//		return _bNotBlank;
+//	}
+	@Override
+	public boolean isNotBlank() { // v 3.0.0
 		return _bNotBlank;
 	}
+
 	public void setNotBlank(boolean v) {
 		_bNotBlank = v ;
 	}
 	//-----------------------------------------------------------------------------
-	public String getMinLength() {
-		return _sMinLength;
+//	public String getMinLength() {
+//		return _sMinLength;
+//	}
+//	public void setMinLength(String v) {
+//		_sMinLength = v ;
+//	}
+	@Override
+	public Integer getMinLength() { // ver 3.0.0
+		return _iMinLength;
 	}
-	public void setMinLength(String v) {
-		_sMinLength = v ;
+	public void setMinLength(Integer v) { // ver 3.0.0
+		_iMinLength = v ;
 	}
 	//-----------------------------------------------------------------------------
-	public String getMaxLength() {
-		return _sMaxLength;
+//	public String getMaxLength() {
+//		return _sMaxLength;
+//	}
+//	public void setMaxLength(String v) {
+//		_sMaxLength = v ;
+//	}
+	@Override
+	public Integer getMaxLength() { // ver 3.0.0
+		return _iMaxLength;
 	}
-	public void setMaxLength(String v) {
-		_sMaxLength = v ;
+	public void setMaxLength(Integer v) { // ver 3.0.0
+		_iMaxLength = v ;
 	}
 	//-----------------------------------------------------------------------------
 	public String getPattern() {
@@ -465,9 +553,13 @@ public class Column implements Comparable<Column>, Serializable
 		_sPattern = v ;
 	}
 	//-----------------------------------------------------------------------------
-	public boolean getSelected() {
+//	public boolean getSelected() {
+//		return _bSelected ;
+//	}
+	@Override
+	public boolean isSelected() { // v 3.0.0
 		return _bSelected ;
-	}
+	}	
 	public void setSelected(boolean b) {
 		_bSelected = b ;
 	}
@@ -475,6 +567,7 @@ public class Column implements Comparable<Column>, Serializable
 	//-----------------------------------------------------------------------------
 	// Special infos
 	//-----------------------------------------------------------------------------
+	@Override
 	public String getLabel() {  // V 2.0.3
 		return _sLabel ;
 	}
@@ -483,6 +576,7 @@ public class Column implements Comparable<Column>, Serializable
 	}
 	
 	//-----------------------------------------------------------------------------
+	@Override
 	public String getInputType() { // V 2.0.3
 		return _sInputType ;
 	}
@@ -491,9 +585,13 @@ public class Column implements Comparable<Column>, Serializable
 	}
 	
 	//-----------------------------------------------------------------------------
-	public boolean getLongText() {
+//	public boolean getLongText() {
+//		return _bLongText ;
+//	}
+	@Override
+	public boolean isLongText() { // v 3.0.0
 		return _bLongText ;
-	}
+	}	
 	public void setLongText(String flag) {
 		setLongText( "true".equalsIgnoreCase(flag) ) ;
 	}
@@ -502,26 +600,37 @@ public class Column implements Comparable<Column>, Serializable
 	}
 
 	//-----------------------------------------------------------------------------
-	/**
-	 * Returns the special date type : "D", "T", "DT" or "" if none
-	 * @return
-	 */
-	public String getDateType() {
-		return ( _sDateType != null ? _sDateType : "" ); 
+//	/**
+//	 * Returns the special date type : "D", "T", "DT" or "" if none
+//	 * @return
+//	 */
+//	public String getDateType() {
+//		return ( _sDateType != null ? _sDateType : "" ); 
+//	}
+	@Override
+	public DateType getDateType() {
+		return dateType ; 
 	}
 
 	/**
 	 * Set the special date type
 	 * @param v : "D", "T", "DT" or null if none
 	 */
-	public void setDateType(String v) {
-		if ( SPECIAL_DATE_ONLY.equals(v) || SPECIAL_TIME_ONLY.equals(v) 
-				|| SPECIAL_DATE_AND_TIME.equals(v) || null == v )
-		{
-			_sDateType = v ;
-		}
+//	public void setDateType(String v) {
+//		if ( SPECIAL_DATE_ONLY.equals(v) || SPECIAL_TIME_ONLY.equals(v) 
+//				|| SPECIAL_DATE_AND_TIME.equals(v) || null == v )
+//		{
+//			_sDateType = v ;
+//		}
+//	}
+	/**
+	 * Set the date type : DATE ONLY, TIME ONLY, DATE AND TIME
+	 * @param v
+	 */
+	public void setDateType(DateType v) {
+		dateType = v ;
 	}
-
+	
 	public boolean isDatePast() {
 		return _bDatePast;
 	}
@@ -596,18 +705,30 @@ public class Column implements Comparable<Column>, Serializable
 	
 	//-----------------------------------------------------------------------------
 
-	public String getMinValue() {
-		return _sMinValue ; 
+//	public String getMinValue() {
+//		return _sMinValue ; 
+//	}
+	public Integer getMinValue() { // ver 3.0.0
+		return _iMinValue ; 
 	}
-	public void setMinValue(String v) {
-		_sMinValue = v ;
+//	public void setMinValue(String v) {
+//		_sMinValue = v ;
+//	}
+	public void setMinValue(Integer v) { // ver 3.0.0
+		_iMinValue = v ;
 	}
 	
-	public String getMaxValue() {
-		return _sMaxValue ; 
+//	public String getMaxValue() {
+//		return _sMaxValue ; 
+//	}
+	public Integer getMaxValue() { // ver 3.0.0
+		return _iMaxValue ; 
 	}
-	public void setMaxValue(String v) {
-		_sMaxValue = v ;
+//	public void setMaxValue(String v) {
+//		_sMaxValue = v ;
+//	}
+	public void setMaxValue(Integer v) { // ver 3.0.0
+		_iMaxValue = v ;
 	}
 	
 	//-----------------------------------------------------------------------------
@@ -637,12 +758,17 @@ public class Column implements Comparable<Column>, Serializable
 		
 		StringBuffer sb = new StringBuffer();
 		if ( this.isJavaTypeString() ) {
-			if ( getLongText() ) addStr(sb, "Long Text") ;
-			if ( getNotEmpty() ) addStr(sb, "NE") ;
-			if ( getNotBlank() ) addStr(sb, "NB") ;
-			if ( ( ! StrUtil.nullOrVoid( getMinLength() ) ) || ( ! StrUtil.nullOrVoid( getMaxLength() ) ) )
+			//if ( getLongText() ) addStr(sb, "Long Text") ;
+			if ( isLongText() ) addStr(sb, "Long Text") ; // v 3.0.0
+			//if ( getNotEmpty() ) addStr(sb, "NE") ;
+			if ( isNotEmpty() ) addStr(sb, "NE") ; // v 3.0.0
+			//if ( getNotBlank() ) addStr(sb, "NB") ;
+			if ( isNotBlank() ) addStr(sb, "NB") ; // v 3.0.0
+			//if ( ( ! StrUtil.nullOrVoid( getMinLength() ) ) || ( ! StrUtil.nullOrVoid( getMaxLength() ) ) )
+			if ( ( getMinLength() != null ) || ( getMaxLength() != null ) )
 			{
-				addStr( sb, "[" + str(getMinLength()) + ";" + str(getMaxLength()) + "]" );
+				//addStr( sb, "[" + str(getMinLength()) + ";" + str(getMaxLength()) + "]" );
+				addStr( sb, "[" + getMinLength() + ";" + getMaxLength() + "]" );
 			}
 			if ( ! StrUtil.nullOrVoid( getPattern() ) ) addStr(sb, "P" ) ;
 		}
@@ -652,20 +778,27 @@ public class Column implements Comparable<Column>, Serializable
 			}
 		}
 		else if ( this.isJavaTypeNumber() ) {
-			if ( ! StrUtil.nullOrVoid( getJavaDefaultValue() ) )
+			if ( ! StrUtil.nullOrVoid( getDefaultValue() ) )
 			{
-				addStr( sb, getJavaDefaultValue() );
+				addStr( sb, getDefaultValue() );
 			}
-			if ( ( ! StrUtil.nullOrVoid( getMinValue() ) ) || ( ! StrUtil.nullOrVoid( getMaxValue() ) ) )
+			//if ( ( ! StrUtil.nullOrVoid( getMinValue() ) ) || ( ! StrUtil.nullOrVoid( getMaxValue() ) ) )
+			if ( ( getMinValue() != null ) || ( getMaxValue() != null ) )
 			{
-				addStr( sb, "[" + str(getMinValue()) + ";" + str(getMaxValue()) + "]" );
+				//addStr( sb, "[" + str(getMinValue()) + ";" + str(getMaxValue()) + "]" );
+				addStr( sb, "[" + getMinValue() + ";" + getMaxValue() + "]" );
 			}
 		}
 		else if ( this.isJavaTypeDateOrTime() ) {
-			String sDateType = getDateType() ;
-			if ( SPECIAL_DATE_ONLY.equals(sDateType) )     addStr( sb, "Date only" );
-			if ( SPECIAL_TIME_ONLY.equals(sDateType) )     addStr( sb, "Time only" );
-			if ( SPECIAL_DATE_AND_TIME.equals(sDateType) ) addStr( sb, "Date & Time" );
+			//String sDateType = getDateType() ;
+			//if ( SPECIAL_DATE_ONLY.equals(sDateType) )     addStr( sb, "Date only" );
+			//if ( SPECIAL_TIME_ONLY.equals(sDateType) )     addStr( sb, "Time only" );
+			//if ( SPECIAL_DATE_AND_TIME.equals(sDateType) ) addStr( sb, "Date & Time" );
+			DateType dateType = getDateType();
+			if ( dateType == DateType.DATE_ONLY )     addStr( sb, "Date only" );
+			if ( dateType == DateType.TIME_ONLY )     addStr( sb, "Time only" );
+			if ( dateType == DateType.DATE_AND_TIME ) addStr( sb, "Date & Time" );
+			
 			if ( isDatePast() ) addStr( sb, "P" ); 
 			if ( isDateFuture() ) addStr( sb, "F" ); 
 			if ( isDateBefore() ) addStr( sb, "B" ); 
@@ -673,10 +806,10 @@ public class Column implements Comparable<Column>, Serializable
 		}
 		return sb.toString();
 	}
-	private String str(String s)
-	{
-		return s != null ? s : "" ;
-	}
+//	private String str(String s)
+//	{
+//		return s != null ? s : "" ;
+//	}
 	private void addStr(StringBuffer sb, String s)
 	{
 		if ( sb.length() > 0 ) sb.append(",");
@@ -688,7 +821,8 @@ public class Column implements Comparable<Column>, Serializable
 	 */
 	public void clearSpecialTypeInfo() 
 	{
-		setJavaNotNull(false);
+		//setJavaNotNull(false);
+		setNotNull(false); // v 3.0.0
 		//--- Boolean category 
 		setBooleanTrueValue(null);
 		setBooleanFalseValue(null);
@@ -713,7 +847,7 @@ public class Column implements Comparable<Column>, Serializable
 	}
 	
 	//public int compareTo(Object o) {
-	public int compareTo(Column other) {
+	public int compareTo(AttributeInDbModel other) {
 		if ( other != null )
 		{
 			//Column other = (Column) o;
@@ -730,11 +864,142 @@ public class Column implements Comparable<Column>, Serializable
 	public String toString() 
 	{
 		return 
-		  getDatabaseName() + "|" 
-			+ ( isPrimaryKey() ? "PK" : "" ) + "|" 
+			getName() + "|" // added in v 3.0.0
+			+ "table:" + getDatabaseName() + "|" 
+			//+ ( isPrimaryKey() ? "PK" : "" ) + "|" 
+			+ ( isKeyElement() ? "PK" : "" ) + "|" // v 3.0.0
 			// + getDatabaseType() + "|" 
 			+ getJdbcTypeCode() + "|" 
-			+ getJavaName() + "|" 
-			+ getJavaType() ;
+			//+ getJavaName() + "|" 
+			//+ getName() + "|" // v 3.0.0 
+			// + getJavaType() ;
+			+ getFullType() ; // v 3.0.0
 	}
+
+	//---------------------------------------------------------------------------------------------------
+	// Methods added in ver 3.0.0 in order to be compliant with the "generic model"
+	//---------------------------------------------------------------------------------------------------
+	@Override
+	public boolean isGeneratedValue() {
+        if ( this.isAutoIncremented() ) {
+        	return true ; 
+        } 
+        else if (this.getGeneratedValue() != null) {
+        	return true ; 
+        }
+    	return false ; 
+	}
+
+	@Override
+	public String getGeneratedValueGenerator() {
+        if ( this.isAutoIncremented() ) {
+        	return null ;
+        } 
+        else {
+			if (this.getGeneratedValue() != null) {
+				return this.getGeneratedValue().getGenerator();
+			}
+			else {
+	        	return null ;
+			}
+        }
+	}
+
+	@Override
+	public String getGeneratedValueStrategy() {
+		// e.g : 'auto', 'identity', 'sequence', 'table' 
+        if ( this.isAutoIncremented() ) {
+        	return null ; // "AUTO" is the default strategy
+        } 
+        else {
+			if (this.getGeneratedValue() != null) {
+				return this.getGeneratedValue().getStrategy();
+			}
+			else {
+	        	return null ;
+			}
+        }
+	}
+
+	//---------------------------------------------------------------------------------------------------
+	// Sequence generator information
+	//---------------------------------------------------------------------------------------------------
+	@Override
+	public boolean hasSequenceGenerator() {
+		return this.sequenceGenerator != null ;
+	}
+
+	@Override
+	public Integer getSequenceGeneratorAllocationSize() {
+		if (this.sequenceGenerator != null) {
+			return this.sequenceGenerator.getAllocationSize() ;
+		}
+		return null;
+	}
+
+	@Override
+	public String getSequenceGeneratorName() {
+		if (this.sequenceGenerator != null) {
+			return this.sequenceGenerator.getName() ;
+		}
+		return null;
+	}
+
+	@Override
+	public String getSequenceGeneratorSequenceName() {
+		if (this.sequenceGenerator != null) {
+			return this.sequenceGenerator.getSequenceName() ;
+		}
+		return null;
+	}
+
+	//---------------------------------------------------------------------------------------------------
+	// Table generator information
+	//---------------------------------------------------------------------------------------------------
+	@Override
+	public boolean hasTableGenerator() {
+		return this.tableGenerator != null ;
+	}
+
+	@Override
+	public String getTableGeneratorName() {
+		if ( this.tableGenerator != null ) {
+			return this.tableGenerator.getName() ;
+		}
+		return null;
+	}
+
+	@Override
+	public String getTableGeneratorPkColumnName() {
+		if ( this.tableGenerator != null ) {
+			return this.tableGenerator.getPkColumnName() ;
+		}
+		return null;
+	}
+
+	@Override
+	public String getTableGeneratorPkColumnValue() {
+		if ( this.tableGenerator != null ) {
+			return this.tableGenerator.getPkColumnValue() ;
+		}
+		return null;
+	}
+
+	@Override
+	public String getTableGeneratorTable() {
+		if ( this.tableGenerator != null ) {
+			return this.tableGenerator.getTable() ;
+		}
+		return null;
+	}
+
+	@Override
+	public String getTableGeneratorValueColumnName() {
+		if ( this.tableGenerator != null ) {
+			return this.tableGenerator.getValueColumnName() ;
+		}
+		return null;
+	}
+
+	//---------------------------------------------------------------------------------------------------
 }

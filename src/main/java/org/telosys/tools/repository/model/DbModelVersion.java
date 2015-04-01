@@ -15,7 +15,7 @@
  */
 package org.telosys.tools.repository.model;
 
-public class ModelVersion {
+public class DbModelVersion {
 
 	public final static String VERSION = "2.0" ;
 }

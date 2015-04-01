@@ -18,8 +18,8 @@ package org.telosys.tools.repository.persistence.commande;
 import java.util.Iterator;
 import java.util.List;
 
-import org.telosys.tools.repository.model.ForeignKey;
-import org.telosys.tools.repository.model.ForeignKeyColumn;
+import org.telosys.tools.repository.model.ForeignKeyInDbModel;
+import org.telosys.tools.repository.model.ForeignKeyColumnInDbModel;
 import org.telosys.tools.repository.persistence.util.CommandException;
 import org.telosys.tools.repository.persistence.util.ProcessContext;
 import org.telosys.tools.repository.persistence.util.RepositoryConst;
@@ -31,7 +31,7 @@ public class CommandElementForeignKey extends AbstractCommand implements IComman
 		final Element elem = processContext.getElement();
 
 		// Transform element
-		final ForeignKey foreignKey = RepositoryConst.FOREIGNKEY_WRAPPER.getForeignKey(elem);
+		final ForeignKeyInDbModel foreignKey = RepositoryConst.FOREIGNKEY_WRAPPER.getForeignKey(elem);
 		
 		// Chain process
 		final ProcessContext processContextNext = genericChildProcess(iCommandManager, elem);
@@ -40,8 +40,8 @@ public class CommandElementForeignKey extends AbstractCommand implements IComman
 		List<?> objs = processContextNext.getList();
 		for (Iterator<?> iterator = objs.iterator(); iterator.hasNext();) {
 			Object obj = iterator.next();
-			if (obj instanceof ForeignKeyColumn) {
-				foreignKey.storeForeignKeyColumn((ForeignKeyColumn) obj);
+			if (obj instanceof ForeignKeyColumnInDbModel) {
+				foreignKey.storeForeignKeyColumn((ForeignKeyColumnInDbModel) obj);
 			} else {
 				throw new CommandException("Unsupported child on ForeignKey : " + obj.getClass());
 			}

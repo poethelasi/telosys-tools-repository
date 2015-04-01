@@ -15,7 +15,7 @@
  */
 package org.telosys.tools.repository.persistence.commande;
 
-import org.telosys.tools.repository.model.JoinColumn;
+import org.telosys.tools.repository.model.JoinColumnInDbModel;
 import org.telosys.tools.repository.persistence.util.CommandException;
 import org.telosys.tools.repository.persistence.util.ProcessContext;
 import org.telosys.tools.repository.persistence.util.RepositoryConst;
@@ -27,7 +27,7 @@ public class CommandElementJoinColumn extends AbstractCommand implements IComman
 		final Element elem = processContext.getElement();
 
 		// Transform element
-		final JoinColumn joinColumn = RepositoryConst.JOIN_COLUMN_WRAPPER.getJoinColumn(elem);
+		final JoinColumnInDbModel joinColumn = RepositoryConst.JOIN_COLUMN_WRAPPER.getJoinColumn(elem);
 		
 		// Return result
 		final ProcessContext context = new ProcessContext(joinColumn);

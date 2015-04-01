@@ -19,20 +19,21 @@ public class RepoModelTest {
 	public void print(RepositoryModel model) {
 		System.out.println("MODEL : " );
 		System.out.println("Database : " + model.getDatabaseId() + " " + model.getDatabaseName() );
-		for ( Entity entity : model.getEntities() ) {
+		for ( EntityInDbModel entity : model.getEntitiesArray() ) {
 			System.out.println(" . entity : " + entity );
 		}
 	}
 	
-	public void print(Entity entity) {
+	public void print(EntityInDbModel entity) {
 		System.out.println("ENTITY : " );
-		for ( Column column : entity.getColumns() ) {
+		for ( AttributeInDbModel column : entity.getAttributesArray() ) {
 			System.out.println(" . column : " + column );
 		}
-		for ( ForeignKey  fk : entity.getForeignKeys() ) {
+		for ( ForeignKeyInDbModel  fk : entity.getForeignKeys() ) {
 			System.out.println(" . foreign key : " + fk );
 		}
-		for ( Link  link : entity.getLinks()) {
+//		for ( LinkInDbModel  link : entity.getLinks()) {
+		for ( LinkInDbModel  link : entity.getLinksArray()) {
 			System.out.println(" . link : " + link );
 		}
 	}
@@ -46,13 +47,16 @@ public class RepoModelTest {
 		RepositoryModel model = pm.load();
 		print(model);
 		String entityName = "BOOK";
-		Entity entity = model.getEntityByName(entityName);
+		EntityInDbModel entity = model.getEntityByTableName(entityName);
 		Assert.assertNotNull(entity);
 		print(entity);
 		
-		int nbLinks = entity.getLinks().length ;
-		System.out.println(nbLinks + " link(s) in entity " + entity.getName());
-		int n = model.removeLinksByEntityName(entity.getName());
+//		int nbLinks = entity.getLinks().length ;
+		int nbLinks = entity.getLinksArray().length ;
+//		System.out.println(nbLinks + " link(s) in entity " + entity.getName());
+		System.out.println(nbLinks + " link(s) in entity " + entity.getDatabaseTable() );
+//		int n = model.removeLinksByEntityName(entity.getName());
+		int n = model.removeLinksByEntityName(entity.getDatabaseTable());
 		System.out.println(n + " link(s) removed");
 		Assert.assertTrue(n == nbLinks * 2 );
 	}

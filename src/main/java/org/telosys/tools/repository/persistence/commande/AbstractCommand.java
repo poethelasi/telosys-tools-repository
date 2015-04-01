@@ -59,6 +59,14 @@ public abstract class AbstractCommand {
 		}
 	}
 
+	/**
+	 * Process the child nodes of the given element <br>
+	 * Returns the result in a ProcessContext instance
+	 * @param iCommandManager
+	 * @param elem
+	 * @return
+	 * @throws CommandException
+	 */
 	protected ProcessContext genericChildProcess(final ICommandManager iCommandManager, final Element elem) throws CommandException {
 		NodeList nodeList = elem.getChildNodes();
 		final ProcessContext processContextChild = new ProcessContext(nodeList);

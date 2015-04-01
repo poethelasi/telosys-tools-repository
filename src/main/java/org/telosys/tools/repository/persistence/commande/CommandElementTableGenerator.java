@@ -15,7 +15,7 @@
  */
 package org.telosys.tools.repository.persistence.commande;
 
-import org.telosys.tools.repository.model.TableGenerator;
+import org.telosys.tools.repository.model.TableGeneratorInDbModel;
 import org.telosys.tools.repository.persistence.util.CommandException;
 import org.telosys.tools.repository.persistence.util.ProcessContext;
 import org.telosys.tools.repository.persistence.util.RepositoryConst;
@@ -27,7 +27,7 @@ public class CommandElementTableGenerator extends AbstractCommand implements ICo
 		final Element elem = processContext.getElement();
 
 		// Transform element
-		final TableGenerator tg = RepositoryConst.TABLE_GENERATOR_WRAPPER.getTableGenerator(elem);
+		final TableGeneratorInDbModel tg = RepositoryConst.TABLE_GENERATOR_WRAPPER.getTableGenerator(elem);
 				
 		// Return result
 		final ProcessContext context = new ProcessContext(tg);

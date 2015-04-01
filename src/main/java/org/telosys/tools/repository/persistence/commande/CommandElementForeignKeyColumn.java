@@ -15,7 +15,7 @@
  */
 package org.telosys.tools.repository.persistence.commande;
 
-import org.telosys.tools.repository.model.ForeignKeyColumn;
+import org.telosys.tools.repository.model.ForeignKeyColumnInDbModel;
 import org.telosys.tools.repository.persistence.util.CommandException;
 import org.telosys.tools.repository.persistence.util.ProcessContext;
 import org.telosys.tools.repository.persistence.util.RepositoryConst;
@@ -27,7 +27,7 @@ public class CommandElementForeignKeyColumn extends AbstractCommand implements I
 		final Element elem = processContext.getElement();
 
 		// Transform element
-		final ForeignKeyColumn foreignKeyColumn = RepositoryConst.FOREIGNKEY_COLUMN_WRAPPER.getForeignKeyColumn(elem);
+		final ForeignKeyColumnInDbModel foreignKeyColumn = RepositoryConst.FOREIGNKEY_COLUMN_WRAPPER.getForeignKeyColumn(elem);
 		
 		// Return result
 		final ProcessContext context = new ProcessContext(foreignKeyColumn);

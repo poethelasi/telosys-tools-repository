@@ -15,7 +15,6 @@
  */
 package org.telosys.tools.repository.persistence.wrapper;
 
-import org.telosys.tools.repository.model.JoinColumns;
 import org.telosys.tools.repository.persistence.util.RepositoryConst;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -41,12 +40,13 @@ public class JoinColumnsWrapper {
 //		return table;
 //	}
 	
-	public JoinColumns getJoinColumns( Element element) {
-		final JoinColumns joinColumns = new JoinColumns();
-		return joinColumns;
-	}
+//	public JoinColumnsInDbModel getJoinColumns( Element element) {
+//		final JoinColumnsInDbModel joinColumns = new JoinColumnsInDbModel();
+//		return joinColumns;
+//	}
 
-	public Element getXmlDesc(JoinColumns object, Document doc) {
+//	public Element getXmlDesc(JoinColumnsInDbModel object, Document doc) {
+	public Element getXmlDesc(Document doc) { // v 3.0.0
 		final Element element = doc.createElement(RepositoryConst.JOIN_COLUMNS_ELEMENT );
 		return element;
 	}

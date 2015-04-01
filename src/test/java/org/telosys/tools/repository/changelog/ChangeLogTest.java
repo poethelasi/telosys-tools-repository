@@ -9,9 +9,9 @@ import java.util.List;
 
 import org.junit.Test;
 import org.telosys.tools.commons.TelosysToolsException;
-import org.telosys.tools.repository.model.Column;
-import org.telosys.tools.repository.model.Entity;
-import org.telosys.tools.repository.model.ForeignKey;
+import org.telosys.tools.repository.model.AttributeInDbModel;
+import org.telosys.tools.repository.model.EntityInDbModel;
+import org.telosys.tools.repository.model.ForeignKeyInDbModel;
 
 public class ChangeLogTest {
 	
@@ -35,8 +35,8 @@ public class ChangeLogTest {
 		
 		
 		System.out.println("test entity updated");
-		Entity entityUpdatedBefore = new Entity("FOO");
-		Entity entityUpdatedAfter  = new Entity("FOO");
+		EntityInDbModel entityUpdatedBefore = new EntityInDbModel("FOO");
+		EntityInDbModel entityUpdatedAfter  = new EntityInDbModel("FOO");
 		ChangeOnEntity change = new ChangeOnEntity(ChangeType.UPDATED, entityUpdatedBefore, entityUpdatedAfter);
 		assertTrue( change.getEntityBefore() == entityUpdatedBefore );
 		assertTrue( change.getEntityAfter()  == entityUpdatedAfter );
@@ -53,7 +53,7 @@ public class ChangeLogTest {
 		System.out.println("testCreated");
 		ChangeLog changeLog = new ChangeLog();
 
-		Entity entityCreated = new Entity();
+		EntityInDbModel entityCreated = new EntityInDbModel();
 		
 		try {
 			new ChangeOnEntity(ChangeType.CREATED, entityCreated, entityCreated); // IMPOSSIBLE
@@ -86,14 +86,14 @@ public class ChangeLogTest {
 		System.out.println("testUpdated");
 		ChangeLog changeLog = new ChangeLog();
 
-		Entity entityUpdatedBefore = new Entity();
-		Entity entityUpdatedAfter  = new Entity();
+		EntityInDbModel entityUpdatedBefore = new EntityInDbModel();
+		EntityInDbModel entityUpdatedAfter  = new EntityInDbModel();
 		ChangeOnEntity changeOnEntity = new ChangeOnEntity(ChangeType.UPDATED, entityUpdatedBefore, entityUpdatedAfter);
 		assertTrue( changeOnEntity.getEntityBefore() == entityUpdatedBefore );
 		assertTrue( changeOnEntity.getEntityAfter()  == entityUpdatedAfter );
 		
-		Column columnBefore = new Column();
-		Column columnAfter  = new Column();
+		AttributeInDbModel columnBefore = new AttributeInDbModel();
+		AttributeInDbModel columnAfter  = new AttributeInDbModel();
 		changeOnEntity.addChangeOnColumn( new ChangeOnColumn(ChangeType.UPDATED, columnBefore, columnAfter ) );
 		changeLog.log(changeOnEntity);
 		assertNotNull( changeLog.getChangesByType(ChangeType.UPDATED).size() == 1 );
@@ -110,8 +110,8 @@ public class ChangeLogTest {
 		
 		System.out.println("testUpdatedWithFK");
 
-		Entity entityUpdatedBefore = new Entity();
-		Entity entityUpdatedAfter  = new Entity();
+		EntityInDbModel entityUpdatedBefore = new EntityInDbModel();
+		EntityInDbModel entityUpdatedAfter  = new EntityInDbModel();
 		ChangeOnEntity changeOnEntity = new ChangeOnEntity(ChangeType.UPDATED, entityUpdatedBefore, entityUpdatedAfter);
 		assertTrue( changeOnEntity.getEntityBefore() == entityUpdatedBefore );
 		assertTrue( changeOnEntity.getEntityAfter()  == entityUpdatedAfter );
@@ -124,7 +124,7 @@ public class ChangeLogTest {
 //		assertNotNull( changeLog.getChangesByType(ChangeType.UPDATED).size() == 1 );
 		
 		//--- Foreign Key created
-		ForeignKey fk = new ForeignKey();
+		ForeignKeyInDbModel fk = new ForeignKeyInDbModel();
 		ChangeOnForeignKey changeOnForeignKey = new ChangeOnForeignKey(ChangeType.CREATED, null, fk);
 		changeOnEntity.addChangeOnForeignKey(changeOnForeignKey);
 		assertEquals(1, changeOnEntity.getNumberOfChanges() );
@@ -147,7 +147,7 @@ public class ChangeLogTest {
 		System.out.println("testDeleted");
 		ChangeLog changeLog = new ChangeLog();
 
-		Entity entityDeleted = new Entity();
+		EntityInDbModel entityDeleted = new EntityInDbModel();
 		try {
 			new ChangeOnEntity(ChangeType.DELETED, entityDeleted, entityDeleted); // IMPOSSIBLE
 			fail("Exception expected");

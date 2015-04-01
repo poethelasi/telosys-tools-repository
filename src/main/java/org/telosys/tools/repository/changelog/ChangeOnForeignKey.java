@@ -15,14 +15,14 @@
  */
 package org.telosys.tools.repository.changelog;
 
-import org.telosys.tools.repository.model.ForeignKey;
+import org.telosys.tools.repository.model.ForeignKeyInDbModel;
 
 public class ChangeOnForeignKey {
 	
 	private final String     fkName ;
 	private final ChangeType changeType ;
-	private final ForeignKey foreignKeyBefore ;
-	private final ForeignKey foreignKeyAfter ;
+	private final ForeignKeyInDbModel foreignKeyBefore ;
+	private final ForeignKeyInDbModel foreignKeyAfter ;
 	
 	private void check(boolean expression, String errorMessage ) {
 		if ( expression != true ) throw new RuntimeException(errorMessage);
@@ -34,7 +34,7 @@ public class ChangeOnForeignKey {
 	 * @param foreignKeyBefore the 'before state' of the changed FK (for UPDATED and DELETED)
 	 * @param foreignKeyAfter  the 'after state' of the changed FK (for UPDATED and CREATED)
 	 */
-	public ChangeOnForeignKey(ChangeType changeType, ForeignKey foreignKeyBefore, ForeignKey foreignKeyAfter) {
+	public ChangeOnForeignKey(ChangeType changeType, ForeignKeyInDbModel foreignKeyBefore, ForeignKeyInDbModel foreignKeyAfter) {
 		super();
 		this.changeType   = changeType ;
 		this.foreignKeyBefore = foreignKeyBefore;
@@ -82,7 +82,7 @@ public class ChangeOnForeignKey {
 	 * Returns the 'before state' of the changed FK 
 	 * @return
 	 */
-	public ForeignKey getForeignKeyBefore() {
+	public ForeignKeyInDbModel getForeignKeyBefore() {
 		return this.foreignKeyBefore;
 	}
 
@@ -90,7 +90,7 @@ public class ChangeOnForeignKey {
 	 * Returns the 'after state' of the changed FK 
 	 * @return
 	 */
-	public ForeignKey getForeignKeyAfter() {
+	public ForeignKeyInDbModel getForeignKeyAfter() {
 		return this.foreignKeyAfter;
 	}
 	
@@ -98,7 +98,7 @@ public class ChangeOnForeignKey {
 	 * Returns the 'CREATED' FK ( the 'FK after change' )
 	 * @return
 	 */
-	public ForeignKey getForeignKeyCreated() {
+	public ForeignKeyInDbModel getForeignKeyCreated() {
 		check ( this.changeType == ChangeType.CREATED , "Not a CREATED Foreign Key" ) ;
 		return this.foreignKeyAfter;
 	}
@@ -107,7 +107,7 @@ public class ChangeOnForeignKey {
 	 * Returns the 'DELETED' FK ( the 'FK before change' )
 	 * @return
 	 */
-	public ForeignKey getForeignKeyDeleted() {
+	public ForeignKeyInDbModel getForeignKeyDeleted() {
 		check ( this.changeType == ChangeType.DELETED , "Not a DELETED Foreign Key" ) ;
 		return this.foreignKeyBefore;
 	}

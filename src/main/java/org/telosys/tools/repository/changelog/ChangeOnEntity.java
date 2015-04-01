@@ -19,7 +19,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.telosys.tools.commons.StrUtil;
-import org.telosys.tools.repository.model.Entity;
+import org.telosys.tools.repository.model.EntityInDbModel;
 
 /**
  * Changes summary for one Entity
@@ -31,8 +31,8 @@ public class ChangeOnEntity {
 	
 	private final String      entityName ;
 	private final ChangeType  changeType ;
-	private final Entity      entityBefore ;
-	private final Entity      entityAfter ;
+	private final EntityInDbModel      entityBefore ;
+	private final EntityInDbModel      entityAfter ;
 
 	private final List<ChangeOnColumn>     changesOnColumns     = new LinkedList<ChangeOnColumn>();
 	private final List<ChangeOnForeignKey> changesOnForeignKeys = new LinkedList<ChangeOnForeignKey>();
@@ -49,7 +49,7 @@ public class ChangeOnEntity {
 	 * @param entityBefore the 'before state' of the changed entity (for UPDATED and DELETED)
 	 * @param entityAfter  the 'after state' of the changed entity (for UPDATED and CREATED)
 	 */
-	public ChangeOnEntity(ChangeType changeType, Entity entityBefore, Entity entityAfter) {
+	public ChangeOnEntity(ChangeType changeType, EntityInDbModel entityBefore, EntityInDbModel entityAfter) {
 		super();
 		this.changeType   = changeType ;
 		this.entityBefore = entityBefore;
@@ -57,19 +57,23 @@ public class ChangeOnEntity {
 		if ( changeType == ChangeType.CREATED ) {
 			check ( entityBefore == null , "Entity CREATED must not have a 'before state'" ) ;
 			check ( entityAfter  != null , "Entity CREATED must have an 'after state'" ) ;
-			this.entityName = entityAfter.getName();
+//			this.entityName = entityAfter.getName();
+			this.entityName = entityAfter.getDatabaseTable();
 		}
 		else if ( changeType == ChangeType.DELETED ) {
 			check ( entityBefore != null , "Entity DELETED must have a 'before state'" ) ;
 			check ( entityAfter  == null , "Entity DELETED must not have an 'after state'" ) ;
-			this.entityName = entityBefore.getName();
+//			this.entityName = entityBefore.getName();
+			this.entityName = entityBefore.getDatabaseTable();
 		}
 		else if ( changeType == ChangeType.UPDATED ) {
 			check ( entityBefore != null , "Entity UPDATED must have a 'before state'" ) ;
 			check ( entityAfter  != null , "Entity UPDATED must have an 'after state'" ) ;
 			//check ( entityBefore.getName().equals(entityAfter.getName()), "Entity name is different between 'after' and 'before'");
-			check ( StrUtil.identical(entityBefore.getName(), entityAfter.getName() ), "Entity name is different between 'after' and 'before'");
-			this.entityName = entityAfter.getName();
+//			check ( StrUtil.identical(entityBefore.getName(), entityAfter.getName() ), "Entity name is different between 'after' and 'before'");
+//			this.entityName = entityAfter.getName();
+			check ( StrUtil.identical(entityBefore.getDatabaseTable(), entityAfter.getDatabaseTable() ), "Entity name is different between 'after' and 'before'");
+			this.entityName = entityAfter.getDatabaseTable();
 		}
 		else {
 			throw new RuntimeException("Invalid change type");
@@ -97,7 +101,7 @@ public class ChangeOnEntity {
 	 * Returns the 'before state' of the changed entity 
 	 * @return
 	 */
-	public Entity getEntityBefore() {
+	public EntityInDbModel getEntityBefore() {
 		return this.entityBefore;
 	}
 
@@ -105,7 +109,7 @@ public class ChangeOnEntity {
 	 * Returns the 'after state' of the changed entity 
 	 * @return
 	 */
-	public Entity getEntityAfter() {
+	public EntityInDbModel getEntityAfter() {
 		return this.entityAfter;
 	}
 	
@@ -113,7 +117,7 @@ public class ChangeOnEntity {
 	 * Returns the 'CREATED' entity ( the 'entity after change' )
 	 * @return
 	 */
-	public Entity getEntityCreated() {
+	public EntityInDbModel getEntityCreated() {
 		check ( this.changeType == ChangeType.CREATED , "Not a CREATED entity" ) ;
 		return this.entityAfter;
 	}
@@ -121,7 +125,7 @@ public class ChangeOnEntity {
 	 * Returns the 'DELETED' entity ( the 'entity before change' )
 	 * @return
 	 */
-	public Entity getEntityDeleted() {
+	public EntityInDbModel getEntityDeleted() {
 		check ( this.changeType == ChangeType.DELETED , "Not a DELETED entity" ) ;
 		return this.entityBefore;
 	}

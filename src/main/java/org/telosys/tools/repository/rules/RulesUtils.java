@@ -17,9 +17,9 @@ package org.telosys.tools.repository.rules;
 
 import java.util.StringTokenizer;
 
-import org.telosys.tools.repository.model.Column;
-import org.telosys.tools.repository.model.Entity;
-import org.telosys.tools.repository.model.Link;
+import org.telosys.tools.repository.model.AttributeInDbModel;
+import org.telosys.tools.repository.model.EntityInDbModel;
+import org.telosys.tools.repository.model.LinkInDbModel;
 
 public class RulesUtils {
 	
@@ -118,18 +118,21 @@ public class RulesUtils {
         }
     }
 
-    public boolean attributeNameAlreadyUsed(String attributeName, Entity entity ) {
+    public boolean attributeNameAlreadyUsed(String attributeName, EntityInDbModel entity ) {
     	//--- Search in all columns/attributes
-    	Column[] columns = entity.getColumns();
-    	for ( Column column : columns ) {
-    		if ( column.getJavaName().equals(attributeName) ) {
+    	AttributeInDbModel[] columns = entity.getAttributesArray();
+    	for ( AttributeInDbModel column : columns ) {
+    		//if ( column.getJavaName().equals(attributeName) ) {
+        	if ( column.getName().equals(attributeName) ) { // v 3.0.0
     			return true ;
     		}
     	}
     	//--- Search in all links
-    	Link[] links = entity.getLinks();
-    	for ( Link link : links ) {
-    		if ( link.getJavaFieldName().equals(attributeName) ) {
+//    	LinkInDbModel[] links = entity.getLinks();
+    	LinkInDbModel[] links = entity.getLinksArray();
+    	for ( LinkInDbModel link : links ) {
+//    		if ( link.getJavaFieldName().equals(attributeName) ) {
+        	if ( link.getFieldName().equals(attributeName) ) {
     			return true ;
     		}
     	}

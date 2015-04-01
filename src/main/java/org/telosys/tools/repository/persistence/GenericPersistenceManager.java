@@ -17,20 +17,19 @@ package org.telosys.tools.repository.persistence;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import org.telosys.tools.commons.TelosysToolsException;
 import org.telosys.tools.commons.TelosysToolsLogger;
-import org.telosys.tools.repository.model.Column;
-import org.telosys.tools.repository.model.Entity;
-import org.telosys.tools.repository.model.ForeignKey;
-import org.telosys.tools.repository.model.ForeignKeyColumn;
-import org.telosys.tools.repository.model.InverseJoinColumns;
-import org.telosys.tools.repository.model.JoinColumn;
-import org.telosys.tools.repository.model.JoinColumns;
-import org.telosys.tools.repository.model.JoinTable;
-import org.telosys.tools.repository.model.Link;
+import org.telosys.tools.generic.model.JoinColumn;
+import org.telosys.tools.repository.model.AttributeInDbModel;
+import org.telosys.tools.repository.model.EntityInDbModel;
+import org.telosys.tools.repository.model.ForeignKeyColumnInDbModel;
+import org.telosys.tools.repository.model.ForeignKeyInDbModel;
+import org.telosys.tools.repository.model.JoinColumnInDbModel;
+import org.telosys.tools.repository.model.JoinTableInDbModel;
+import org.telosys.tools.repository.model.LinkInDbModel;
 import org.telosys.tools.repository.model.RepositoryModel;
 import org.telosys.tools.repository.persistence.commande.CommandManager;
 import org.telosys.tools.repository.persistence.commande.ICommandContext;
@@ -90,7 +89,7 @@ public abstract class GenericPersistenceManager implements PersistenceManager {
 		ICommandContext commandContext = manager.searchCommand(context);
 		ProcessContext resultat = commandContext.runProcess(context, manager);
 		for (Iterator<?> iterator = resultat.getList().iterator(); iterator.hasNext();) {
-			Entity entity = (Entity) iterator.next();
+			EntityInDbModel entity = (EntityInDbModel) iterator.next();
 			model.storeEntity(entity);
 		}
 
@@ -111,7 +110,6 @@ public abstract class GenericPersistenceManager implements PersistenceManager {
 			Document doc = Xml.createDomDocument();
 
 			log(" . generate root tags ");
-//			writeStart(xmlDoc, model);
 
 			Comment comment = doc.createComment(" Telosys Database Repository ");
 			doc.appendChild(comment);
@@ -138,40 +136,14 @@ public abstract class GenericPersistenceManager implements PersistenceManager {
 
 	private void addAllEntities(Document doc, RepositoryModel model, Element entitiesElement) 
 	{
-		Entity[] entities = model.getEntities();
-		for ( Entity entity : entities ) {
-			log("entity : " + entity.getName() );
+//		EntityInDbModel[] entities = model.getEntities();
+		EntityInDbModel[] entities = model.getEntitiesArray();
+		for ( EntityInDbModel entity : entities ) {
+//			log("entity : " + entity.getName() );
+			log("entity : " + entity.getDatabaseTable() );
 			addEntity(doc, entity, entitiesElement);
 		}
-//		Collection colE = model.getEntitiesCollection();
-//		for (Iterator iterator = colE.iterator(); iterator.hasNext();) {
-//			Entity entity = (Entity) iterator.next();
-//			log("   entity '" + entity.getName());
-//			addEntity(xmlDoc, entity);
-//		}
 	}
-
-//	/**
-//	 * Creates the document root
-//	 * 
-//	 * @param doc
-//	 * @param model
-//	 * @return
-//	 */
-//	private Document writeStart(Document doc, RepositoryModel model) 
-//	{
-//		Comment comment = doc.createComment(" Telosys Database Repository ");
-//		doc.appendChild(comment);
-//		
-//		Element root = doc.createElement(RepositoryConst.ROOT_ELEMENT);
-//
-//		Element tableList = RepositoryConst.BASE_WRAPPER.getXmlDesc(model, doc);
-//		root.appendChild(tableList);
-//		
-//		doc.appendChild(root);
-//
-//		return doc;
-//	}
 
 	/**
 	 * Adds an entity in the DOM
@@ -179,7 +151,7 @@ public abstract class GenericPersistenceManager implements PersistenceManager {
 	 * @param doc
 	 * @param entity
 	 */
-	private void addEntity(Document doc, Entity entity, Element parentElement) 
+	private void addEntity(Document doc, EntityInDbModel entity, Element parentElement) 
 	{
 		log("addEntity()");
 		// --- Create XML element "table"
@@ -196,21 +168,24 @@ public abstract class GenericPersistenceManager implements PersistenceManager {
 		parentElement.appendChild(entityElement);
 	}
 
-	private void addLinks(Document doc, Entity entity, Element entityElement) 
+	private void addLinks(Document doc, EntityInDbModel entity, Element entityElement) 
 	{
-		Link[] links = entity.getLinks();
-		for ( Link link : links )
+//		LinkInDbModel[] links = entity.getLinks();
+		LinkInDbModel[] links = entity.getLinksArray();
+		for ( LinkInDbModel link : links )
 		{
 			Element linkElement = RepositoryConst.LINK_WRAPPER.getXmlDesc(link, doc);
 
 			//--- "Join Table" 
-			JoinTable joinTable = link.getJoinTable();
+//			JoinTableInDbModel joinTable = link.getJoinTable();
+			JoinTableInDbModel joinTable = (JoinTableInDbModel) link.getJoinTable(); // v 3.0.0
 			if ( joinTable != null ) {
 				//--- Add the "JoinTable" element
 				addJoinTable(doc, joinTable, linkElement);
 			}
 			else {
-				JoinColumns joinColumns = link.getJoinColumns();
+//				JoinColumnsInDbModel joinColumns = link.getJoinColumns();
+				List<JoinColumn> joinColumns = link.getJoinColumns();
 				//--- List of "Join Columns" for this link 
 				addJoinColumns(doc, joinColumns, linkElement) ;
 			}
@@ -219,43 +194,58 @@ public abstract class GenericPersistenceManager implements PersistenceManager {
 		}
 	}
 	
-	private void addJoinColumns(Document doc, JoinColumns joinColumns, Element linkElement) 
+//	private void addJoinColumns(Document doc, JoinColumnsInDbModel joinColumns, Element linkElement) 
+	private void addJoinColumns(Document doc, List<JoinColumn> joinColumns, Element linkElement)  // v 3.0.0
 	{
 		if ( joinColumns != null ) {
-			Element joinColumnsElement = RepositoryConst.JOIN_COLUMNS_WRAPPER.getXmlDesc(joinColumns, doc);
-			for ( JoinColumn joinColumn : joinColumns ) 
+//			Element joinColumnsElement = RepositoryConst.JOIN_COLUMNS_WRAPPER.getXmlDesc(joinColumns, doc);
+			Element joinColumnsElement = RepositoryConst.JOIN_COLUMNS_WRAPPER.getXmlDesc(doc); // v 3.0.0
+//			for ( JoinColumnInDbModel joinColumn : joinColumns ) 
+			for ( JoinColumn joinColumn : joinColumns ) // v 3.0.0
 			{
-				Element joinColumnElement = RepositoryConst.JOIN_COLUMN_WRAPPER.getXmlDesc(joinColumn, doc);
+				JoinColumnInDbModel joinColumnInDbModel = (JoinColumnInDbModel) joinColumn ; // v 3.0.0 
+//				Element joinColumnElement = RepositoryConst.JOIN_COLUMN_WRAPPER.getXmlDesc(joinColumn, doc);
+				Element joinColumnElement = RepositoryConst.JOIN_COLUMN_WRAPPER.getXmlDesc(joinColumnInDbModel, doc); // v 3.0.0 
 				joinColumnsElement.appendChild(joinColumnElement);
 			}
 			linkElement.appendChild(joinColumnsElement);
 		}
 	}
 	
-	private void addJoinTable(Document doc, JoinTable joinTable, Element linkElement) 
+	private void addJoinTable(Document doc, JoinTableInDbModel joinTable, Element linkElement) 
 	{
 		//--- Add the "JoinTable" element
 		Element joinTableElement = RepositoryConst.JOIN_TABLE_WRAPPER.getXmlDesc(joinTable, doc);
 		
 		//--- Add the "Join Columns" elements
-		JoinColumns joinColumns = joinTable.getJoinColumns();
+//		JoinColumnsInDbModel joinColumns = joinTable.getJoinColumns();
+		List<JoinColumn> joinColumns = joinTable.getJoinColumns(); // v 3.0.0
 		if ( joinColumns != null ) {
-			Element joinColumnsElement = RepositoryConst.JOIN_COLUMNS_WRAPPER.getXmlDesc(joinColumns, doc);
-			for ( JoinColumn joinColumn : joinColumns ) 
+//			Element joinColumnsElement = RepositoryConst.JOIN_COLUMNS_WRAPPER.getXmlDesc(joinColumns, doc);
+			Element joinColumnsElement = RepositoryConst.JOIN_COLUMNS_WRAPPER.getXmlDesc(doc); // v 3.0.0
+//			for ( JoinColumnInDbModel joinColumn : joinColumns ) 
+			for ( JoinColumn joinColumn : joinColumns ) // v 3.0.0
 			{
-				Element joinColumnElement = RepositoryConst.JOIN_COLUMN_WRAPPER.getXmlDesc(joinColumn, doc);
+				JoinColumnInDbModel joinColumnInDbModel = (JoinColumnInDbModel) joinColumn ; // v 3.0.0 
+//				Element joinColumnElement = RepositoryConst.JOIN_COLUMN_WRAPPER.getXmlDesc(joinColumn, doc);
+				Element joinColumnElement = RepositoryConst.JOIN_COLUMN_WRAPPER.getXmlDesc(joinColumnInDbModel, doc); // v 3.0.0 
 				joinColumnsElement.appendChild(joinColumnElement);
 			}
 			joinTableElement.appendChild(joinColumnsElement);
 		}
 
 		//--- Add the "Inverse Join Columns" elements
-		InverseJoinColumns inverseJoinColumns = joinTable.getInverseJoinColumns();
+//		InverseJoinColumnsInDbModel inverseJoinColumns = joinTable.getInverseJoinColumns();
+		List<JoinColumn> inverseJoinColumns = joinTable.getJoinColumns(); // v 3.0.0
 		if ( inverseJoinColumns != null ) {
-			Element inverseJoinColumnsElement = RepositoryConst.INVERSE_JOIN_COLUMNS_WRAPPER.getXmlDesc(inverseJoinColumns, doc);
+//			Element inverseJoinColumnsElement = RepositoryConst.INVERSE_JOIN_COLUMNS_WRAPPER.getXmlDesc(inverseJoinColumns, doc);
+			Element inverseJoinColumnsElement = RepositoryConst.INVERSE_JOIN_COLUMNS_WRAPPER.getXmlDesc(doc); // v 3.0.0
+//			for ( JoinColumnInDbModel joinColumn : inverseJoinColumns ) 
 			for ( JoinColumn joinColumn : inverseJoinColumns ) 
 			{
-				Element joinColumnElement = RepositoryConst.JOIN_COLUMN_WRAPPER.getXmlDesc(joinColumn, doc);
+				JoinColumnInDbModel joinColumnInDbModel = (JoinColumnInDbModel) joinColumn ; // v 3.0.0 
+//				Element joinColumnElement = RepositoryConst.JOIN_COLUMN_WRAPPER.getXmlDesc(joinColumn, doc);
+				Element joinColumnElement = RepositoryConst.JOIN_COLUMN_WRAPPER.getXmlDesc(joinColumnInDbModel, doc); // v 3.0.0
 				inverseJoinColumnsElement.appendChild(joinColumnElement);
 			}
 			joinTableElement.appendChild(inverseJoinColumnsElement);
@@ -269,12 +259,11 @@ public abstract class GenericPersistenceManager implements PersistenceManager {
 //		element.appendChild(joinColumnElement);
 //	}
 	
-	private void addForeignKeys(Document doc, Entity entity, Element table) {
+	private void addForeignKeys(Document doc, EntityInDbModel entity, Element table) {
 		// --- Foreign Keys
-		Collection<ForeignKey> foreignKeys = entity.getForeignKeysCollection();
-//		for (Iterator iterator = foreignKeys.iterator(); iterator.hasNext();) {			
-//			ForeignKey foreignKey = (ForeignKey) iterator.next();
-		for ( ForeignKey foreignKey : foreignKeys ) {
+//		Collection<ForeignKeyInDbModel> foreignKeys = entity.getForeignKeysCollection();
+		ForeignKeyInDbModel[] foreignKeys = entity.getForeignKeys();
+		for ( ForeignKeyInDbModel foreignKey : foreignKeys ) {
 			final Element fkElement = RepositoryConst.FOREIGNKEY_WRAPPER.getXmlDesc(foreignKey, doc);
 
 			this.addForeignKeyColumns(doc, foreignKey, fkElement);
@@ -283,22 +272,21 @@ public abstract class GenericPersistenceManager implements PersistenceManager {
 		}
 	}
 
-	private void addForeignKeyColumns(Document doc, ForeignKey foreignKey, final Element fkElement) {
+	private void addForeignKeyColumns(Document doc, ForeignKeyInDbModel foreignKey, final Element fkElement) {
 		// --- Foreign Key Columns
-		ForeignKeyColumn[] foreignKeyColumns = foreignKey.getForeignKeyColumns();
+		ForeignKeyColumnInDbModel[] foreignKeyColumns = foreignKey.getForeignKeyColumns();
 		for (int i = 0; i < foreignKeyColumns.length; i++) {
-			ForeignKeyColumn foreignKeyColumn = foreignKeyColumns[i];
+			ForeignKeyColumnInDbModel foreignKeyColumn = foreignKeyColumns[i];
 			Element fkColElement = RepositoryConst.FOREIGNKEY_COLUMN_WRAPPER.getXmlDesc(foreignKeyColumn, doc);
 			fkElement.appendChild(fkColElement);
 		}
 	}
 
-	private void addColumns(Document doc, Entity entity, Element parentElement) {
+	private void addColumns(Document doc, EntityInDbModel entity, Element parentElement) {
 		// --- Columns/attributes
-		Collection<Column> colcols = entity.getColumnsCollection();
-//		for (Iterator iterator = colcols.iterator(); iterator.hasNext();) {
-//			Column column = (Column) iterator.next();
-		for ( Column column : colcols ) {
+//		Collection<AttributeInDbModel> colcols = entity.getColumnsCollection();
+//		for ( AttributeInDbModel column : colcols ) {
+		for ( AttributeInDbModel column : entity.getAttributesArray() ) {
 			final Element colonne = RepositoryConst.COLUMN_WRAPPER.getXmlDesc(column, doc);
 
 			if (column.getGeneratedValue() != null) {

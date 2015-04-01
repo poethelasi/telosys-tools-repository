@@ -16,16 +16,16 @@
 package org.telosys.tools.repository.persistence.wrapper;
 
 import org.telosys.tools.commons.StrUtil;
-import org.telosys.tools.repository.model.ForeignKeyColumn;
+import org.telosys.tools.repository.model.ForeignKeyColumnInDbModel;
 import org.telosys.tools.repository.persistence.util.RepositoryConst;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class ForeignKeyColumnWrapper {
 
-	public ForeignKeyColumn getForeignKeyColumn(final Element xmlElement) {
+	public ForeignKeyColumnInDbModel getForeignKeyColumn(final Element xmlElement) {
 		
-		final ForeignKeyColumn foreignKeyColumn = new ForeignKeyColumn();
+		final ForeignKeyColumnInDbModel foreignKeyColumn = new ForeignKeyColumnInDbModel();
 		
 		foreignKeyColumn.setTableName(xmlElement.getAttribute(RepositoryConst.FKCOL_TABLENAME));
 		foreignKeyColumn.setColumnName(xmlElement.getAttribute(RepositoryConst.FKCOL_COLNAME) );
@@ -33,12 +33,9 @@ public class ForeignKeyColumnWrapper {
 		foreignKeyColumn.setSequence( StrUtil.getInt(xmlElement.getAttribute(RepositoryConst.FKCOL_SEQUENCE)) );
 		
 		foreignKeyColumn.setTableRef(xmlElement.getAttribute(RepositoryConst.FKCOL_TABLEREF));
-		foreignKeyColumn.setColumnRef(xmlElement.getAttribute(RepositoryConst.FKCOL_COLREF));
+//		foreignKeyColumn.setColumnRef(xmlElement.getAttribute(RepositoryConst.FKCOL_COLREF));
+		foreignKeyColumn.setReferencedColumnName(xmlElement.getAttribute(RepositoryConst.FKCOL_COLREF)); // v 3.0.0
 		
-//		foreignKeyColumn.setDeferrable(xmlElement.getAttribute(RepositoryConst.FKCOL_DEFERRABLE));
-//		foreignKeyColumn.setUpdateRule(xmlElement.getAttribute(RepositoryConst.FKCOL_UPDATERULE));
-//		foreignKeyColumn.setDeleteRule(xmlElement.getAttribute(RepositoryConst.FKCOL_DELETERULE));
-		// v 2.0.7
 		foreignKeyColumn.setDeferrableCode(StrUtil.getInt(xmlElement.getAttribute(RepositoryConst.FKCOL_DEFERRABLE)));
 		foreignKeyColumn.setUpdateRuleCode(StrUtil.getInt(xmlElement.getAttribute(RepositoryConst.FKCOL_UPDATERULE)));
 		foreignKeyColumn.setDeleteRuleCode(StrUtil.getInt(xmlElement.getAttribute(RepositoryConst.FKCOL_DELETERULE)));
@@ -46,7 +43,7 @@ public class ForeignKeyColumnWrapper {
 		return foreignKeyColumn;
 	}
 
-	public Element getXmlDesc(final ForeignKeyColumn foreignKeyColumn, final Document doc) {
+	public Element getXmlDesc(final ForeignKeyColumnInDbModel foreignKeyColumn, final Document doc) {
 		
 		final Element xmlElement = doc.createElement(RepositoryConst.FKCOL);
 		
@@ -56,7 +53,8 @@ public class ForeignKeyColumnWrapper {
 		xmlElement.setAttribute(RepositoryConst.FKCOL_SEQUENCE, Integer.toString(foreignKeyColumn.getSequence()) );
 
 		xmlElement.setAttribute(RepositoryConst.FKCOL_TABLEREF, foreignKeyColumn.getTableRef());
-		xmlElement.setAttribute(RepositoryConst.FKCOL_COLREF, foreignKeyColumn.getColumnRef());
+//		xmlElement.setAttribute(RepositoryConst.FKCOL_COLREF, foreignKeyColumn.getColumnRef());
+		xmlElement.setAttribute(RepositoryConst.FKCOL_COLREF, foreignKeyColumn.getReferencedColumnName()); // v 3.0.0
 		
 		// v 2.0.7 (String -> int )
 		xmlElement.setAttribute(RepositoryConst.FKCOL_DEFERRABLE, Integer.toString(foreignKeyColumn.getDeferrableCode()));

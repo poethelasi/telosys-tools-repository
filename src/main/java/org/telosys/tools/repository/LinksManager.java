@@ -19,17 +19,17 @@ import java.util.LinkedList;
 
 import org.telosys.tools.commons.TelosysToolsException;
 import org.telosys.tools.commons.TelosysToolsLogger;
+import org.telosys.tools.generic.model.Cardinality;
+import org.telosys.tools.generic.model.FetchType;
 import org.telosys.tools.repository.changelog.ChangeLog;
 import org.telosys.tools.repository.changelog.ChangeOnEntity;
 import org.telosys.tools.repository.changelog.ChangeOnForeignKey;
-import org.telosys.tools.repository.model.Entity;
-import org.telosys.tools.repository.model.ForeignKey;
-import org.telosys.tools.repository.model.ForeignKeyColumn;
-import org.telosys.tools.repository.model.InverseJoinColumns;
-import org.telosys.tools.repository.model.JoinColumn;
-import org.telosys.tools.repository.model.JoinColumns;
-import org.telosys.tools.repository.model.JoinTable;
-import org.telosys.tools.repository.model.Link;
+import org.telosys.tools.repository.model.EntityInDbModel;
+import org.telosys.tools.repository.model.ForeignKeyColumnInDbModel;
+import org.telosys.tools.repository.model.ForeignKeyInDbModel;
+import org.telosys.tools.repository.model.JoinColumnInDbModel;
+import org.telosys.tools.repository.model.JoinTableInDbModel;
+import org.telosys.tools.repository.model.LinkInDbModel;
 import org.telosys.tools.repository.model.RepositoryModel;
 import org.telosys.tools.repository.persistence.util.RepositoryConst;
 import org.telosys.tools.repository.rules.RepositoryRules;
@@ -76,7 +76,7 @@ public class LinksManager {
 		
 		int count = 0 ;
 		//Entity[] entities = model.getEntities();
-		for ( Entity entity : model.getEntities() ) {
+		for ( EntityInDbModel entity : model.getEntitiesArray() ) {
 			count = count + createRelations(model, entity);
 		}
 		return count ;
@@ -89,11 +89,12 @@ public class LinksManager {
 	 * @return
 	 * @throws TelosysToolsException
 	 */
-	private int removeRelations(RepositoryModel model, Entity entity) throws TelosysToolsException 
+	private int removeRelations(RepositoryModel model, EntityInDbModel entity) throws TelosysToolsException 
 	{
 		log("removeRelations() : entity = " + entity);
 		//--- Remove all the links using this entity 
-		return model.removeLinksByEntityName(entity.getName());
+//		return model.removeLinksByEntityName(entity.getName());
+		return model.removeLinksByEntityName(entity.getDatabaseTable());
 	}
 	
 	/**
@@ -103,7 +104,7 @@ public class LinksManager {
 	 * @return
 	 * @throws TelosysToolsException
 	 */
-	private int removeRelation(RepositoryModel model, ForeignKey foreignKey) throws TelosysToolsException 
+	private int removeRelation(RepositoryModel model, ForeignKeyInDbModel foreignKey) throws TelosysToolsException 
 	{
 		log("removeRelations() : foreignKey = " + foreignKey);
 		//--- Remove all the links using this Foreign Key 
@@ -119,7 +120,7 @@ public class LinksManager {
 	 * @return the number of links generated 
 	 * @throws TelosysToolsException
 	 */
-	private int createRelations(RepositoryModel model, Entity entity) throws TelosysToolsException 
+	private int createRelations(RepositoryModel model, EntityInDbModel entity) throws TelosysToolsException 
 	{
 		log("createRelations() : entity = " + entity);
 		int count = 0 ;
@@ -143,7 +144,7 @@ public class LinksManager {
 		{
 			log("createRelations() : entity is standard entity (not a Join Table) ");
 			//--- Generate one relation ( 2 links ) for each FK 
-			for ( ForeignKey fk : entity.getForeignKeys() ) {
+			for ( ForeignKeyInDbModel fk : entity.getForeignKeys() ) {
 				count = count + createRelationManyToOne(model, entity, fk);
 			}
 		}
@@ -193,19 +194,20 @@ public class LinksManager {
 	 * @return the number of links generated (always 2)
 	 * @throws TelosysToolsException
 	 */
-	private int createRelationManyToOne(RepositoryModel model, Entity owningSideEntity, ForeignKey owningSideForeignKey) throws TelosysToolsException 
+	private int createRelationManyToOne(RepositoryModel model, EntityInDbModel owningSideEntity, ForeignKeyInDbModel owningSideForeignKey) throws TelosysToolsException 
 	{
 		log("createRelationManyToOne() : Owning Side FK = " + owningSideForeignKey);
 
-		Entity inverseSideEntity = model.getEntityByName( owningSideForeignKey.getTableRef() );
+//		EntityInDbModel inverseSideEntity = model.getEntityByName( owningSideForeignKey.getTableRef() );
+		EntityInDbModel inverseSideEntity = model.getEntityByTableName( owningSideForeignKey.getReferencedTableName() ); // v 3.0.0
 		if ( null == inverseSideEntity ) {
 			throw new TelosysToolsException("No referenced table for Foreign Key '" + owningSideForeignKey.getName() + "'");
 		}
 		log("createRelationManyToOne() : Inverse Side Entity = " + inverseSideEntity);
 		
 		//--- Build the 2 link id
-		String owningSideLinkId  = Link.buildId(owningSideForeignKey, true) ;
-		String inverseSideLinkId = Link.buildId(owningSideForeignKey, false) ;
+		String owningSideLinkId  = LinkInDbModel.buildId(owningSideForeignKey, true) ;
+		String inverseSideLinkId = LinkInDbModel.buildId(owningSideForeignKey, false) ;
 
 //		String originAttributeName = getAttributeName( inverseSideEntity.getBeanJavaClass() ) ;
 		
@@ -214,7 +216,7 @@ public class LinksManager {
 		model.removeLinkById(owningSideLinkId);
 
 		//--- Generates the 2 links 
-		Link owningSideLink = generateManyToOneLinkOwningSide( owningSideLinkId, owningSideEntity, inverseSideEntity, owningSideForeignKey);
+		LinkInDbModel owningSideLink = generateManyToOneLinkOwningSide( owningSideLinkId, owningSideEntity, inverseSideEntity, owningSideForeignKey);
 		generateManyToOneLinkInverseSide( inverseSideLinkId, owningSideEntity, inverseSideEntity, owningSideForeignKey, owningSideLink);
 		
 		return 2 ; // 2 links generated
@@ -229,31 +231,40 @@ public class LinksManager {
 	 * @return
 	 * @throws TelosysToolsException
 	 */
-	private Link generateManyToOneLinkOwningSide( String linkId, Entity owningSideEntity, Entity inverseSideEntity, 
-			ForeignKey owningSideForeignKey  ) throws TelosysToolsException 
+	private LinkInDbModel generateManyToOneLinkOwningSide( String linkId, EntityInDbModel owningSideEntity, EntityInDbModel inverseSideEntity, 
+			ForeignKeyInDbModel owningSideForeignKey  ) throws TelosysToolsException 
 	{
-		log("generateManyToOneLinkOwningSide() : linkId = " + linkId + " "+ owningSideEntity.getName() + " --> " + inverseSideEntity.getName() );
+		log("generateManyToOneLinkOwningSide() : linkId = " + linkId + " "
+//				+ owningSideEntity.getName() + " --> " + inverseSideEntity.getName() );
+				+ owningSideEntity.getDatabaseTable() + " --> " + inverseSideEntity.getDatabaseTable() );
 		
-		Link link = new Link();
+		LinkInDbModel link = new LinkInDbModel();
 		link.setId(linkId);
 		link.setForeignKeyName( owningSideForeignKey.getName() );
 		
 		link.setOwningSide(true); // Owning Side
-		link.setInverseSideOf("");
-		link.setCardinality(RepositoryConst.MAPPING_MANY_TO_ONE);
-		link.setFetch(RepositoryConst.FETCH_DEFAULT);
+//		link.setInverseSideOf("");
+		link.setInverseSideLinkId(""); // v 3.0.0
+//		link.setCardinality(RepositoryConst.MAPPING_MANY_TO_ONE);
+		link.setCardinality(Cardinality.MANY_TO_ONE); // v 3.0.0
+//		link.setFetch(RepositoryConst.FETCH_DEFAULT);
+		link.setFetchType(FetchType.DEFAULT); // v 3.0.0
 		link.setSourceTableName(owningSideForeignKey.getTableName());
-		link.setTargetTableName(owningSideForeignKey.getTableRef());
+//		link.setTargetTableName(owningSideForeignKey.getTableRef());
+		link.setTargetTableName(owningSideForeignKey.getReferencedTableName());
 		
 		//--- Define the "Join Columns"
-		LinkedList<JoinColumn> joinColumns = buildJoinColumns(owningSideForeignKey);
-		link.setJoinColumns( new JoinColumns(joinColumns) );
+		LinkedList<JoinColumnInDbModel> joinColumns = buildJoinColumns(owningSideForeignKey);
+//		link.setJoinColumns( new JoinColumnsInDbModel(joinColumns) );
+		link.setJoinColumns(joinColumns); // v 3.0.0
 		
-		link.setTargetEntityJavaType( inverseSideEntity.getBeanJavaClass() ); // ie "Book" 
-		link.setJavaFieldType( inverseSideEntity.getBeanJavaClass() ); // ie "Book" 
+//		link.setTargetEntityJavaType( inverseSideEntity.getBeanJavaClass() ); // ie "Book" 
+		link.setTargetEntityClassName( inverseSideEntity.getClassName() ); // ie "Book" // v 3.0.0
+//		link.setJavaFieldType( inverseSideEntity.getBeanJavaClass() ); // ie "Book" 
+		link.setFieldType( inverseSideEntity.getClassName() ); // ie "Book" // v 3.0.0
 		//--- Updated in ver 2.1.1 (the link manages multiple references to the same inverse-side entity)
 		//link.setJavaFieldName( getAttributeName( inverseSideEntity.getBeanJavaClass() ) ); // ie "book"
-		link.setJavaFieldName( repositoryRules.getAttributeNameForLinkToOne(owningSideEntity, inverseSideEntity) ) ; // #LGU v 2.1.1
+		link.setFieldName( repositoryRules.getAttributeNameForLinkToOne(owningSideEntity, inverseSideEntity) ) ; // #LGU v 2.1.1
 
 
 		//--- Store the link in the entity
@@ -271,32 +282,39 @@ public class LinksManager {
 	 * @return
 	 * @throws TelosysToolsException
 	 */
-	private Link generateManyToOneLinkInverseSide(String linkId, Entity owningSideEntity, Entity inverseSideEntity, 
-			ForeignKey owningSideForeignKey, Link owningSideLink ) throws TelosysToolsException 
+	private LinkInDbModel generateManyToOneLinkInverseSide(String linkId, EntityInDbModel owningSideEntity, EntityInDbModel inverseSideEntity, 
+			ForeignKeyInDbModel owningSideForeignKey, LinkInDbModel owningSideLink ) throws TelosysToolsException 
 	{
-		Link link = new Link();
+		LinkInDbModel link = new LinkInDbModel();
 		link.setId(linkId);
 		link.setForeignKeyName( owningSideForeignKey.getName() );
 
 		link.setOwningSide(false); // Inverse Side
-		link.setInverseSideOf(owningSideLink.getId());
+//		link.setInverseSideOf(owningSideLink.getId());
+		link.setInverseSideLinkId(owningSideLink.getId()); // v 3.0.0
 		
 		//--- Inverse side => No "Join Table", No "Join Columns", No "Inverse Join Columns"
 
 		//--- Inverse side => "Mapped By"
-		link.setMappedBy( owningSideLink.getJavaFieldName() );
+//		link.setMappedBy( owningSideLink.getJavaFieldName() );
+		link.setMappedBy( owningSideLink.getFieldName() ); // v 3.0.0
 
-		link.setCardinality(RepositoryConst.MAPPING_ONE_TO_MANY);
-		link.setFetch(RepositoryConst.FETCH_DEFAULT);
-		link.setSourceTableName(owningSideForeignKey.getTableRef());
+//		link.setCardinality(RepositoryConst.MAPPING_ONE_TO_MANY);
+		link.setCardinality(Cardinality.ONE_TO_MANY); // v 3.0.0
+//		link.setFetch(RepositoryConst.FETCH_DEFAULT);
+		link.setFetchType(FetchType.DEFAULT); // v 3.0.0
+//		link.setSourceTableName(owningSideForeignKey.getTableRef());
+		link.setSourceTableName(owningSideForeignKey.getReferencedTableName()); // v 3.0.0
 		link.setTargetTableName(owningSideForeignKey.getTableName());
 
-		link.setJavaFieldType(RepositoryConst.COLLECTION_JAVA_TYPE); // ie "List"
+//		link.setJavaFieldType(RepositoryConst.COLLECTION_JAVA_TYPE); // ie "java.util.List"
+		link.setFieldType(RepositoryConst.COLLECTION_JAVA_TYPE); // ie "java.util.List" // v 3.0.0
 		
-		//link.setJavaFieldName( "listOf" + owningSideEntity.getBeanJavaClass() ); // ie "listOfBook"
-		link.setJavaFieldName( repositoryRules.getAttributeNameForLinkToMany(inverseSideEntity, owningSideEntity ) ) ; // #LGU v 2.1.1
+//		link.setJavaFieldName( repositoryRules.getAttributeNameForLinkToMany(inverseSideEntity, owningSideEntity ) ) ; // #LGU v 2.1.1
+		link.setFieldName( repositoryRules.getAttributeNameForLinkToMany(inverseSideEntity, owningSideEntity ) ) ; // v 3.0.0
 		
-		link.setTargetEntityJavaType( owningSideEntity.getBeanJavaClass() ); // ie "Book"
+//		link.setTargetEntityJavaType( owningSideEntity.getBeanJavaClass() ); // ie "Book"
+		link.setTargetEntityClassName( owningSideEntity.getClassName() ); // ie "Book" // v 3.0.0
 
 		//--- Store the link in the entity
 		inverseSideEntity.storeLink(link);
@@ -314,20 +332,21 @@ public class LinksManager {
 	 * @return
 	 * @throws TelosysToolsException
 	 */
-	private int createRelationManyToMany(RepositoryModel model, Entity joinTableEntity) throws TelosysToolsException 
+	private int createRelationManyToMany(RepositoryModel model, EntityInDbModel joinTableEntity) throws TelosysToolsException 
 	{
 		log("createRelationManyToMany()...");
 		int count = 0 ;
 		//--- This entity can be considered as a "Join Table" ( all columns are Foreign Keys )
-		ForeignKey[] foreignKeys = joinTableEntity.getForeignKeys() ;
+		ForeignKeyInDbModel[] foreignKeys = joinTableEntity.getForeignKeys() ;
 		if ( foreignKeys.length == 2 ) {
 			//--- Generate a bidirectional "ManyToMany" relation for this "Join Table"
-			ForeignKey owningSideForeignKey  = foreignKeys[0]; // Arbitrary choice
-			ForeignKey inverseSideForeignKey = foreignKeys[1]; // Arbitrary choice
+			ForeignKeyInDbModel owningSideForeignKey  = foreignKeys[0]; // Arbitrary choice
+			ForeignKeyInDbModel inverseSideForeignKey = foreignKeys[1]; // Arbitrary choice
 			count = createRelationManyToMany( model, joinTableEntity, owningSideForeignKey, inverseSideForeignKey); 				
 		}
 		else {
-			throw new TelosysToolsException("Entity '" + joinTableEntity.getName() 
+//			throw new TelosysToolsException("Entity '" + joinTableEntity.getName() 
+			throw new TelosysToolsException("Entity '" + joinTableEntity.getDatabaseTable()
 					+ "' (Join Table) has " + foreignKeys.length + " Foreign Key(s) (2 FK expected)") ;
 		}
 		return count ;
@@ -343,26 +362,28 @@ public class LinksManager {
 	 * @return the number of links generated (always 2)
 	 * @throws TelosysToolsException
 	 */
-	private int createRelationManyToMany(RepositoryModel model, Entity joinTable, 
-			ForeignKey owningSideForeignKey, ForeignKey inverseSideForeignKey) throws TelosysToolsException 
+	private int createRelationManyToMany(RepositoryModel model, EntityInDbModel joinTable, 
+			ForeignKeyInDbModel owningSideForeignKey, ForeignKeyInDbModel inverseSideForeignKey) throws TelosysToolsException 
 	{
 		log("createRelationManyToMany()...");
 
 		//--- Build the 2 id
-		String owningSideId  = Link.buildId(joinTable, true) ;
-		String inverseSideId = Link.buildId(joinTable, false) ;
+		String owningSideId  = LinkInDbModel.buildId(joinTable, true) ;
+		String inverseSideId = LinkInDbModel.buildId(joinTable, false) ;
 		
 		//--- Remove the links if they are already in the model
 		model.removeLinkById(inverseSideId);
 		model.removeLinkById(owningSideId);
 
 		//--- One entity is referenced by one of the two foreign keys
-		Entity owningSideEntity  = model.getEntityByName( owningSideForeignKey.getTableRef() );		
+//		EntityInDbModel owningSideEntity  = model.getEntityByName( owningSideForeignKey.getTableRef() );		
+		EntityInDbModel owningSideEntity  = model.getEntityByTableName( owningSideForeignKey.getReferencedTableName() );	// v 3.0.0	
 		//--- The other entity is referenced by the other foreign key
-		Entity inverseSideEntity = model.getEntityByName( inverseSideForeignKey.getTableRef() );
+//		EntityInDbModel inverseSideEntity = model.getEntityByName( inverseSideForeignKey.getTableRef() );
+		EntityInDbModel inverseSideEntity = model.getEntityByTableName( inverseSideForeignKey.getReferencedTableName() ); // v 3.0.0	
 		
 		//--- Generates the 2 links 
-		Link owningSideLink = generateManyToManyLinkOwningSide( owningSideId, 
+		LinkInDbModel owningSideLink = generateManyToManyLinkOwningSide( owningSideId, 
 				owningSideEntity, inverseSideEntity, 
 				joinTable, 
 				owningSideForeignKey, inverseSideForeignKey );
@@ -387,44 +408,57 @@ public class LinksManager {
 	 * @return
 	 * @throws TelosysToolsException
 	 */
-	private Link generateManyToManyLinkOwningSide( String linkId, Entity owningSideEntity, Entity inverseSideEntity, 
-			Entity joinTableEntity, ForeignKey owningSideForeignKey, ForeignKey inverseSideForeignKey
+	private LinkInDbModel generateManyToManyLinkOwningSide( String linkId, EntityInDbModel owningSideEntity, EntityInDbModel inverseSideEntity, 
+			EntityInDbModel joinTableEntity, ForeignKeyInDbModel owningSideForeignKey, ForeignKeyInDbModel inverseSideForeignKey
 			 ) throws TelosysToolsException 
 	{		
-		Link link = new Link();
+		LinkInDbModel link = new LinkInDbModel();
 		link.setId(linkId);
-		link.setJoinTableName( joinTableEntity.getName() );
+//		link.setJoinTableName( joinTableEntity.getName() );
+		link.setJoinTableName( joinTableEntity.getDatabaseTable() ); // v 3.0.0
 
 		link.setOwningSide(true); // Owning Side
-		link.setInverseSideOf("");
-		link.setCardinality(RepositoryConst.MAPPING_MANY_TO_MANY);
-		link.setFetch(RepositoryConst.FETCH_DEFAULT);
+//		link.setInverseSideOf("");
+		link.setInverseSideLinkId(""); // v 3.0.0
+//		link.setCardinality(RepositoryConst.MAPPING_MANY_TO_MANY);
+		link.setCardinality(Cardinality.MANY_TO_MANY); // v 3.0.0
+//		link.setFetch(RepositoryConst.FETCH_DEFAULT);
+		link.setFetchType(FetchType.DEFAULT); // v 3.0.0
 		
 		//--- Define the "Join Table"
-		JoinTable joinTable = new JoinTable();
-		joinTable.setName( joinTableEntity.getName() );
-		joinTable.setSchema( joinTableEntity.getSchema() );
-		joinTable.setCatalog( joinTableEntity.getCatalog() );
+		JoinTableInDbModel joinTable = new JoinTableInDbModel();
+//		joinTable.setName( joinTableEntity.getName() );
+		joinTable.setName( joinTableEntity.getDatabaseTable() );
+//		joinTable.setSchema( joinTableEntity.getSchema() );
+		joinTable.setSchema( joinTableEntity.getDatabaseSchema() );
+//		joinTable.setCatalog( joinTableEntity.getCatalog() );
+		joinTable.setCatalog( joinTableEntity.getDatabaseCatalog() );
 		link.setJoinTable(joinTable);
 		
 		//--- Define the "Join Columns" of the "Join Table"
-		LinkedList<JoinColumn> joinColumns = buildJoinColumns(owningSideForeignKey);
-		joinTable.setJoinColumns( new JoinColumns(joinColumns) );
+		LinkedList<JoinColumnInDbModel> joinColumns = buildJoinColumns(owningSideForeignKey);
+//		joinTable.setJoinColumns( new JoinColumnsInDbModel(joinColumns) );
+		joinTable.setJoinColumns( joinColumns ); // v 3.0.0
 		
 		//--- Define the "Inverse Join Columns" of the "Join Table"
-		LinkedList<JoinColumn> inverseJoinColumns = buildJoinColumns(inverseSideForeignKey);
-		joinTable.setInverseJoinColumns( new InverseJoinColumns(inverseJoinColumns) );
+		LinkedList<JoinColumnInDbModel> inverseJoinColumns = buildJoinColumns(inverseSideForeignKey);
+//		joinTable.setInverseJoinColumns( new InverseJoinColumnsInDbModel(inverseJoinColumns) );
+		joinTable.setInverseJoinColumns( inverseJoinColumns ); // v 3.0.0
 		
 		
-		link.setSourceTableName(owningSideForeignKey.getTableRef());
-		link.setTargetTableName(inverseSideForeignKey.getTableRef());
+//		link.setSourceTableName(owningSideForeignKey.getTableRef());
+		link.setSourceTableName(owningSideForeignKey.getReferencedTableName()); // v 3.0.0
+//		link.setTargetTableName(inverseSideForeignKey.getTableRef());
+		link.setTargetTableName(inverseSideForeignKey.getReferencedTableName()); // v 3.0.0
 		
 		//--- Java attribute for this link
-		link.setJavaFieldType( RepositoryConst.COLLECTION_JAVA_TYPE ); // ie "java.util.List"
-		//link.setJavaFieldName( getCollectionAttributeName( inverseSideEntity.getBeanJavaClass() ) ); // ie "listOfBook"
-		link.setJavaFieldName( repositoryRules.getAttributeNameForLinkToMany(owningSideEntity, inverseSideEntity) ) ; // #LGU v 2.1.1
+//		link.setJavaFieldType( RepositoryConst.COLLECTION_JAVA_TYPE ); // ie "java.util.List"
+		link.setFieldType( RepositoryConst.COLLECTION_JAVA_TYPE ); // ie "java.util.List" // v 3.0.0
+//		link.setJavaFieldName( repositoryRules.getAttributeNameForLinkToMany(owningSideEntity, inverseSideEntity) ) ; // #LGU v 2.1.1
+		link.setFieldName( repositoryRules.getAttributeNameForLinkToMany(owningSideEntity, inverseSideEntity) ) ; // v 3.0.0
 		
-		link.setTargetEntityJavaType( inverseSideEntity.getBeanJavaClass() ); // ie "Book"
+//		link.setTargetEntityJavaType( inverseSideEntity.getBeanJavaClass() ); // ie "Book"
+		link.setTargetEntityClassName( inverseSideEntity.getClassName() ); // ie "Book" // v 3.0.0
 
 		//--- Store the link in the entity
 		owningSideEntity.storeLink(link);
@@ -443,50 +477,60 @@ public class LinksManager {
 	 * @return
 	 * @throws TelosysToolsException
 	 */
-	private Link generateManyToManyLinkInverseSide( String linkId, Entity owningSideEntity, Entity inverseSideEntity, 
-			Entity joinTableEntity, ForeignKey owningSideForeignKey, ForeignKey inverseSideForeignKey, 
-			 Link owningSideLink ) throws TelosysToolsException 
+	private LinkInDbModel generateManyToManyLinkInverseSide( String linkId, EntityInDbModel owningSideEntity, EntityInDbModel inverseSideEntity, 
+			EntityInDbModel joinTableEntity, ForeignKeyInDbModel owningSideForeignKey, ForeignKeyInDbModel inverseSideForeignKey, 
+			 LinkInDbModel owningSideLink ) throws TelosysToolsException 
 	{		
-		Link link = new Link();
+		LinkInDbModel link = new LinkInDbModel();
 		link.setId(linkId);
-		link.setJoinTableName( joinTableEntity.getName() );
+//		link.setJoinTableName( joinTableEntity.getName() );
+		link.setJoinTableName( joinTableEntity.getDatabaseTable() );
 		
 		link.setOwningSide(false); // Owning Side
-		link.setInverseSideOf( owningSideLink.getId() );
-		link.setCardinality(RepositoryConst.MAPPING_MANY_TO_MANY);
-		link.setFetch(RepositoryConst.FETCH_DEFAULT);
+//		link.setInverseSideOf( owningSideLink.getId() );
+		link.setInverseSideLinkId( owningSideLink.getId() ); // v 3.0.0
+//		link.setCardinality(RepositoryConst.MAPPING_MANY_TO_MANY);
+		link.setCardinality(Cardinality.MANY_TO_MANY); // v 3.0.0
+//		link.setFetch(RepositoryConst.FETCH_DEFAULT);
+		link.setFetchType(FetchType.DEFAULT); // v 3.0.0
 		
 		//--- Inverse side => No "Join Table", No "Join Columns", No "Inverse Join Columns"
 
 		//--- Inverse side => "Mapped By"
-		link.setMappedBy( owningSideLink.getJavaFieldName() );
+//		link.setMappedBy( owningSideLink.getJavaFieldName() );
+		link.setMappedBy( owningSideLink.getFieldName() ); // v 3.0.0
 		
-		link.setSourceTableName(inverseSideForeignKey.getTableRef());
-		link.setTargetTableName(owningSideForeignKey.getTableRef()); 
+//		link.setSourceTableName(inverseSideForeignKey.getTableRef());
+		link.setSourceTableName(inverseSideForeignKey.getReferencedTableName()); // v 3.0.0
+//		link.setTargetTableName(owningSideForeignKey.getTableRef()); 
+		link.setTargetTableName(owningSideForeignKey.getReferencedTableName());  // v 3.0.0
 		
 		//--- Java attribute for this link
-		link.setJavaFieldType( RepositoryConst.COLLECTION_JAVA_TYPE ); // ie "java.util.List"
-		//link.setJavaFieldName( getCollectionAttributeName( owningSideEntity.getBeanJavaClass() ) ); // ie "listOfBook"
-		link.setJavaFieldName( repositoryRules.getAttributeNameForLinkToMany(inverseSideEntity, owningSideEntity ) ) ; // #LGU v 2.1.1
+//		link.setJavaFieldType( RepositoryConst.COLLECTION_JAVA_TYPE ); // ie "java.util.List"
+		link.setFieldType( RepositoryConst.COLLECTION_JAVA_TYPE ); // ie "java.util.List"  // v 3.0.0
+//		link.setJavaFieldName( repositoryRules.getAttributeNameForLinkToMany(inverseSideEntity, owningSideEntity ) ) ; // #LGU v 2.1.1
+		link.setFieldName( repositoryRules.getAttributeNameForLinkToMany(inverseSideEntity, owningSideEntity ) ) ; // v 3.0.0
 
-		link.setTargetEntityJavaType( owningSideEntity.getBeanJavaClass() ); // ie "Book"
+//		link.setTargetEntityJavaType( owningSideEntity.getBeanJavaClass() ); // ie "Book"
+		link.setTargetEntityClassName( owningSideEntity.getClassName() ); // ie "Book" // v 3.0.0
 
 		//--- Store the link in the entity
 		inverseSideEntity.storeLink(link);
 		return link;		
 	}
 	
-	private LinkedList<JoinColumn>  buildJoinColumns( ForeignKey foreignKey ) throws TelosysToolsException 
+	private LinkedList<JoinColumnInDbModel>  buildJoinColumns( ForeignKeyInDbModel foreignKey ) throws TelosysToolsException 
 	{
-		LinkedList<JoinColumn> joinColumns = new LinkedList<JoinColumn>();
+		LinkedList<JoinColumnInDbModel> joinColumns = new LinkedList<JoinColumnInDbModel>();
 		//JoinColumns joinColumns = new JoinColumns();
 		
-		ForeignKeyColumn[] fkColumns = foreignKey.getForeignKeyColumns();
+		ForeignKeyColumnInDbModel[] fkColumns = foreignKey.getForeignKeyColumns();
 		
-		for ( ForeignKeyColumn fkColumn : fkColumns ) {
-			JoinColumn joinColumn = new JoinColumn();
+		for ( ForeignKeyColumnInDbModel fkColumn : fkColumns ) {
+			JoinColumnInDbModel joinColumn = new JoinColumnInDbModel();
 			joinColumn.setName(fkColumn.getColumnName());
-			joinColumn.setReferencedColumnName(fkColumn.getColumnRef());
+//			joinColumn.setReferencedColumnName(fkColumn.getColumnRef());
+			joinColumn.setReferencedColumnName(fkColumn.getReferencedColumnName()); // v 3.0.0
 			// TODO ???
 //			joinColumn.setNullable(xx); 
 //			joinColumn.setInsertable(xxx);
@@ -516,20 +560,20 @@ public class LinksManager {
 			switch ( change.getChangeType() ) {
 			case CREATED :
 				//--- An entity as been created
-				Entity entityCreated = change.getEntityCreated() ;
+				EntityInDbModel entityCreated = change.getEntityCreated() ;
 				log("updateLinks() : entity CREATED = " + entityCreated);
 				//--- Create all the links based on this entity (for a standard Table or a  Join Table )
 				count = count + this.createRelations(model, entityCreated);
 				break;
 			case UPDATED :
 				//--- An entity as been updated
-				Entity entityUpdated = change.getEntityAfter() ;
+				EntityInDbModel entityUpdated = change.getEntityAfter() ;
 				log("updateLinks() : entity UPDATED = " + entityUpdated);
 				count = count + this.updateEntityLinks(model, entityUpdated, change);
 				break;
 			case DELETED :
 				//--- An entity as been deleted
-				Entity entityDeleted = change.getEntityDeleted() ;
+				EntityInDbModel entityDeleted = change.getEntityDeleted() ;
 				log("updateLinks() : entity DELETED = " + entityDeleted);
 				//--- Remove all the links using this entity 
 				count = count + this.removeRelations(model, entityDeleted);
@@ -547,14 +591,15 @@ public class LinksManager {
 	 * @return
 	 * @throws TelosysToolsException
 	 */
-	private int updateEntityLinks(RepositoryModel model, Entity entity, ChangeOnEntity change ) throws TelosysToolsException 
+	private int updateEntityLinks(RepositoryModel model, EntityInDbModel entity, ChangeOnEntity change ) throws TelosysToolsException 
 	{
 		int count = 0 ;
 		if ( entity.isJoinTable() ) {
 			if ( change.getChangesOnForeignKey().size() > 0 ) {
 				//--- Something has changed in the Foreign Keys
 				//--- 1) Remove existing links
-				model.removeLinksByJoinTableName(entity.getName());
+//				model.removeLinksByJoinTableName(entity.getName());
+				model.removeLinksByJoinTableName(entity.getDatabaseTable());
 				//--- 2) Create new links based on the new Foreign Keys
 				count = count + createRelationManyToMany(model, entity);
 			}

@@ -12,8 +12,8 @@ import org.telosys.tools.commons.TelosysToolsException;
 import org.telosys.tools.repository.changelog.ChangeLog;
 import org.telosys.tools.repository.changelog.ChangeOnEntity;
 import org.telosys.tools.repository.changelog.ChangeType;
-import org.telosys.tools.repository.model.Entity;
-import org.telosys.tools.repository.model.Link;
+import org.telosys.tools.repository.model.EntityInDbModel;
+import org.telosys.tools.repository.model.LinkInDbModel;
 import org.telosys.tools.repository.model.RepositoryModel;
 
 public class RepositoryUpdatorTest extends AbstractTestCase {
@@ -65,10 +65,14 @@ public class RepositoryUpdatorTest extends AbstractTestCase {
 		assertEquals(4, repositoryModel.getNumberOfEntities() );
 		
 		//--- Links in the updated model 
-		printLinks(repositoryModel.getEntityByName("STUDENT").getLinks());
-		printLinks(repositoryModel.getEntityByName("TEACHER").getLinks());
-		printLinks(repositoryModel.getEntityByName("BADGE").getLinks());
-		printLinks(repositoryModel.getEntityByName("TEAM").getLinks());
+//		printLinks(repositoryModel.getEntityByName("STUDENT").getLinks());
+//		printLinks(repositoryModel.getEntityByName("TEACHER").getLinks());
+//		printLinks(repositoryModel.getEntityByName("BADGE").getLinks());
+//		printLinks(repositoryModel.getEntityByName("TEAM").getLinks());
+		printLinks(repositoryModel.getEntityByTableName("STUDENT").getLinksArray() );
+		printLinks(repositoryModel.getEntityByTableName("TEACHER").getLinksArray());
+		printLinks(repositoryModel.getEntityByTableName("BADGE").getLinksArray());
+		printLinks(repositoryModel.getEntityByTableName("TEAM").getLinksArray());
 		
 		//--- Entities created 
 		List<ChangeOnEntity> entitiesCreated = changeLog.getChangesByType(ChangeType.CREATED);
@@ -98,30 +102,38 @@ public class RepositoryUpdatorTest extends AbstractTestCase {
 		//ChangeOnEntity firstEntityUpdated = entitiesUpdated.get(0);
 		
 		//--- Entity "STUDENT BEFORE/AFTER"
-		Entity studentBefore = studentChange.getEntityBefore();
+		EntityInDbModel studentBefore = studentChange.getEntityBefore();
 		assertNotNull(studentBefore);
 		assertEquals(1, studentBefore.getForeignKeys().length ); // One FK
-		assertEquals(1, studentBefore.getLinks().length ); // Owning side link for FK 
-		Entity studentAfter = studentChange.getEntityAfter();
+//		assertEquals(1, studentBefore.getLinks().length ); // Owning side link for FK 
+		assertEquals(1, studentBefore.getLinks().size() ); // Owning side link for FK 
+		EntityInDbModel studentAfter = studentChange.getEntityAfter();
 		assertNotNull(studentAfter);
 		assertEquals(0, studentAfter.getForeignKeys().length );// One FK removed 
-		assertEquals(0, studentAfter.getLinks().length ); 
+//		assertEquals(0, studentAfter.getLinks().length ); 
+		assertEquals(0, studentAfter.getLinks().size() ); 
 
 		//--- Entity "TEACHER BEFORE/AFTER"
-		Entity teacherBefore = teacherChange.getEntityBefore();
+		EntityInDbModel teacherBefore = teacherChange.getEntityBefore();
 		assertNotNull(teacherBefore);
 		assertEquals(0, teacherBefore.getForeignKeys().length ); // No FK
-		assertEquals(1, teacherBefore.getLinks().length ); // Inverse side link
-		Entity teacherAfter = teacherChange.getEntityAfter();
+//		assertEquals(1, teacherBefore.getLinks().length ); // Inverse side link
+		assertEquals(1, teacherBefore.getLinks().size() ); // Inverse side link
+		EntityInDbModel teacherAfter = teacherChange.getEntityAfter();
 		assertNotNull(teacherAfter);
 		assertEquals(1, teacherAfter.getForeignKeys().length );// One FK added 
-		assertEquals(1, teacherBefore.getLinks().length ); // Owning side link for FK
+//		assertEquals(1, teacherBefore.getLinks().length ); // Owning side link for FK
+		assertEquals(1, teacherBefore.getLinks().size() ); // Owning side link for FK
 
 		//--- Result in the model
-		assertEquals(0, repositoryModel.getEntityByName("STUDENT").getLinks().length ); // No link
-		assertEquals(2, repositoryModel.getEntityByName("TEACHER").getLinks().length ); // Inverse side (from TEAM) + Owning side(to BADGE)
-		assertEquals(1, repositoryModel.getEntityByName("BADGE").getLinks().length ); // Inverse side (from TEACHER)
-		assertEquals(1, repositoryModel.getEntityByName("TEAM").getLinks().length ); // Owning side (to TEACHER)
+//		assertEquals(0, repositoryModel.getEntityByName("STUDENT").getLinks().length ); // No link
+//		assertEquals(2, repositoryModel.getEntityByName("TEACHER").getLinks().length ); // Inverse side (from TEAM) + Owning side(to BADGE)
+//		assertEquals(1, repositoryModel.getEntityByName("BADGE").getLinks().length ); // Inverse side (from TEACHER)
+//		assertEquals(1, repositoryModel.getEntityByName("TEAM").getLinks().length ); // Owning side (to TEACHER)
+		assertEquals(0, repositoryModel.getEntityByTableName("STUDENT").getLinks().size() ); // No link
+		assertEquals(2, repositoryModel.getEntityByTableName("TEACHER").getLinks().size() ); // Inverse side (from TEAM) + Owning side(to BADGE)
+		assertEquals(1, repositoryModel.getEntityByTableName("BADGE").getLinks().size() ); // Inverse side (from TEACHER)
+		assertEquals(1, repositoryModel.getEntityByTableName("TEAM").getLinks().size() ); // Owning side (to TEACHER)
 	}
 
 	/**
@@ -146,20 +158,22 @@ public class RepositoryUpdatorTest extends AbstractTestCase {
 		assertEquals(1, changeLog.getNumberOfEntitiesDeleted() );
 		assertEquals(1, repositoryModel.getNumberOfEntities() );
 		
-		assertNull(repositoryModel.getEntityByName("STUDENT")); // Deleted
-		assertNotNull(repositoryModel.getEntityByName("TEACHER")); // Still present
+		assertNull(repositoryModel.getEntityByTableName("STUDENT")); // Deleted
+		assertNotNull(repositoryModel.getEntityByTableName("TEACHER")); // Still present
 		
 		//--- Links in the updated model 
-		printLinks(repositoryModel.getEntityByName("TEACHER").getLinks());
+//		printLinks(repositoryModel.getEntityByName("TEACHER").getLinks());
+		printLinks(repositoryModel.getEntityByTableName("TEACHER").getLinksArray());
 		
 		List<ChangeOnEntity> entitiesDeleted = changeLog.getChangesByType(ChangeType.DELETED);
 		assertEquals(1, entitiesDeleted.size() );
 		ChangeOnEntity changeOnEntity = entitiesDeleted.get(0);
-		Entity entityDeleted = changeOnEntity.getEntityDeleted();
+		EntityInDbModel entityDeleted = changeOnEntity.getEntityDeleted();
 		assertNotNull(entityDeleted);
 		assertEquals(1, entityDeleted.getForeignKeys().length );
 		
-		assertEquals(0, repositoryModel.getEntityByName("TEACHER").getLinks().length ); // 0 Link 
+//		assertEquals(0, repositoryModel.getEntityByName("TEACHER").getLinks().length ); // 0 Link 
+		assertEquals(0, repositoryModel.getEntityByTableName("TEACHER").getLinks().size() ); // 0 Link 
 	}
 	
 	/**
@@ -185,52 +199,63 @@ public class RepositoryUpdatorTest extends AbstractTestCase {
 		assertEquals(3, repositoryModel.getNumberOfEntities() ); // 3 in the model
 		
 		//--- Links in the updated model 
-		printLinks(repositoryModel.getEntityByName("STUDENT").getLinks()); 
-		printLinks(repositoryModel.getEntityByName("TEACHER").getLinks());
-		printLinks(repositoryModel.getEntityByName("TEAM").getLinks()); // the new entity
+//		printLinks(repositoryModel.getEntityByName("STUDENT").getLinks()); 
+//		printLinks(repositoryModel.getEntityByName("TEACHER").getLinks());
+//		printLinks(repositoryModel.getEntityByName("TEAM").getLinks()); // the new entity
+		printLinks(repositoryModel.getEntityByTableName("STUDENT").getLinksArray()); 
+		printLinks(repositoryModel.getEntityByTableName("TEACHER").getLinksArray());
+		printLinks(repositoryModel.getEntityByTableName("TEAM").getLinksArray()); // the new entity
 		
 		List<ChangeOnEntity> changesOnEntitiesCreated = changeLog.getChangesByType(ChangeType.CREATED);
 		assertEquals(1, changesOnEntitiesCreated.size() );
 		ChangeOnEntity changeOnEntity = changesOnEntitiesCreated.get(0);
-		Entity entityCreated = changeOnEntity.getEntityCreated();
+		EntityInDbModel entityCreated = changeOnEntity.getEntityCreated();
 		assertNotNull(entityCreated);
 		assertEquals(1, entityCreated.getForeignKeys().length );
-		assertEquals(1, entityCreated.getLinks().length ); // Inverse side link
+//		assertEquals(1, entityCreated.getLinks().length ); // Inverse side link
+		assertEquals(1, entityCreated.getLinks().size() ); // Inverse side link
 
 		//--- Links in the updated model
 		
 		//--- "STUDENT" links (unchanged)
-		Link[] studentLinks = repositoryModel.getEntityByName("STUDENT").getLinks();
+//		LinkInDbModel[] studentLinks = repositoryModel.getEntityByName("STUDENT").getLinks();
+		LinkInDbModel[] studentLinks = repositoryModel.getEntityByTableName("STUDENT").getLinksArray();
 		assertEquals(1, studentLinks.length ); 
 		assertEquals(true, studentLinks[0].isOwningSide() );
-		assertEquals(true, studentLinks[0].isTypeManyToOne() );
+//		assertEquals(true, studentLinks[0].isTypeManyToOne() );
+		assertEquals(true, studentLinks[0].isCardinalityManyToOne() );
 		assertEquals(true, studentLinks[0].isBasedOnForeignKey() );
 		assertEquals("TEACHER", studentLinks[0].getTargetTableName() );
 		
 		//--- "TEAM" links (created with the entity)
-		Link[] teamLinks = repositoryModel.getEntityByName("TEAM").getLinks();
+//		LinkInDbModel[] teamLinks = repositoryModel.getEntityByName("TEAM").getLinks();
+		LinkInDbModel[] teamLinks = repositoryModel.getEntityByTableName("TEAM").getLinksArray();
 		assertEquals(1, teamLinks.length ); 
 		assertEquals(true, teamLinks[0].isOwningSide() );
-		assertEquals(true, teamLinks[0].isTypeManyToOne() );
+//		assertEquals(true, teamLinks[0].isTypeManyToOne() );
+		assertEquals(true, teamLinks[0].isCardinalityManyToOne() );
 		assertEquals(true, teamLinks[0].isBasedOnForeignKey() );
 		assertEquals("TEACHER", teamLinks[0].getTargetTableName() );
 
 		//--- "TEACHER" links : one more link ( inverse side / list of students )
-		Link[] teacherLinks = repositoryModel.getEntityByName("TEACHER").getLinks();
+//		LinkInDbModel[] teacherLinks = repositoryModel.getEntityByName("TEACHER").getLinks();
+		LinkInDbModel[] teacherLinks = repositoryModel.getEntityByTableName("TEACHER").getLinksArray();
 		assertEquals(2, teacherLinks.length ); 
 		
-		List<Link> linksToStudent = repositoryModel.getEntityByName("TEACHER").getLinksTo("STUDENT");
+		List<LinkInDbModel> linksToStudent = repositoryModel.getEntityByTableName("TEACHER").getLinksTo("STUDENT");
 		assertEquals(1, linksToStudent.size() ); 
-		Link linkToStudent = linksToStudent.get(0);
+		LinkInDbModel linkToStudent = linksToStudent.get(0);
 		assertEquals(true, linkToStudent.isInverseSide() );
-		assertEquals(true, linkToStudent.isTypeOneToMany() );
+//		assertEquals(true, linkToStudent.isTypeOneToMany() );
+		assertEquals(true, linkToStudent.isCardinalityOneToMany() );
 		assertEquals("STUDENT", linkToStudent.getTargetTableName() );
 
-		List<Link> linksToTeam = repositoryModel.getEntityByName("TEACHER").getLinksTo("TEAM");
+		List<LinkInDbModel> linksToTeam = repositoryModel.getEntityByTableName("TEACHER").getLinksTo("TEAM");
 		assertEquals(1, linksToTeam.size() ); 
-		Link linkToTeam = linksToTeam.get(0);
+		LinkInDbModel linkToTeam = linksToTeam.get(0);
 		assertEquals(true, linkToTeam.isInverseSide() );
-		assertEquals(true, linkToTeam.isTypeOneToMany() );
+//		assertEquals(true, linkToTeam.isTypeOneToMany() );
+		assertEquals(true, linkToTeam.isCardinalityOneToMany() );
 		assertEquals("TEAM", linkToTeam.getTargetTableName() );
 	}
 
@@ -240,22 +265,26 @@ public class RepositoryUpdatorTest extends AbstractTestCase {
 		for ( ChangeOnEntity change : changeLog.getChanges() ) {
 			switch ( change.getChangeType() ) {
 			case CREATED :
-				assertTrue( repositoryModel.getEntityByName(change.getEntityCreated().getName()) == change.getEntityCreated() );
+//				assertTrue( repositoryModel.getEntityByName(change.getEntityCreated().getName()) == change.getEntityCreated() );
+				assertTrue( repositoryModel.getEntityByTableName(change.getEntityCreated().getDatabaseTable()) == change.getEntityCreated() );
 				break;
 			case UPDATED :
-				assertTrue( repositoryModel.getEntityByName(change.getEntityAfter().getName()) == change.getEntityAfter() );
+//				assertTrue( repositoryModel.getEntityByName(change.getEntityAfter().getName()) == change.getEntityAfter() );
+				assertTrue( repositoryModel.getEntityByTableName(change.getEntityAfter().getDatabaseTable()) == change.getEntityAfter() );
 				break;
 			case DELETED :
-				assertTrue( repositoryModel.getEntityByName(change.getEntityDeleted().getName()) == null );
+//				assertTrue( repositoryModel.getEntityByName(change.getEntityDeleted().getName()) == null );
+				assertTrue( repositoryModel.getEntityByTableName(change.getEntityDeleted().getDatabaseTable()) == null );
 				break;
 			}
 		}
 	}
 
-	private void printLinks(Link[] links) {
-		for ( Link link : links ) {
+	private void printLinks(LinkInDbModel[] links) {
+		for ( LinkInDbModel link : links ) {
 			System.out.println(" . Link : "  + link);
-			System.out.println(" . " + link.getJavaFieldName() );
+//			System.out.println(" . " + link.getJavaFieldName() );
+			System.out.println(" . " + link.getFieldName() );
 		}
 	}
 

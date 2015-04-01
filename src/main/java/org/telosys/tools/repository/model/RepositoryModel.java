@@ -19,10 +19,19 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.List;
 
-public class RepositoryModel 
+import org.telosys.tools.commons.StrUtil;
+import org.telosys.tools.generic.model.Entity;
+import org.telosys.tools.generic.model.Model;
+import org.telosys.tools.generic.model.ModelType;
+
+public class RepositoryModel implements Model
 {
-	private String version ;
+	private String name = "" ;
+	
+	private String description = "" ;
 	
 	private String databaseName ;
 
@@ -34,18 +43,47 @@ public class RepositoryModel
 	
 	private Date   lastUpdateDate ;
 	
-	private Hashtable<String,Entity> htEntities = new Hashtable<String,Entity>() ; 
+	private Hashtable<String,EntityInDbModel> htEntities = new Hashtable<String,EntityInDbModel>() ; 
 
-	//-----------------------------------------------
+	//--------------------------------------------------------------------------------------
+	@Override
+	public ModelType getType() {
+		return ModelType.DATABASE_SCHEMA ;
+	}
+
+	//--------------------------------------------------------------------------------------
+	@Override
 	public String getVersion() {
-		return version;
+		return DbModelVersion.VERSION;
 	}
 
-	public void setVersion(String version) {
-		this.version = version;
+	//--------------------------------------------------------------------------------------
+	@Override
+	public String getName() {
+		// Cannot be null or void
+		if ( StrUtil.nullOrVoid(name) ) {
+			return "Db#" + databaseId ;
+		}
+		else {
+			return name ;
+		}
+	}
+	
+	public void setName( String name) {
+		this.name = name;
 	}
 
-	//-----------------------------------------------
+	//--------------------------------------------------------------------------------------
+	@Override
+	public String getDescription() {
+		return description ;
+	}
+
+	public void getDescription(String description) {
+		this.description = description ;
+	}
+
+	//--------------------------------------------------------------------------------------
 	public String getDatabaseName() {
 		return databaseName;
 	}
@@ -54,12 +92,17 @@ public class RepositoryModel
 		this.databaseName = databaseName;
 	}
 
-	//-----------------------------------------------
+	//--------------------------------------------------------------------------------------
+	@Override
+	public Integer getDatabaseId() {
+		return databaseId;
+	}
+
 	/**
 	 * Returns the database id ( ".dbcfg" id )
 	 * @return
 	 */
-	public int getDatabaseId() {
+	public int getDatabaseIdAsInt() {
 		return databaseId;
 	}
 
@@ -71,11 +114,8 @@ public class RepositoryModel
 		this.databaseId = databaseId;
 	}
 
-	//-----------------------------------------------
-	/**
-	 * Returns the database product name retrieved from the meta-data
-	 * @return
-	 */
+	//--------------------------------------------------------------------------------------
+	@Override
 	public String getDatabaseProductName() {
 		return databaseProductName;
 	}
@@ -88,7 +128,7 @@ public class RepositoryModel
 		this.databaseProductName = databaseType;
 	}
 
-	//-----------------------------------------------
+	//--------------------------------------------------------------------------------------
 	public Date getGenerationDate() {
 		return generationDate;
 	}
@@ -97,7 +137,7 @@ public class RepositoryModel
 		this.generationDate = generationDate;
 	}
 
-	//-----------------------------------------------
+	//--------------------------------------------------------------------------------------
 	public Date getLastUpdateDate() {
 		return lastUpdateDate;
 	}
@@ -106,6 +146,8 @@ public class RepositoryModel
 		this.lastUpdateDate = lastUpdateDate;
 	}
 	
+	//-------------------------------------------------------------------------------
+	// ENTITIES management
 	//-------------------------------------------------------------------------------
 	
 	public int getNumberOfEntities() {
@@ -118,64 +160,88 @@ public class RepositoryModel
 	 * 
 	 * @return
 	 */
-	public Entity[] getEntities() {
-		Entity[] array = (Entity[]) htEntities.values().toArray( new Entity[htEntities.size()] );
+	public EntityInDbModel[] getEntitiesArray() {
+		EntityInDbModel[] array = (EntityInDbModel[]) htEntities.values().toArray( new EntityInDbModel[htEntities.size()] );
 		Arrays.sort(array);
 		return array ;
 	}
 	
-	/**
-	 * Returns a collection of all the entities of the model.<br>
-	 * The entities are sorted by name.
-	 * 
-	 * @return
-	 */
-	public Collection<Entity> getEntitiesCollection() {
-		//return htEntities.values() ;
-		Entity[] entities = getEntities();
-		return Arrays.asList(entities);
+//	/**
+//	 * Returns a collection of all the entities of the model.<br>
+//	 * The entities are sorted by name.
+//	 * 
+//	 * @return
+//	 */
+//	public Collection<EntityInDbModel> getEntitiesCollection() {
+//		//return htEntities.values() ;
+//		EntityInDbModel[] entities = getEntitiesArray();
+//		return Arrays.asList(entities);
+//	}
+
+	@Override
+	public List<Entity> getEntities() {
+		EntityInDbModel[] entities = getEntitiesArray();
+		LinkedList<Entity> list = new LinkedList<Entity>();
+		for ( Entity entity : entities ) {
+			list.add(entity);
+		}
+		return list ;
 	}
 	
+//	/**
+//	 * Returns the entity for the given name, or null if not found
+//	 * @param name
+//	 * @return
+//	 */
+//	public EntityInDbModel getEntityByName(String name) {
+//		return htEntities.get(name);
+//	}
+	
+	@Override
+	public EntityInDbModel getEntityByTableName(String entityTableName) {
+		return htEntities.get(entityTableName);
+	}
+
+	@Override
+	public EntityInDbModel getEntityByClassName(String entityClassName) {
+		for ( EntityInDbModel entity : htEntities.values() ) {
+			if ( entity.getClassName().equals(entityClassName) ) {
+				return entity ; // Found
+			}
+		}
+		return null; // Not found
+	}
+
 	/**
-	 * Returns an array containing the names of all the entities of the model.<br>
+	 * Returns an array containing the table names for all the entities stored in the model.<br>
 	 * The names are sorted in alphabetic order.
 	 * 
 	 * @return
 	 */
 	public String[] getEntitiesNames() {
-		Collection<Entity> values = htEntities.values();
+		Collection<EntityInDbModel> values = htEntities.values();
 		String[] names = new String[values.size()];
 		int cpt = 0;
-//		for (Iterator iterator = values.iterator(); iterator.hasNext();) {
-//			Entity entity = (Entity) iterator.next();
-		for ( Entity entity : values ) {
-			names[cpt] = entity.getName();
+		for ( EntityInDbModel entity : values ) {
+			names[cpt] = entity.getDatabaseTable();
 			cpt++;
 		}
 		Arrays.sort(names);
 		return names;
 	}
 	
-	/**
-	 * Returns the entity for the given name, or null if not found
-	 * @param name
-	 * @return
-	 */
-	public Entity getEntityByName(String name) {
-		return htEntities.get(name);
-	}
-	
-	public void storeEntity(Entity entity) {
-		htEntities.put(entity.getName(), entity);
+	public void storeEntity(EntityInDbModel entity) {
+//		htEntities.put(entity.getName(), entity);
+		htEntities.put(entity.getDatabaseTable(), entity); // v 3.0.0
 	}
 	
 	/**
-	 * Removes the entity having the given name (if any)
-	 * @param name
+	 * Removes the entity having the given table name (if any)
+	 * @param entityTableName
 	 * @return the entity removed (or null if none)
 	 */
-	public Entity removeEntity(String name) {
-		return htEntities.remove(name);
+	public EntityInDbModel removeEntity(String entityTableName) {
+		return htEntities.remove(entityTableName);
 	}
 	
 	//-------------------------------------------------------------------------------
@@ -186,14 +252,15 @@ public class RepositoryModel
 	 * @param id
 	 * @return
 	 */
-	public Link getLinkById(String id) {
+	public LinkInDbModel getLinkById(String id) {
 		if ( id != null ) {
-			Entity [] entities = this.getEntities();
+			EntityInDbModel [] entities = this.getEntitiesArray();
 			for ( int i = 0 ; i < entities.length ; i++ ) {
-				Entity entity = entities[i];
-				Link [] links = entity.getLinks();
+				EntityInDbModel entity = entities[i];
+//				LinkInDbModel [] links = entity.getLinks();
+				LinkInDbModel [] links = entity.getLinksArray();
 				for ( int j = 0 ; j < links.length ; j++ ) {
-					Link link = links[j];
+					LinkInDbModel link = links[j];
 					if ( id.equals( link.getId() ) )  {
 						return link;
 					}
@@ -208,9 +275,9 @@ public class RepositoryModel
 	 * Removes all the links in the model (for all the entities)
 	 */
 	public void removeAllLinks() {
-		Entity [] entities = this.getEntities();
+		EntityInDbModel [] entities = this.getEntitiesArray();
 		for ( int i = 0 ; i < entities.length ; i++ ) {
-			Entity entity = entities[i];
+			EntityInDbModel entity = entities[i];
 			entity.removeAllLinks();
 		}
 	}
@@ -223,10 +290,11 @@ public class RepositoryModel
 	 */
 	public int removeLinkById(String id) {
 		int count = 0 ;
-		Link link = getLinkById(id);
+		LinkInDbModel link = getLinkById(id);
 		if ( link != null ) {
 			//--- Remove link 
-			Entity entity = getEntityByName( link.getSourceTableName() );
+//			EntityInDbModel entity = getEntityByName( link.getSourceTableName() );
+			EntityInDbModel entity = getEntityByTableName( link.getSourceTableName() );
 			if ( entity != null ) {
 				count = entity.removeLink(link);
 			}
@@ -242,8 +310,9 @@ public class RepositoryModel
 	 */
 	public int removeLinksByEntityName(String entityName) {
 		int count = 0 ;
-		for ( Entity entity : this.getEntities() ) {
-			for ( Link link : entity.getLinks() ) {
+		for ( EntityInDbModel entity : this.getEntitiesArray() ) {
+//			for ( LinkInDbModel link : entity.getLinks() ) {
+			for ( LinkInDbModel link : entity.getLinksArray() ) {
 				if ( entityName.equals( link.getSourceTableName() ) || entityName.equals( link.getTargetTableName() ) ) {
 					count = count + entity.removeLink(link);
 				}
@@ -257,11 +326,11 @@ public class RepositoryModel
 	 * @param foreignKey
 	 * @return the number of links removes (usually 2)
 	 */
-	public int removeLinksByForeignKey(ForeignKey foreignKey) {
+	public int removeLinksByForeignKey(ForeignKeyInDbModel foreignKey) {
 		int count = 0 ;
 		//--- Build the 2 link id
-		String owningSideLinkId  = Link.buildId(foreignKey, true) ;
-		String inverseSideLinkId = Link.buildId(foreignKey, false) ;
+		String owningSideLinkId  = LinkInDbModel.buildId(foreignKey, true) ;
+		String inverseSideLinkId = LinkInDbModel.buildId(foreignKey, false) ;
 		//--- Remove the links if they are already in the model
 		count = count + this.removeLinkById(inverseSideLinkId);
 		count = count + this.removeLinkById(owningSideLinkId);
@@ -280,8 +349,9 @@ public class RepositoryModel
 	public int removeLinksByJoinTableName(String joinTableName) {
 		int count = 0 ;
 		if ( joinTableName != null ) {
-			for ( Entity entity : this.getEntities() ) {
-				for ( Link link : entity.getLinks() ) {
+			for ( EntityInDbModel entity : this.getEntitiesArray() ) {
+//				for ( LinkInDbModel link : entity.getLinks() ) {
+				for ( LinkInDbModel link : entity.getLinksArray() ) {
 					String jtName = link.getJoinTableName() ;
 					if ( jtName != null ) {
 						if ( jtName.equals(joinTableName) ) {
@@ -300,32 +370,35 @@ public class RepositoryModel
 	 * @param linkId the id of one of the 2 links of the relation
 	 * @return
 	 */
-	public RelationLinks getRelationByLinkId(String linkId) 
+	public RelationLinksInDbModel getRelationByLinkId(String linkId) 
 	{
-		Link link1 = getLinkById(linkId);
+		LinkInDbModel link1 = getLinkById(linkId);
 		if ( link1 != null ) {
 			if ( link1.isOwningSide() ) {
 				//--- Owning Side => try to found the inverse side
-				Entity [] entities = this.getEntities();
+				EntityInDbModel [] entities = this.getEntitiesArray();
 				for ( int i = 0 ; i < entities.length ; i++ ) {
-					Entity entity = entities[i];
-					Link [] links = entity.getLinks();
+					EntityInDbModel entity = entities[i];
+//					LinkInDbModel [] links = entity.getLinks();
+					LinkInDbModel [] links = entity.getLinksArray();
 					for ( int j = 0 ; j < links.length ; j++ ) {
-						Link link2 = links[j];
+						LinkInDbModel link2 = links[j];
 						if ( link2.isOwningSide() == false ) {
-							if ( linkId.equals( link2.getInverseSideOf() ) ) {
-								return new RelationLinks ( link1, link2 );
+							//if ( linkId.equals( link2.getInverseSideOf() ) ) {
+							if ( linkId.equals( link2.getInverseSideLinkId() ) ) { // v 3.0.0
+								return new RelationLinksInDbModel ( link1, link2 );
 							}
 						}
 					}
 				}
 				// inverse side not found 
-				return new RelationLinks ( link1, null );
+				return new RelationLinksInDbModel ( link1, null );
 			}
 			else {
 				//--- Inverse Side => try to found the owning side
-				Link link2 = getLinkById( link1.getInverseSideOf() ) ;
-				return new RelationLinks ( link2, link1 );
+				//LinkInDbModel link2 = getLinkById( link1.getInverseSideOf() ) ;
+				LinkInDbModel link2 = getLinkById( link1.getInverseSideLinkId() ) ; // v 3.0.0
+				return new RelationLinksInDbModel ( link2, link1 );
 			}
 		}
 		return null ;
@@ -339,16 +412,16 @@ public class RepositoryModel
 	 * @param fkName the name to e searched
 	 * @return the Foreign Key or null if not found
 	 */
-	public ForeignKey getForeignKeyByName(String fkName)
+	public ForeignKeyInDbModel getForeignKeyByName(String fkName)
 	{
-		Entity [] entities = this.getEntities();
-		for ( Entity entity : entities ) {
-			ForeignKey fk = entity.getForeignKey(fkName);
+		EntityInDbModel [] entities = this.getEntitiesArray();
+		for ( EntityInDbModel entity : entities ) {
+			ForeignKeyInDbModel fk = entity.getForeignKey(fkName);
 			if ( fk != null ) {
 				return fk ; // FOUND 
 			}
 		}
 		return null ;
 	}
-	
+
 }

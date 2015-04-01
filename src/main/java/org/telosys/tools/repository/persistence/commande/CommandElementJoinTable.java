@@ -17,9 +17,8 @@ package org.telosys.tools.repository.persistence.commande;
 
 import java.util.List;
 
-import org.telosys.tools.repository.model.InverseJoinColumns;
-import org.telosys.tools.repository.model.JoinColumns;
-import org.telosys.tools.repository.model.JoinTable;
+import org.telosys.tools.repository.model.JoinColumnInDbModel;
+import org.telosys.tools.repository.model.JoinTableInDbModel;
 import org.telosys.tools.repository.persistence.util.CommandException;
 import org.telosys.tools.repository.persistence.util.ProcessContext;
 import org.telosys.tools.repository.persistence.util.RepositoryConst;
@@ -31,31 +30,36 @@ public class CommandElementJoinTable extends AbstractCommand implements ICommand
 		final Element elem = processContext.getElement();
 
 		// Transform element
-		final JoinTable joinTable = RepositoryConst.JOIN_TABLE_WRAPPER.getObject(elem);
+		final JoinTableInDbModel joinTable = RepositoryConst.JOIN_TABLE_WRAPPER.getObject(elem);
 
-//		final ProcessContext processContextNext = genericChildProcess(iCommandManager, elem);
-
-//		List objs = processContextNext.getList();
-//		for (Iterator iterator = objs.iterator(); iterator.hasNext();) {
-//			Object obj = iterator.next();
-//			if (obj instanceof JoinFK) {
-//				joinTable.storeJoinFK((JoinFK) obj);
-//			} else {
-//				throw new CommandException("Unsupported child on JoinTable : " + obj.getClass());
-//			}
-//		}
-		
 		ProcessContext processContextNext = genericChildProcess(iCommandManager, elem);
 		List<?> list = processContextNext.getList();
 		for ( Object obj : list ) {
-			if (obj instanceof JoinColumns ) {
-				joinTable.setJoinColumns( (JoinColumns) obj );
+//			if (obj instanceof JoinColumnsInDbModel ) {
+//				joinTable.setJoinColumns( (JoinColumnsInDbModel) obj );
+//			}
+//			else if (obj instanceof InverseJoinColumnsInDbModel ) {
+//				joinTable.setInverseJoinColumns( (InverseJoinColumnsInDbModel) obj );
+//			}
+			//--- v 3.0.0 [
+			if (obj instanceof List<?>) {
+				if ( RepositoryConst.JOIN_COLUMN_ELEMENT.equals( elem.getNodeName() ) ) {
+					@SuppressWarnings("unchecked")
+					List<JoinColumnInDbModel> joinColumns = (List<JoinColumnInDbModel>) obj ; 
+					joinTable.setJoinColumns( joinColumns );
+				}
+				else if ( RepositoryConst.INVERSE_JOIN_COLUMNS_ELEMENT.equals( elem.getNodeName() ) ) {
+					@SuppressWarnings("unchecked")
+					List<JoinColumnInDbModel> joinColumns = (List<JoinColumnInDbModel>) obj ; 
+					joinTable.setJoinColumns( joinColumns );
+				}
+				else {
+					throw new CommandException("Unexpected child element '" + elem.getNodeName() + "' in 'joinTable'");
+				}
 			}
-			else if (obj instanceof InverseJoinColumns ) {
-				joinTable.setInverseJoinColumns( (InverseJoinColumns) obj );
-			}
+			//--- ] v 3.0.0
 			else {
-				throw new CommandException("Unsupported child on Column : " + obj.getClass());
+				throw new CommandException("Unexpected child type '" + obj.getClass().getSimpleName() + "' in 'joinTable'");
 			}
 		}
 		
@@ -67,5 +71,4 @@ public class CommandElementJoinTable extends AbstractCommand implements ICommand
 	public boolean accept(final ProcessContext processContext) {
 		return genericAccept(processContext, RepositoryConst.JOIN_TABLE_ELEMENT);
 	}
-
 }

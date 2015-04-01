@@ -15,7 +15,6 @@
  */
 package org.telosys.tools.repository.persistence.wrapper;
 
-import org.telosys.tools.repository.model.InverseJoinColumns;
 import org.telosys.tools.repository.persistence.util.RepositoryConst;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -26,11 +25,12 @@ public class InverseJoinColumnsWrapper {
 		super();
 	}
 
-	public InverseJoinColumns getObject( Element element) {
-		return new InverseJoinColumns();
-	}
+//	public InverseJoinColumnsInDbModel getObject( Element element) {
+//		return new InverseJoinColumnsInDbModel();
+//	}
 
-	public Element getXmlDesc( InverseJoinColumns object, Document doc) {
+//	public Element getXmlDesc( InverseJoinColumnsInDbModel object, Document doc) {
+	public Element getXmlDesc(Document doc) {
 		Element element = doc.createElement(RepositoryConst.INVERSE_JOIN_COLUMNS_ELEMENT );
 		return element;
 	}

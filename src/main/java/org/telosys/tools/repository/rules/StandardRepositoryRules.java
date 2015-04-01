@@ -19,7 +19,7 @@ import java.sql.Types;
 
 import org.telosys.tools.commons.jdbctypes.JdbcTypes;
 import org.telosys.tools.commons.jdbctypes.JdbcTypesManager;
-import org.telosys.tools.repository.model.Entity;
+import org.telosys.tools.repository.model.EntityInDbModel;
 
 /**
  * Repository (model) generator 
@@ -122,10 +122,11 @@ public class StandardRepositoryRules implements RepositoryRules
 	}
 
     @Override
-	public String getAttributeNameForLinkToOne(Entity entity, Entity referencedEntity ) 
+	public String getAttributeNameForLinkToOne(EntityInDbModel entity, EntityInDbModel referencedEntity ) 
 	{
 		//--- Determines the attribute name
-		String originalAttributeName = rulesUtils.uncapitalize( referencedEntity.getBeanJavaClass() ) ;
+//		String originalAttributeName = rulesUtils.uncapitalize( referencedEntity.getBeanJavaClass() ) ;
+		String originalAttributeName = rulesUtils.uncapitalize( referencedEntity.getClassName() ) ;
 		String attributeName = originalAttributeName ; // eg : "book"
 		//--- Check the attribute name is not already used
 		int n = 1 ;
@@ -137,10 +138,11 @@ public class StandardRepositoryRules implements RepositoryRules
 	}
 
     @Override
-	public String getAttributeNameForLinkToMany(Entity entity, Entity referencedEntity ) 
+	public String getAttributeNameForLinkToMany(EntityInDbModel entity, EntityInDbModel referencedEntity ) 
 	{
 		//--- Determines the attribute name
-		String originalAttributeName = "listOf" + referencedEntity.getBeanJavaClass() ;
+//		String originalAttributeName = "listOf" + referencedEntity.getBeanJavaClass() ;
+		String originalAttributeName = "listOf" + referencedEntity.getClassName() ;
 		String attributeName = originalAttributeName ; // eg : "listOfBook"
 		//--- Check the attribute name is not already used
 		int n = 1 ;

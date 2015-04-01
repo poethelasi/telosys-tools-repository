@@ -15,10 +15,10 @@
  */
 package org.telosys.tools.repository.persistence.commande;
 
+import java.util.LinkedList;
 import java.util.List;
 
-import org.telosys.tools.repository.model.JoinColumn;
-import org.telosys.tools.repository.model.JoinColumns;
+import org.telosys.tools.repository.model.JoinColumnInDbModel;
 import org.telosys.tools.repository.persistence.util.CommandException;
 import org.telosys.tools.repository.persistence.util.ProcessContext;
 import org.telosys.tools.repository.persistence.util.RepositoryConst;
@@ -31,18 +31,15 @@ public class CommandElementJoinColumns extends AbstractCommand implements IComma
 		final Element elem = processContext.getElement();
 
 		// Transform element
-		//final JoinFK joinFK = RepositoryConst.JOIN_FK_WRAPPER.getJoinFK(elem);
-		final JoinColumns joinColumns = RepositoryConst.JOIN_COLUMNS_WRAPPER.getJoinColumns(elem);
+//		final JoinColumnsInDbModel joinColumns = RepositoryConst.JOIN_COLUMNS_WRAPPER.getJoinColumns(elem);
+		List<JoinColumnInDbModel> joinColumns = new LinkedList<JoinColumnInDbModel>(); // v 3.0.0
 
 		final ProcessContext processContextNext = genericChildProcess(iCommandManager, elem);
 
 		List<?> list = processContextNext.getList();
-		//for (Iterator iterator = list.iterator(); iterator.hasNext();) 
-		for (Object obj : list ) 
-		{
-			//Object obj = iterator.next();
-			if (obj instanceof JoinColumn) {
-				joinColumns.add((JoinColumn) obj);
+		for (Object obj : list ) {
+			if (obj instanceof JoinColumnInDbModel) {
+				joinColumns.add((JoinColumnInDbModel) obj);
 			} else {
 				throw new CommandException("Unsupported child on JoinFK : " + obj.getClass());
 			}

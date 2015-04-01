@@ -15,9 +15,9 @@ import org.telosys.tools.repository.changelog.ChangeLog;
 import org.telosys.tools.repository.changelog.ChangeOnColumn;
 import org.telosys.tools.repository.changelog.ChangeOnEntity;
 import org.telosys.tools.repository.changelog.ChangeOnForeignKey;
-import org.telosys.tools.repository.model.Column;
-import org.telosys.tools.repository.model.Entity;
-import org.telosys.tools.repository.model.Link;
+import org.telosys.tools.repository.model.AttributeInDbModel;
+import org.telosys.tools.repository.model.EntityInDbModel;
+import org.telosys.tools.repository.model.LinkInDbModel;
 import org.telosys.tools.repository.model.RepositoryModel;
 import org.telosys.tools.repository.rules.RepositoryRules;
 import org.telosys.tools.repository.rules.RepositoryRulesProvider;
@@ -32,12 +32,12 @@ public abstract class AbstractTestCase {
 		System.out.println("==================================================================================================");
 	}
 	
-	protected void printEntity(Entity entity) {
-		System.out.println("ENTITY : name = '" + entity.getName() 
-				+ "',  class = '" + entity.getBeanJavaClass() 
-				+ "',  nb columns = " + entity.getColumns().length
+	protected void printEntity(EntityInDbModel entity) {
+		System.out.println("ENTITY : table = '" + entity.getDatabaseTable() 
+				+ "',  class = '" + entity.getClassName() 
+				+ "',  nb columns = " + entity.getAttributesArray().length
 				+ ",  nb FK = " + entity.getForeignKeys().length
-				+ ",  nb LINKS = " + entity.getLinks().length );
+				+ ",  nb LINKS = " + entity.getLinks().size() );
 	}
 
 	protected void printModel (RepositoryModel model)  {
@@ -48,15 +48,18 @@ public abstract class AbstractTestCase {
 		String[] entitiesNames = model.getEntitiesNames();
 		for ( String name : entitiesNames ) {
 			System.out.println("Entity name = '" + name + "'");
-			Entity entity = model.getEntityByName(name);
-			Column[] columns = entity.getColumns();
-			for ( Column c : columns ) {
+//			EntityInDbModel entity = model.getEntityByName(name);
+			EntityInDbModel entity = model.getEntityByTableName(name);
+			AttributeInDbModel[] columns = entity.getAttributesArray();
+			for ( AttributeInDbModel c : columns ) {
 				System.out.println(" . Column : " + c );
 			}
-			Link[] links = entity.getLinks();
-			for ( Link link : links ) {
+//			LinkInDbModel[] links = entity.getLinks();
+			LinkInDbModel[]  links = entity.getLinksArray();
+			for ( LinkInDbModel link : links ) {
 				System.out.println(" . Link : "  + link);
-				System.out.println(" . " + link.getJavaFieldName() );
+//				System.out.println(" . " + link.getJavaFieldName() );
+				System.out.println(" . " + link.getFieldName() );
 			}
 		}
 	}

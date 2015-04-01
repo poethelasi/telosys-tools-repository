@@ -15,7 +15,7 @@
  */
 package org.telosys.tools.repository.persistence.wrapper;
 
-import org.telosys.tools.repository.model.JoinTable;
+import org.telosys.tools.repository.model.JoinTableInDbModel;
 import org.telosys.tools.repository.persistence.util.RepositoryConst;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -26,14 +26,14 @@ public class JoinTableWrapper {
 		super();
 	}
 
-	public JoinTable getObject(final Element table) 
+	public JoinTableInDbModel getObject(final Element table) 
 	{
-		final JoinTable joinTable = new JoinTable();
+		final JoinTableInDbModel joinTable = new JoinTableInDbModel();
 		joinTable.setName(table.getAttribute(RepositoryConst.JOIN_TABLE_NAME));
 		return joinTable;
 	}
 
-	public Element getXmlDesc(final JoinTable joinTable, final Document doc) 
+	public Element getXmlDesc(final JoinTableInDbModel joinTable, final Document doc) 
 	{
 		final Element table = doc.createElement(RepositoryConst.JOIN_TABLE_ELEMENT);
 		table.setAttribute(RepositoryConst.JOIN_TABLE_NAME, joinTable.getName());

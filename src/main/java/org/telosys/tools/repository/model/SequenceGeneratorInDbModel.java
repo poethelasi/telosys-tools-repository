@@ -18,24 +18,19 @@ package org.telosys.tools.repository.model;
 import java.io.Serializable;
 
 /**
- * <tableGenerator name="MyGenerator" table="ID_GEN" pkColumnName="ID_NAME" valueColumnName="ID_VAL" pkColumnValue="INV_GEN" />
+ * <sequenceGenerator name="MyGenerator" sequenceName="INV_SEQ" allocationSize="5" />
  * @author S.Labbe
  * 
  */
-public class TableGenerator implements Serializable {
+public class SequenceGeneratorInDbModel implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
 	private String name = null ;
 
-	private String table = null ;
+	private String sequenceName = null ;
 
-	private String pkColumnName = null ;
-
-	private String valueColumnName = null ;
-
-	private String pkColumnValue = null ;
-
+	private int allocationSize = 0;
 
 	public String getName() {
 		return name;
@@ -45,36 +40,20 @@ public class TableGenerator implements Serializable {
 		this.name = name;
 	}
 
-	public String getTable() {
-		return table;
+	public String getSequenceName() {
+		return sequenceName;
 	}
 
-	public void setTable(String table) {
-		this.table = table;
+	public void setSequenceName(String sequenceName) {
+		this.sequenceName = sequenceName;
 	}
 
-	public String getPkColumnName() {
-		return pkColumnName;
+	public int getAllocationSize() {
+		return allocationSize;
 	}
 
-	public void setPkColumnName(String pkColumnName) {
-		this.pkColumnName = pkColumnName;
-	}
-
-	public String getValueColumnName() {
-		return valueColumnName;
-	}
-
-	public void setValueColumnName(String valueColumnName) {
-		this.valueColumnName = valueColumnName;
-	}
-
-	public String getPkColumnValue() {
-		return pkColumnValue;
-	}
-
-	public void setPkColumnValue(String pkColumnValue) {
-		this.pkColumnValue = pkColumnValue;
+	public void setAllocationSize(int allocationSize) {
+		this.allocationSize = allocationSize;
 	}
 
 }

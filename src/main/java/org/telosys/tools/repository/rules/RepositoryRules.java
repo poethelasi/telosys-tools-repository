@@ -15,7 +15,7 @@
  */
 package org.telosys.tools.repository.rules;
 
-import org.telosys.tools.repository.model.Entity;
+import org.telosys.tools.repository.model.EntityInDbModel;
 
 /**
  * @author L.GUERIN
@@ -64,7 +64,7 @@ public interface RepositoryRules
 	 * @param referencedEntity the entity referenced by the link
 	 * @return the attribute name ( eg "book", "employee", "employee2", etc )
 	 */
-	public String getAttributeNameForLinkToOne(Entity entity, Entity referencedEntity ) ;
+	public String getAttributeNameForLinkToOne(EntityInDbModel entity, EntityInDbModel referencedEntity ) ;
 
 	/**
      * Returns the attribute name for a link with a "One To Many" or "Many To Many" cardinality
@@ -72,7 +72,7 @@ public interface RepositoryRules
 	 * @param referencedEntity the entity referenced by the link
 	 * @return the attribute name ( eg "listOfBook", "listOfEmployee", "listOfEmployee2", etc )
 	 */
-	public String getAttributeNameForLinkToMany(Entity entity, Entity referencedEntity ) ;
+	public String getAttributeNameForLinkToMany(EntityInDbModel entity, EntityInDbModel referencedEntity ) ;
 
     /**
      * Returns the attribute GUI type for the given column 

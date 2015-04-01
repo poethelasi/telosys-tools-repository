@@ -15,13 +15,13 @@
  */
 package org.telosys.tools.repository.changelog;
 
-import org.telosys.tools.repository.model.Column;
+import org.telosys.tools.repository.model.AttributeInDbModel;
 
 public class ChangeOnColumn {
 	
 	private final ChangeType  changeType ;
-	private final Column      columnBefore ;
-	private final Column      columnAfter ;
+	private final AttributeInDbModel      columnBefore ;
+	private final AttributeInDbModel      columnAfter ;
 	
 	/**
 	 * Constructor
@@ -29,7 +29,7 @@ public class ChangeOnColumn {
 	 * @param columnBefore
 	 * @param columnAfter
 	 */
-	public ChangeOnColumn(ChangeType changeType, Column columnBefore, Column columnAfter) {
+	public ChangeOnColumn(ChangeType changeType, AttributeInDbModel columnBefore, AttributeInDbModel columnAfter) {
 		super();
 		this.changeType   = changeType ;
 		this.columnBefore = columnBefore;
@@ -40,11 +40,11 @@ public class ChangeOnColumn {
 		return this.changeType;
 	}
 
-	public Column getColumnBefore() {
+	public AttributeInDbModel getColumnBefore() {
 		return this.columnBefore;
 	}
 
-	public Column getColumnAfter() {
+	public AttributeInDbModel getColumnAfter() {
 		return this.columnAfter;
 	}
 }

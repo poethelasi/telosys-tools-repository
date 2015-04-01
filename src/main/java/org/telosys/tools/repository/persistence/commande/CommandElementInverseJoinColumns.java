@@ -15,10 +15,10 @@
  */
 package org.telosys.tools.repository.persistence.commande;
 
+import java.util.LinkedList;
 import java.util.List;
 
-import org.telosys.tools.repository.model.InverseJoinColumns;
-import org.telosys.tools.repository.model.JoinColumn;
+import org.telosys.tools.repository.model.JoinColumnInDbModel;
 import org.telosys.tools.repository.persistence.util.CommandException;
 import org.telosys.tools.repository.persistence.util.ProcessContext;
 import org.telosys.tools.repository.persistence.util.RepositoryConst;
@@ -31,27 +31,19 @@ public class CommandElementInverseJoinColumns extends AbstractCommand implements
 		final Element elem = processContext.getElement();
 
 		// Transform element
-		//final JoinFK joinFK = RepositoryConst.JOIN_FK_WRAPPER.getJoinFK(elem);
-		final InverseJoinColumns inverseJoinColumns = RepositoryConst.INVERSE_JOIN_COLUMNS_WRAPPER.getObject(elem);
+		//final InverseJoinColumnsInDbModel inverseJoinColumns = RepositoryConst.INVERSE_JOIN_COLUMNS_WRAPPER.getObject(elem);
+		List<JoinColumnInDbModel> inverseJoinColumns = new LinkedList<JoinColumnInDbModel>(); // v 3.0.0
 
 		final ProcessContext processContextNext = genericChildProcess(iCommandManager, elem);
 
 		List<?> list = processContextNext.getList();
 		for ( Object obj : list ) {
-			if (obj instanceof JoinColumn) {
-				inverseJoinColumns.add((JoinColumn) obj);
+			if (obj instanceof JoinColumnInDbModel) {
+				inverseJoinColumns.add((JoinColumnInDbModel) obj);
 			} else {
 				throw new CommandException("Unsupported child on JoinFK : " + obj.getClass());
 			}
 		}
-//		for (Iterator iterator = list.iterator(); iterator.hasNext();) {
-//			Object obj = iterator.next();
-//			if (obj instanceof JoinColumn) {
-//				inverseJoinColumns.add((JoinColumn) obj);
-//			} else {
-//				throw new CommandException("Unsupported child on JoinFK : " + obj.getClass());
-//			}
-//		}
 		
 		// Return result
 		final ProcessContext context = new ProcessContext(inverseJoinColumns);

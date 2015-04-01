@@ -15,7 +15,7 @@
  */
 package org.telosys.tools.repository.persistence.wrapper;
 
-import org.telosys.tools.repository.model.GeneratedValue;
+import org.telosys.tools.repository.model.GeneratedValueInDbModel;
 import org.telosys.tools.repository.persistence.util.RepositoryConst;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -26,14 +26,14 @@ public class GeneratedValueWrapper {
 		super();
 	}
 
-	public GeneratedValue getGeneratedValue(final Element elem) {
-		final GeneratedValue gv = new GeneratedValue();
+	public GeneratedValueInDbModel getGeneratedValue(final Element elem) {
+		final GeneratedValueInDbModel gv = new GeneratedValueInDbModel();
 		gv.setGenerator(elem.getAttribute(RepositoryConst.GENERATED_VALUE_GENERATOR));
 		gv.setStrategy(elem.getAttribute(RepositoryConst.GENERATED_VALUE_STRATEGY));
 		return gv;
 	}
 
-	public Element getXmlDesc(final GeneratedValue column, final Document doc) {
+	public Element getXmlDesc(final GeneratedValueInDbModel column, final Document doc) {
 		final Element gv = doc.createElement(RepositoryConst.GENERATED_VALUE_ELEMENT);
 		gv.setAttribute(RepositoryConst.GENERATED_VALUE_GENERATOR, column.getGenerator());
 		gv.setAttribute(RepositoryConst.GENERATED_VALUE_STRATEGY, column.getStrategy());

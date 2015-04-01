@@ -15,7 +15,7 @@
  */
 package org.telosys.tools.repository.persistence.commande;
 
-import org.telosys.tools.repository.model.SequenceGenerator;
+import org.telosys.tools.repository.model.SequenceGeneratorInDbModel;
 import org.telosys.tools.repository.persistence.util.CommandException;
 import org.telosys.tools.repository.persistence.util.ProcessContext;
 import org.telosys.tools.repository.persistence.util.RepositoryConst;
@@ -27,7 +27,7 @@ public class CommandElementSequenceGenerator extends AbstractCommand implements 
 		final Element elem = processContext.getElement();
 
 		// Transform element
-		final SequenceGenerator sg = RepositoryConst.SEQUENCE_GENERATOR_WRAPPER.getSequenceGenerator(elem);
+		final SequenceGeneratorInDbModel sg = RepositoryConst.SEQUENCE_GENERATOR_WRAPPER.getSequenceGenerator(elem);
 				
 		// Return result
 		final ProcessContext context = new ProcessContext(sg);

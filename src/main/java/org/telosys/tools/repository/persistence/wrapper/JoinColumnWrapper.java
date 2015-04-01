@@ -16,7 +16,7 @@
 package org.telosys.tools.repository.persistence.wrapper;
 
 import org.telosys.tools.commons.StrUtil;
-import org.telosys.tools.repository.model.JoinColumn;
+import org.telosys.tools.repository.model.JoinColumnInDbModel;
 import org.telosys.tools.repository.persistence.util.RepositoryConst;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -27,8 +27,8 @@ public class JoinColumnWrapper {
 		super();
 	}
 
-	public JoinColumn getJoinColumn(final Element table) {
-		final JoinColumn joinColumn = new JoinColumn();
+	public JoinColumnInDbModel getJoinColumn(final Element table) {
+		final JoinColumnInDbModel joinColumn = new JoinColumnInDbModel();
 		
 		joinColumn.setName(table.getAttribute(RepositoryConst.JOIN_COLUMN_NAME));
 		joinColumn.setReferencedColumnName(table.getAttribute(RepositoryConst.JOIN_COLUMN_REFERENCEDCOLUMNNAME));
@@ -49,7 +49,7 @@ public class JoinColumnWrapper {
 		return joinColumn;
 	}
 
-	public Element getXmlDesc(final JoinColumn joinColumn, final Document doc) {
+	public Element getXmlDesc(final JoinColumnInDbModel joinColumn, final Document doc) {
 		final Element table = doc.createElement(RepositoryConst.JOIN_COLUMN_ELEMENT);
 		
 		table.setAttribute(RepositoryConst.JOIN_COLUMN_NAME, joinColumn.getName());

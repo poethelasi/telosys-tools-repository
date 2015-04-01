@@ -22,7 +22,7 @@ import java.io.Serializable;
  * @author S.Labbe
  * 
  */
-public class GeneratedValue implements Serializable {
+public class GeneratedValueInDbModel implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 

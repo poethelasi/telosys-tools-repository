@@ -16,7 +16,7 @@
 package org.telosys.tools.repository.persistence.wrapper;
 
 import org.telosys.tools.commons.StrUtil;
-import org.telosys.tools.repository.model.SequenceGenerator;
+import org.telosys.tools.repository.model.SequenceGeneratorInDbModel;
 import org.telosys.tools.repository.persistence.util.RepositoryConst;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -27,15 +27,15 @@ public class SequenceGeneratorWrapper {
 		super();
 	}
 
-	public SequenceGenerator getSequenceGenerator(final Element elem) {
-		final SequenceGenerator sg = new SequenceGenerator();
+	public SequenceGeneratorInDbModel getSequenceGenerator(final Element elem) {
+		final SequenceGeneratorInDbModel sg = new SequenceGeneratorInDbModel();
 		sg.setName(elem.getAttribute(RepositoryConst.SEQUENCE_GENERATOR_NAME));
 		sg.setSequenceName(elem.getAttribute(RepositoryConst.SEQUENCE_GENERATOR_SEQUENCENAME));
 		sg.setAllocationSize(StrUtil.getInt(elem.getAttribute(RepositoryConst.SEQUENCE_GENERATOR_ALLOCATIONSIZE)));
 		return sg;
 	}
 
-	public Element getXmlDesc(final SequenceGenerator column, final Document doc) {
+	public Element getXmlDesc(final SequenceGeneratorInDbModel column, final Document doc) {
 		final Element sg = doc.createElement(RepositoryConst.SEQUENCE_GENERATOR_ELEMENT);
 		sg.setAttribute(RepositoryConst.SEQUENCE_GENERATOR_NAME, column.getName());
 		sg.setAttribute(RepositoryConst.SEQUENCE_GENERATOR_SEQUENCENAME, column.getSequenceName());

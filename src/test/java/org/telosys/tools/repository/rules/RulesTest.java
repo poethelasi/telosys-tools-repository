@@ -1,14 +1,14 @@
 package org.telosys.tools.repository.rules;
 
+import static org.junit.Assert.assertEquals;
+
 import java.sql.Types;
 
-import static org.junit.Assert.*;
-
 import org.junit.Test;
-import org.telosys.tools.repository.model.Column;
-import org.telosys.tools.repository.model.Entity;
-import org.telosys.tools.repository.model.Link;
-import org.telosys.tools.repository.persistence.util.RepositoryConst;
+import org.telosys.tools.generic.model.Cardinality;
+import org.telosys.tools.repository.model.AttributeInDbModel;
+import org.telosys.tools.repository.model.EntityInDbModel;
+import org.telosys.tools.repository.model.LinkInDbModel;
 
 public class RulesTest {
 
@@ -81,17 +81,23 @@ public class RulesTest {
 		assertEquals("Ab cd", rules.getAttributeGuiLabel("ab_cd") ) ;
 	}
 
-	private Column buildColumn(String dbName, String javaName, String javaType ) {
-		Column col = new Column();
+	private AttributeInDbModel buildColumn(String dbName, String javaName, String javaType ) {
+		AttributeInDbModel col = new AttributeInDbModel();
 		col.setDatabaseName(dbName);
-		col.setJavaName("name");
-		col.setJavaType("java.lang.String");
+		//col.setJavaName("name");
+		col.setName("name"); // v 3.0.0
+		//col.setJavaType("java.lang.String");
+		col.setFullType("java.lang.String"); // v 3.0.0
 		return col ;
 	}
-	private Link buildLink(String id, String javaFieldName, String cardinality ) {
-		Link link = new Link();
+	
+//	private LinkInDbModel buildLink(String id, String javaFieldName, String cardinality ) {
+	private LinkInDbModel buildLink(String id, String javaFieldName, Cardinality cardinality ) {
+		LinkInDbModel link = new LinkInDbModel();
 		link.setId(id);
-		link.setJavaFieldName(javaFieldName);
+//		link.setJavaFieldName(javaFieldName);
+		link.setFieldName(javaFieldName);
+//		link.setCardinality(cardinality);
 		link.setCardinality(cardinality);
 		return link ;
 	}
@@ -100,26 +106,32 @@ public class RulesTest {
 	public void testAttributeNameForLinkManyToOne() {
 		RepositoryRules rules = RepositoryRulesProvider.getRepositoryRules() ;
 
-		Entity owningSideEntity = new Entity();
-		owningSideEntity.setName("EMPLOYEE");
-		owningSideEntity.setBeanJavaClass("Employee");
-		owningSideEntity.storeColumn(buildColumn("ID", "id", "int"));
-		owningSideEntity.storeColumn(buildColumn("FIRST_NAME", "firstName", "java.lang.String"));
-		owningSideEntity.storeColumn(buildColumn("LAST_NAME", "lastName", "java.lang.String"));
+		EntityInDbModel owningSideEntity = new EntityInDbModel();
+//		owningSideEntity.setName("EMPLOYEE");
+		owningSideEntity.setDatabaseTable("EMPLOYEE");
+//		owningSideEntity.setBeanJavaClass("Employee");
+		owningSideEntity.setClassName("Employee");
+		owningSideEntity.storeAttribute(buildColumn("ID", "id", "int"));
+		owningSideEntity.storeAttribute(buildColumn("FIRST_NAME", "firstName", "java.lang.String"));
+		owningSideEntity.storeAttribute(buildColumn("LAST_NAME", "lastName", "java.lang.String"));
 		
-		Entity inverseSideEntity = new Entity();
-		inverseSideEntity.setName("COMPANY");
-		inverseSideEntity.setBeanJavaClass("Company");
-		inverseSideEntity.storeColumn(buildColumn("CODE", "code", "short"));
-		inverseSideEntity.storeColumn(buildColumn("NAME", "name", "java.lang.String"));
+		EntityInDbModel inverseSideEntity = new EntityInDbModel();
+//		inverseSideEntity.setName("COMPANY");
+		inverseSideEntity.setDatabaseTable("COMPANY");
+//		inverseSideEntity.setBeanJavaClass("Company");
+		inverseSideEntity.setClassName("Company");
+		inverseSideEntity.storeAttribute(buildColumn("CODE", "code", "short"));
+		inverseSideEntity.storeAttribute(buildColumn("NAME", "name", "java.lang.String"));
 
 		assertEquals("company", rules.getAttributeNameForLinkToOne(owningSideEntity, inverseSideEntity) ) ;
 		
-		owningSideEntity.storeLink( buildLink("LINK_FK_AAAA_O", "company", RepositoryConst.MAPPING_MANY_TO_ONE ) );
+//		owningSideEntity.storeLink( buildLink("LINK_FK_AAAA_O", "company", RepositoryConst.MAPPING_MANY_TO_ONE ) );
+		owningSideEntity.storeLink( buildLink("LINK_FK_AAAA_O", "company", Cardinality.MANY_TO_ONE ) );
 		
 		assertEquals("company2", rules.getAttributeNameForLinkToOne(owningSideEntity, inverseSideEntity) ) ;
 		
-		owningSideEntity.storeLink( buildLink("LINK_FK_BBBB_O", "company2", RepositoryConst.MAPPING_MANY_TO_ONE ) );
+//		owningSideEntity.storeLink( buildLink("LINK_FK_BBBB_O", "company2", RepositoryConst.MAPPING_MANY_TO_ONE ) );
+		owningSideEntity.storeLink( buildLink("LINK_FK_BBBB_O", "company2", Cardinality.MANY_TO_ONE ) );
 		
 		assertEquals("company3", rules.getAttributeNameForLinkToOne(owningSideEntity, inverseSideEntity) ) ;
 	}
@@ -128,35 +140,44 @@ public class RulesTest {
 	public void testAttributeNameForLinkOneToMany() {
 		RepositoryRules rules = RepositoryRulesProvider.getRepositoryRules() ;
 
-		Entity entity = new Entity();
-		entity.setName("EMPLOYEE");
-		entity.setBeanJavaClass("Employee");
-		entity.storeColumn(buildColumn("ID", "id", "int"));
-		entity.storeColumn(buildColumn("FIRST_NAME", "firstName", "java.lang.String"));
-		entity.storeColumn(buildColumn("LAST_NAME", "lastName", "java.lang.String"));
+		EntityInDbModel entity = new EntityInDbModel();
+//		entity.setName("EMPLOYEE");
+		entity.setDatabaseTable("EMPLOYEE");
+//		entity.setBeanJavaClass("Employee");
+		entity.setClassName("Employee");
+		entity.storeAttribute(buildColumn("ID", "id", "int"));
+		entity.storeAttribute(buildColumn("FIRST_NAME", "firstName", "java.lang.String"));
+		entity.storeAttribute(buildColumn("LAST_NAME", "lastName", "java.lang.String"));
 		
-		Entity referencedEntity = new Entity();
-		referencedEntity.setName("COMPANY");
-		referencedEntity.setBeanJavaClass("Company");
-		referencedEntity.storeColumn(buildColumn("CODE", "code", "short"));
-		referencedEntity.storeColumn(buildColumn("NAME", "name", "java.lang.String"));
+		EntityInDbModel referencedEntity = new EntityInDbModel();
+//		referencedEntity.setName("COMPANY");
+		referencedEntity.setDatabaseTable("COMPANY");
+//		referencedEntity.setBeanJavaClass("Company");
+		referencedEntity.setClassName("Company");
+		referencedEntity.storeAttribute(buildColumn("CODE", "code", "short"));
+		referencedEntity.storeAttribute(buildColumn("NAME", "name", "java.lang.String"));
 
 		assertEquals("listOfCompany", rules.getAttributeNameForLinkToMany(entity, referencedEntity) ) ;
 		
-		entity.storeLink( buildLink("LINK_FK_AAAA_I", "listOfCompany", RepositoryConst.MAPPING_ONE_TO_MANY ) );
+//		entity.storeLink( buildLink("LINK_FK_AAAA_I", "listOfCompany", RepositoryConst.MAPPING_ONE_TO_MANY ) );
+		entity.storeLink( buildLink("LINK_FK_AAAA_I", "listOfCompany", Cardinality.ONE_TO_MANY ) );
 		
 		assertEquals("listOfCompany2", rules.getAttributeNameForLinkToMany(entity, referencedEntity) ) ;
 		
-		entity.storeLink( buildLink("LINK_FK_BBBB_I", "listOfCompany2", RepositoryConst.MAPPING_ONE_TO_MANY ) );
+//		entity.storeLink( buildLink("LINK_FK_BBBB_I", "listOfCompany2", RepositoryConst.MAPPING_ONE_TO_MANY ) );
+		entity.storeLink( buildLink("LINK_FK_BBBB_I", "listOfCompany2", Cardinality.ONE_TO_MANY ) );
 		
 		assertEquals("listOfCompany3", rules.getAttributeNameForLinkToMany(entity, referencedEntity) ) ;
 
-		Entity referencedEntity2 = new Entity();
-		referencedEntity2.setName("MANAGER");
-		referencedEntity2.setBeanJavaClass("Manager");
+		EntityInDbModel referencedEntity2 = new EntityInDbModel();
+//		referencedEntity2.setName("MANAGER");
+		referencedEntity2.setDatabaseTable("MANAGER");
+//		referencedEntity2.setBeanJavaClass("Manager");
+		referencedEntity2.setClassName("Manager");
 
 		assertEquals("listOfManager", rules.getAttributeNameForLinkToMany(entity, referencedEntity2) ) ;
-		entity.storeLink( buildLink("LINK_FK_MMMM_I", "listOfManager", RepositoryConst.MAPPING_ONE_TO_MANY ) );
+//		entity.storeLink( buildLink("LINK_FK_MMMM_I", "listOfManager", RepositoryConst.MAPPING_ONE_TO_MANY ) );
+		entity.storeLink( buildLink("LINK_FK_MMMM_I", "listOfManager", Cardinality.ONE_TO_MANY ) );
 		assertEquals("listOfManager2", rules.getAttributeNameForLinkToMany(entity, referencedEntity2) ) ;
 	}
 

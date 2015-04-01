@@ -18,10 +18,10 @@ package org.telosys.tools.repository.persistence.commande;
 import java.util.Iterator;
 import java.util.List;
 
-import org.telosys.tools.repository.model.Column;
-import org.telosys.tools.repository.model.GeneratedValue;
-import org.telosys.tools.repository.model.SequenceGenerator;
-import org.telosys.tools.repository.model.TableGenerator;
+import org.telosys.tools.repository.model.AttributeInDbModel;
+import org.telosys.tools.repository.model.GeneratedValueInDbModel;
+import org.telosys.tools.repository.model.SequenceGeneratorInDbModel;
+import org.telosys.tools.repository.model.TableGeneratorInDbModel;
 import org.telosys.tools.repository.persistence.util.CommandException;
 import org.telosys.tools.repository.persistence.util.ProcessContext;
 import org.telosys.tools.repository.persistence.util.RepositoryConst;
@@ -33,7 +33,7 @@ public class CommandElementColumn extends AbstractCommand implements ICommandCon
 		final Element elem = processContext.getElement();
 
 		// Transform element
-		final Column column = RepositoryConst.COLUMN_WRAPPER.getColumn(elem);
+		final AttributeInDbModel column = RepositoryConst.COLUMN_WRAPPER.getColumn(elem);
 
 		// Chain process
 		final ProcessContext processContextNext = genericChildProcess(iCommandManager, elem);
@@ -42,12 +42,12 @@ public class CommandElementColumn extends AbstractCommand implements ICommandCon
 		List<?> objs = processContextNext.getList();
 		for (Iterator<?> iterator = objs.iterator(); iterator.hasNext();) {
 			Object obj = iterator.next();
-			if (obj instanceof GeneratedValue) {
-				column.setGeneratedValue((GeneratedValue) obj);
-			} else if (obj instanceof SequenceGenerator) {
-				column.setSequenceGenerator((SequenceGenerator) obj);
-			} else if (obj instanceof TableGenerator) {
-				column.setTableGenerator((TableGenerator) obj);
+			if (obj instanceof GeneratedValueInDbModel) {
+				column.setGeneratedValue((GeneratedValueInDbModel) obj);
+			} else if (obj instanceof SequenceGeneratorInDbModel) {
+				column.setSequenceGenerator((SequenceGeneratorInDbModel) obj);
+			} else if (obj instanceof TableGeneratorInDbModel) {
+				column.setTableGenerator((TableGeneratorInDbModel) obj);
 			} else {
 				throw new CommandException("Unsupported child on Column : " + obj.getClass());
 			}

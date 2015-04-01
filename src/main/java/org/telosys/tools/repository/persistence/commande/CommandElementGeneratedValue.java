@@ -15,7 +15,7 @@
  */
 package org.telosys.tools.repository.persistence.commande;
 
-import org.telosys.tools.repository.model.GeneratedValue;
+import org.telosys.tools.repository.model.GeneratedValueInDbModel;
 import org.telosys.tools.repository.persistence.util.CommandException;
 import org.telosys.tools.repository.persistence.util.ProcessContext;
 import org.telosys.tools.repository.persistence.util.RepositoryConst;
@@ -27,7 +27,7 @@ public class CommandElementGeneratedValue extends AbstractCommand implements ICo
 		final Element elem = processContext.getElement();
 
 		// Transform element
-		final GeneratedValue gv = RepositoryConst.GENERATED_VALUE_WRAPPER.getGeneratedValue(elem);
+		final GeneratedValueInDbModel gv = RepositoryConst.GENERATED_VALUE_WRAPPER.getGeneratedValue(elem);
 				
 		// Return result
 		final ProcessContext context = new ProcessContext(gv);

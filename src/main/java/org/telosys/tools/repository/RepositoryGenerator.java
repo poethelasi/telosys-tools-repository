@@ -27,7 +27,6 @@ import org.telosys.tools.commons.jdbc.ConnectionManager;
 import org.telosys.tools.db.model.DatabaseModelManager;
 import org.telosys.tools.db.model.DatabaseTable;
 import org.telosys.tools.db.model.DatabaseTables;
-import org.telosys.tools.repository.model.ModelVersion;
 import org.telosys.tools.repository.model.RepositoryModel;
 import org.telosys.tools.repository.rules.RepositoryRules;
 
@@ -157,7 +156,7 @@ public class RepositoryGenerator extends RepositoryManager
 			repositoryModel.setDatabaseId( databaseConfig.getDatabaseId() );
 			repositoryModel.setDatabaseProductName( dbmd.getDatabaseProductName() );
 			repositoryModel.setGenerationDate( new Date() );
-			repositoryModel.setVersion( ModelVersion.VERSION );
+			//repositoryModel.setVersion( DbModelVersion.VERSION ); // v 3.0.0 (in Model class)
 
 			//--- Add all tables/entities to the new repository	
 			generateEntities(repositoryModel, 

@@ -7,13 +7,13 @@ import org.telosys.tools.commons.ObjectUtil;
 public class ColumnTest {
 
 	@Test
-	public void test() {
-		Column c = new Column();
+	public void testDeepCopy() {
+		AttributeInDbModel c = new AttributeInDbModel();
 		c.setDatabaseName("FIRST_NAME");
 		c.setDatabaseNotNull(true);
 		c.setDatabaseComment("my comment");
 		
-		Column c2 = ObjectUtil.deepCopy(c);
+		AttributeInDbModel c2 = ObjectUtil.deepCopy(c);
 		
 		c.setDatabaseName("OTHER");
 		

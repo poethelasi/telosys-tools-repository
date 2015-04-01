@@ -18,10 +18,10 @@ package org.telosys.tools.repository.persistence.commande;
 import java.util.Iterator;
 import java.util.List;
 
-import org.telosys.tools.repository.model.Column;
-import org.telosys.tools.repository.model.Entity;
-import org.telosys.tools.repository.model.ForeignKey;
-import org.telosys.tools.repository.model.Link;
+import org.telosys.tools.repository.model.AttributeInDbModel;
+import org.telosys.tools.repository.model.EntityInDbModel;
+import org.telosys.tools.repository.model.ForeignKeyInDbModel;
+import org.telosys.tools.repository.model.LinkInDbModel;
 import org.telosys.tools.repository.persistence.util.CommandException;
 import org.telosys.tools.repository.persistence.util.ProcessContext;
 import org.telosys.tools.repository.persistence.util.RepositoryConst;
@@ -33,7 +33,7 @@ public class CommandElementTable extends AbstractCommand implements ICommandCont
 		final Element elem = processContext.getElement();
 
 		// Transform element
-		final Entity entity = RepositoryConst.ENTITY_WRAPPER.getEntity(elem);
+		final EntityInDbModel entity = RepositoryConst.ENTITY_WRAPPER.getEntity(elem);
 
 		// Chain process
 		final ProcessContext processContextNext = genericChildProcess(iCommandManager, elem);
@@ -42,12 +42,12 @@ public class CommandElementTable extends AbstractCommand implements ICommandCont
 		List<?> objs = processContextNext.getList();
 		for (Iterator<?> iterator = objs.iterator(); iterator.hasNext();) {
 			Object obj = iterator.next();
-			if (obj instanceof ForeignKey) {
-				entity.storeForeignKey((ForeignKey) obj);
-			} else if (obj instanceof Column) {
-				entity.storeColumn((Column) obj);
-			} else if (obj instanceof Link) {
-				entity.storeLink((Link) obj);
+			if (obj instanceof ForeignKeyInDbModel) {
+				entity.storeForeignKey((ForeignKeyInDbModel) obj);
+			} else if (obj instanceof AttributeInDbModel) {
+				entity.storeAttribute((AttributeInDbModel) obj);
+			} else if (obj instanceof LinkInDbModel) {
+				entity.storeLink((LinkInDbModel) obj);
 			} else {
 				throw new CommandException("Unsupported child on Entity : " + obj.getClass());
 			}

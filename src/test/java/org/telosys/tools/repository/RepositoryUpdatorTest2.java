@@ -11,7 +11,7 @@ import org.telosys.tools.repository.changelog.ChangeLog;
 import org.telosys.tools.repository.changelog.ChangeOnEntity;
 import org.telosys.tools.repository.changelog.ChangeOnForeignKey;
 import org.telosys.tools.repository.changelog.ChangeType;
-import org.telosys.tools.repository.model.ForeignKey;
+import org.telosys.tools.repository.model.ForeignKeyInDbModel;
 import org.telosys.tools.repository.model.RepositoryModel;
 
 public class RepositoryUpdatorTest2 extends AbstractTestCase {
@@ -47,8 +47,10 @@ public class RepositoryUpdatorTest2 extends AbstractTestCase {
 		
 		assertEquals(2, repositoryModel.getNumberOfEntities() );
 		
-		assertEquals(1, repositoryModel.getEntityByName("COUNTRY").getLinks().length );
-		assertEquals(1, repositoryModel.getEntityByName("CUSTOMER").getLinks().length );
+//		assertEquals(1, repositoryModel.getEntityByName("COUNTRY").getLinks().length );
+//		assertEquals(1, repositoryModel.getEntityByName("CUSTOMER").getLinks().length );
+		assertEquals(1, repositoryModel.getEntityByTableName("COUNTRY").getLinksArray().length);
+		assertEquals(1, repositoryModel.getEntityByTableName("CUSTOMER").getLinksArray().length );
 	}
 
 	/**
@@ -81,8 +83,8 @@ public class RepositoryUpdatorTest2 extends AbstractTestCase {
 		
 		assertEquals(2, repositoryModel.getNumberOfEntities() );
 		
-		assertEquals(0, repositoryModel.getEntityByName("COUNTRY").getLinks().length );
-		assertEquals(0, repositoryModel.getEntityByName("CUSTOMER").getLinks().length );
+		assertEquals(0, repositoryModel.getEntityByTableName("COUNTRY").getLinksArray().length );
+		assertEquals(0, repositoryModel.getEntityByTableName("CUSTOMER").getLinksArray().length );
 	}
 
 	/**
@@ -116,16 +118,20 @@ public class RepositoryUpdatorTest2 extends AbstractTestCase {
 		assertEquals(3, repositoryModel.getNumberOfEntities() );
 		
 		//--- 1 Foreign Key
-		assertEquals(1, repositoryModel.getEntityByName("CUSTOMER").getForeignKeys().length ) ;
+		assertEquals(1, repositoryModel.getEntityByTableName("CUSTOMER").getForeignKeys().length ) ;
 		//--- 1 Foreign Key referencing "DEPARTMENT"
-		ForeignKey fk = repositoryModel.getEntityByName("CUSTOMER").getForeignKey("FK1");
+		ForeignKeyInDbModel fk = repositoryModel.getEntityByTableName("CUSTOMER").getForeignKey("FK1");
 		assertNotNull(fk);
-		assertEquals("DEPARTMENT", fk.getTableRef() ) ;
+//		assertEquals("DEPARTMENT", fk.getTableRef() ) ;
+		assertEquals("DEPARTMENT", fk.getReferencedTableName() ) ;
 		
 		//--- Links
-		assertEquals(0, repositoryModel.getEntityByName("COUNTRY").getLinks().length );
-		assertEquals(1, repositoryModel.getEntityByName("CUSTOMER").getLinks().length );
-		assertEquals(1, repositoryModel.getEntityByName("DEPARTMENT").getLinks().length );
+//		assertEquals(0, repositoryModel.getEntityByName("COUNTRY").getLinks().length );
+//		assertEquals(1, repositoryModel.getEntityByName("CUSTOMER").getLinks().length );
+//		assertEquals(1, repositoryModel.getEntityByName("DEPARTMENT").getLinks().length );
+		assertEquals(0, repositoryModel.getEntityByTableName("COUNTRY").getLinksArray().length );
+		assertEquals(1, repositoryModel.getEntityByTableName("CUSTOMER").getLinksArray().length );
+		assertEquals(1, repositoryModel.getEntityByTableName("DEPARTMENT").getLinksArray().length );
 	}
 
 }

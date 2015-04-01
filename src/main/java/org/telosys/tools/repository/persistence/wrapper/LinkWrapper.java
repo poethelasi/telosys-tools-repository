@@ -16,7 +16,12 @@
 package org.telosys.tools.repository.persistence.wrapper;
 
 import org.telosys.tools.commons.StrUtil;
-import org.telosys.tools.repository.model.Link;
+import org.telosys.tools.generic.model.Cardinality;
+import org.telosys.tools.generic.model.CascadeOption;
+import org.telosys.tools.generic.model.CascadeOptions;
+import org.telosys.tools.generic.model.FetchType;
+import org.telosys.tools.generic.model.Optional;
+import org.telosys.tools.repository.model.LinkInDbModel;
 import org.telosys.tools.repository.persistence.util.RepositoryConst;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -27,23 +32,38 @@ public class LinkWrapper {
 		super();
 	}
 
-	public Link getLink(Element element) 
+	public LinkInDbModel getLink(Element element) 
 	{
-		Link link = new Link();
+		LinkInDbModel link = new LinkInDbModel();
 		
 		link.setId(element.getAttribute(RepositoryConst.LINK_ID));
 		
-		link.setCascade(element.getAttribute(RepositoryConst.LINK_CASCADE));
-		link.setFetch(element.getAttribute(RepositoryConst.LINK_FETCH));
-		link.setInverseSideOf(element.getAttribute(RepositoryConst.LINK_INVERSE_SIDE_OF));
-		link.setJavaFieldName(element.getAttribute(RepositoryConst.LINK_JAVA_NAME));
-		link.setJavaFieldType(element.getAttribute(RepositoryConst.LINK_JAVA_TYPE));
+//		link.setCascade(element.getAttribute(RepositoryConst.LINK_CASCADE));
+		link.setCascadeOptions(convertStringToCascadeOptions(element.getAttribute(RepositoryConst.LINK_CASCADE)));
+		
+//		link.setFetch(element.getAttribute(RepositoryConst.LINK_FETCH));
+		link.setFetchType(convertStringToFetchType(element.getAttribute(RepositoryConst.LINK_FETCH))); // v 3.0.0
+
+//		link.setInverseSideOf(element.getAttribute(RepositoryConst.LINK_INVERSE_SIDE_OF));
+		link.setInverseSideLinkId(element.getAttribute(RepositoryConst.LINK_INVERSE_SIDE_OF)); // v 3.0.0
+		
+//		link.setJavaFieldName(element.getAttribute(RepositoryConst.LINK_JAVA_NAME));
+		link.setFieldName(element.getAttribute(RepositoryConst.LINK_JAVA_NAME)); // v 3.0.0
+		
+//		link.setJavaFieldType(element.getAttribute(RepositoryConst.LINK_JAVA_TYPE));
+		link.setFieldType(element.getAttribute(RepositoryConst.LINK_JAVA_TYPE)); // v 3.0.0
+		
 		link.setMappedBy(element.getAttribute(RepositoryConst.LINK_MAPPED_BY));
-		link.setTargetEntityJavaType(element.getAttribute(RepositoryConst.LINK_TARGET_ENTITY));
+		
+//		link.setTargetEntityJavaType(element.getAttribute(RepositoryConst.LINK_TARGET_ENTITY));
+		link.setTargetEntityClassName(element.getAttribute(RepositoryConst.LINK_TARGET_ENTITY)); // v 3.0.0
 		
 		link.setSourceTableName(element.getAttribute(RepositoryConst.LINK_SOURCE_TABLE_NAME));
+		
 		link.setTargetTableName(element.getAttribute(RepositoryConst.LINK_TARGET_TABLE_NAME));
-		link.setCardinality(element.getAttribute(RepositoryConst.LINK_CARDINALITY));
+		
+//		link.setCardinality(element.getAttribute(RepositoryConst.LINK_CARDINALITY));
+		link.setCardinality(convertStringToCardinality(element.getAttribute(RepositoryConst.LINK_CARDINALITY)));
 
 		if (StrUtil.nullOrVoid(element.getAttribute(RepositoryConst.LINK_FOREIGN_KEY_NAME)) == false) {
 			link.setForeignKeyName( element.getAttribute(RepositoryConst.LINK_FOREIGN_KEY_NAME) );
@@ -54,10 +74,9 @@ public class LinkWrapper {
 		if (StrUtil.nullOrVoid(element.getAttribute(RepositoryConst.LINK_OWNING_SIDE)) == false) {
 			link.setOwningSide(StrUtil.getBoolean(element.getAttribute(RepositoryConst.LINK_OWNING_SIDE)));
 		}
-//		if (StrUtil.nullOrVoid(element.getAttribute(RepositoryConst.LINK_OPTIONAL)) == false) {
-//			link.setOptional(StrUtil.getBoolean(element.getAttribute(RepositoryConst.LINK_OPTIONAL)));
-//		}
-		link.setOptional(element.getAttribute(RepositoryConst.LINK_OPTIONAL));
+
+//		link.setOptional(element.getAttribute(RepositoryConst.LINK_OPTIONAL));
+		link.setOptional(convertStringToOptional(element.getAttribute(RepositoryConst.LINK_OPTIONAL)));
 
 		if (StrUtil.nullOrVoid(element.getAttribute(RepositoryConst.LINK_USED)) == false) {
 			link.setUsed(StrUtil.getBoolean(element.getAttribute(RepositoryConst.LINK_USED)));
@@ -65,35 +84,210 @@ public class LinkWrapper {
 		return link;
 	}
 
-	public Element getXmlDesc(Link link, Document doc) 
+	public Element getXmlDesc(LinkInDbModel link, Document doc) 
 	{
 		Element element = doc.createElement(RepositoryConst.LINK);
 		
 		element.setAttribute(RepositoryConst.LINK_ID, link.getId());
 		
-		element.setAttribute(RepositoryConst.LINK_CASCADE, link.getCascade());
-		element.setAttribute(RepositoryConst.LINK_FETCH, link.getFetch());
-		element.setAttribute(RepositoryConst.LINK_INVERSE_SIDE_OF, link.getInverseSideOf());
-		element.setAttribute(RepositoryConst.LINK_JAVA_NAME, link.getJavaFieldName());
-		element.setAttribute(RepositoryConst.LINK_JAVA_TYPE, link.getJavaFieldType());
+//		element.setAttribute(RepositoryConst.LINK_CASCADE, link.getCascade());
+		element.setAttribute(RepositoryConst.LINK_CASCADE, convertCascadeOptionsToString(link.getCascadeOptions())); // v 3.0.0
+		
+//		element.setAttribute(RepositoryConst.LINK_FETCH, link.getFetch());
+		element.setAttribute(RepositoryConst.LINK_FETCH, convertFetchTypeToString(link.getFetchType()) ); // v 3.0.0
+		
+//		element.setAttribute(RepositoryConst.LINK_INVERSE_SIDE_OF, link.getInverseSideOf());
+		element.setAttribute(RepositoryConst.LINK_INVERSE_SIDE_OF, link.getInverseSideLinkId()); // v 3.0.0
+		
+//		element.setAttribute(RepositoryConst.LINK_JAVA_NAME, link.getJavaFieldName());
+		element.setAttribute(RepositoryConst.LINK_JAVA_NAME, link.getFieldName()); // v 3.0.0
+		
+//		element.setAttribute(RepositoryConst.LINK_JAVA_TYPE, link.getJavaFieldType());
+		element.setAttribute(RepositoryConst.LINK_JAVA_TYPE, link.getFieldType()); // v 3.0.0
+		
 		element.setAttribute(RepositoryConst.LINK_MAPPED_BY, link.getMappedBy());
-		element.setAttribute(RepositoryConst.LINK_TARGET_ENTITY, link.getTargetEntityJavaType());
+		
+//		element.setAttribute(RepositoryConst.LINK_TARGET_ENTITY, link.getTargetEntityJavaType());
+		element.setAttribute(RepositoryConst.LINK_TARGET_ENTITY, link.getTargetEntityClassName()); // v 3.0.0
+		
 		element.setAttribute(RepositoryConst.LINK_TARGET_TABLE_NAME, link.getTargetTableName());
 		
 		element.setAttribute(RepositoryConst.LINK_FOREIGN_KEY_NAME, link.getForeignKeyName());
 		element.setAttribute(RepositoryConst.LINK_JOIN_TABLE_NAME, link.getJoinTableName());
 		
 		element.setAttribute(RepositoryConst.LINK_SOURCE_TABLE_NAME, link.getSourceTableName());
-		element.setAttribute(RepositoryConst.LINK_CARDINALITY, link.getCardinality());
+		
+//		element.setAttribute(RepositoryConst.LINK_CARDINALITY, link.getCardinality());
+		element.setAttribute(RepositoryConst.LINK_CARDINALITY, convertCardinalityToString(link.getCardinality()));
 
 		element.setAttribute(RepositoryConst.LINK_OWNING_SIDE, Boolean.toString(link.isOwningSide()));
 		
-		//element.setAttribute(RepositoryConst.LINK_OPTIONAL, Boolean.toString(link.isOptional()));
-		element.setAttribute(RepositoryConst.LINK_OPTIONAL, link.getOptional() );
+//		element.setAttribute(RepositoryConst.LINK_OPTIONAL, link.getOptional() );
+		element.setAttribute(RepositoryConst.LINK_OPTIONAL, convertOptionalToString(link.getOptional()) );
 
 		element.setAttribute(RepositoryConst.LINK_USED, Boolean.toString(link.isUsed()));
 		
 		return element;
+	}
+	
+	//---------------------------------------------------------------------------------------------------
+	// CASCADE OPTIONS
+	//---------------------------------------------------------------------------------------------------
+	/**
+	 * Convert the given string to CascadeOptions
+	 * @param s ( eg : "MERGE PERSIST", "PERSIST", "ALL" )
+	 * @return the CascadeOptions instance
+	 */
+	private CascadeOptions convertStringToCascadeOptions(String s) {
+		CascadeOptions cascadeOptions = new CascadeOptions();
+		if ( s != null ) {
+			String cascadeUC = s.toUpperCase();
+			if (cascadeUC.contains(RepositoryConst.CASCADE_ALL)) {
+				cascadeOptions.add(CascadeOption.ALL);
+			}
+			if (cascadeUC.contains(RepositoryConst.CASCADE_MERGE)) {
+				cascadeOptions.add(CascadeOption.MERGE);
+			}
+			if (cascadeUC.contains(RepositoryConst.CASCADE_PERSIST)) {
+				cascadeOptions.add(CascadeOption.PERSIST);
+			}
+			if (cascadeUC.contains(RepositoryConst.CASCADE_REFRESH)) {
+				cascadeOptions.add(CascadeOption.REFRESH);
+			}
+			if (cascadeUC.contains(RepositoryConst.CASCADE_REMOVE)) {
+				cascadeOptions.add(CascadeOption.REMOVE);
+			}
+		}
+		return cascadeOptions ;
+	}
+	
+	private String convertCascadeOptionsToString(CascadeOptions cascadeOptions) {
+		if ( cascadeOptions != null ) {
+			StringBuffer sb = new StringBuffer();
+			for ( CascadeOption co : cascadeOptions.getActiveOptions() ) {
+				sb.append(" ");
+				switch (co) {
+				case MERGE:	
+					sb.append(RepositoryConst.CASCADE_MERGE);					
+					break;
+				case PERSIST:	
+					sb.append(RepositoryConst.CASCADE_PERSIST);					
+					break;
+				case REFRESH:	
+					sb.append(RepositoryConst.CASCADE_REFRESH);					
+					break;
+				case REMOVE:	
+					sb.append(RepositoryConst.CASCADE_REMOVE);					
+					break;
+				case ALL:	
+					return RepositoryConst.CASCADE_ALL ; // ALL : return immediately		
+				}
+			}
+			return sb.toString();
+		}
+		return "" ;
+	}
+	
+	//---------------------------------------------------------------------------------------------------
+	// FETCH TYPE
+	//---------------------------------------------------------------------------------------------------
+	/**
+	 * Convert the given string to FetchType
+	 * @param s ( eg : "EAGER", "LAZY", etc )
+	 * @return the FetchType instance
+	 */
+	private FetchType convertStringToFetchType(String s) {
+		if ( s != null ) {
+			if ( RepositoryConst.FETCH_EAGER.equals(s)) return FetchType.EAGER ;
+			if ( RepositoryConst.FETCH_LAZY.equals(s)) return FetchType.LAZY ;
+			if ( RepositoryConst.FETCH_DEFAULT.equals(s)) return FetchType.DEFAULT ;
+		}
+		return FetchType.UNDEFINED ;
+	}
+	
+	/**
+	 * Convert the given FetchType to a String value
+	 * @param fetchType
+	 * @return the String value ( eg : "EAGER", "LAZY", etc ) or "" if the FetchType is null or UNDEFINED
+	 */
+	private String convertFetchTypeToString(FetchType fetchType) {
+		if ( fetchType != null ) {
+			switch (fetchType) {
+				case EAGER : return RepositoryConst.FETCH_EAGER ;
+				case LAZY : return RepositoryConst.FETCH_LAZY ;
+				case DEFAULT : return RepositoryConst.FETCH_DEFAULT ;
+				case UNDEFINED : return "" ;
+			}
+		}
+		return "" ;
+	}
+
+	//---------------------------------------------------------------------------------------------------
+	// CARDINALITY
+	//---------------------------------------------------------------------------------------------------
+	/**
+	 * Convert the given string to Cardinality
+	 * @param s ( eg : "OneToOne", "ManyToOne", etc )
+	 * @return the Cardinality instance
+	 */
+	private Cardinality convertStringToCardinality(String s) {
+		if ( s != null ) {
+			if ( RepositoryConst.MAPPING_ONE_TO_ONE.equals(s)) return Cardinality.ONE_TO_ONE ;
+			if ( RepositoryConst.MAPPING_ONE_TO_MANY.equals(s)) return Cardinality.ONE_TO_MANY ;
+			if ( RepositoryConst.MAPPING_MANY_TO_ONE.equals(s)) return Cardinality.MANY_TO_ONE ;
+			if ( RepositoryConst.MAPPING_MANY_TO_MANY.equals(s)) return Cardinality.MANY_TO_MANY ;
+		}
+		return Cardinality.UNDEFINED ;
+	}
+	
+	/**
+	 * Convert the given Cardinality to a String value
+	 * @param cardinality
+	 * @return the String value ( eg : "OneToOne", "ManyToOne", etc  ) or "" if the Cardinality is null or UNDEFINED
+	 */
+	private String convertCardinalityToString(Cardinality cardinality) {
+		if ( cardinality != null ) {
+			switch (cardinality) {
+				case ONE_TO_ONE : return RepositoryConst.MAPPING_ONE_TO_ONE ;
+				case ONE_TO_MANY : return RepositoryConst.MAPPING_ONE_TO_MANY ;
+				case MANY_TO_ONE : return RepositoryConst.MAPPING_MANY_TO_ONE ;
+				case MANY_TO_MANY : return RepositoryConst.MAPPING_MANY_TO_MANY ;
+				case UNDEFINED : return "" ;
+			}
+		}
+		return null ;
+	}
+
+	//---------------------------------------------------------------------------------------------------
+	// OPTIONAL
+	//---------------------------------------------------------------------------------------------------
+	/**
+	 * Convert the given string to Optional
+	 * @param s ( eg : "TRUE", "FALSE" )
+	 * @return the Optional instance
+	 */
+	private Optional convertStringToOptional(String s) {
+		if ( s != null ) {
+			if ( RepositoryConst.OPTIONAL_TRUE.equals(s)) return Optional.TRUE ;
+			if ( RepositoryConst.OPTIONAL_FALSE.equals(s)) return Optional.FALSE ;
+		}
+		return Optional.UNDEFINED ;
+	}
+	
+	/**
+	 * Convert the given Optional to a String value
+	 * @param optional
+	 * @return the String value ( eg : "TRUE", "FALSE" ) or "" if Optional is null or UNDEFINED
+	 */
+	private String convertOptionalToString(Optional optional) {
+		if ( optional != null ) {
+			switch (optional) {
+				case TRUE : return RepositoryConst.OPTIONAL_TRUE ;
+				case FALSE : return RepositoryConst.OPTIONAL_FALSE ;
+				case UNDEFINED : return "" ;
+			}
+		}
+		return "" ;
 	}
 
 }

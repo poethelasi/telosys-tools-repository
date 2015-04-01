@@ -16,14 +16,17 @@
 package org.telosys.tools.repository.model;
 
 import java.io.Serializable;
+import java.util.List;
+
+import org.telosys.tools.generic.model.JoinColumn;
+import org.telosys.tools.generic.model.JoinTable;
 
 
 /**
  * "JoinTable" model class <br>
  *
- * @author slabbe
  */
-public class JoinTable implements Serializable 
+public class JoinTableInDbModel implements Serializable, JoinTable 
 {
 	private static final long serialVersionUID = 1L;
 
@@ -33,9 +36,11 @@ public class JoinTable implements Serializable
 
 	private String catalog ;
 	
-	private JoinColumns        joinColums = null ;
+//	private JoinColumnsInDbModel        joinColums = null ;
+	private List<JoinColumnInDbModel>   joinColumns = null ;
 
-	private InverseJoinColumns inverseJoinColums = null ;
+//	private InverseJoinColumnsInDbModel inverseJoinColums = null ;
+	private List<JoinColumnInDbModel>   inverseJoinColumns = null ;
 	
 	
 	//--------------------------------------------------------------------------
@@ -66,23 +71,48 @@ public class JoinTable implements Serializable
 	}
 
 	//--------------------------------------------------------------------------
-	public void setJoinColumns( JoinColumns joinColumns )
-	{
-		joinColums = joinColumns ;
+//	private List<JoinColumn> toListOfJoinColumns(List<JoinColumnInDbModel> listOfJoinColumnInDbModel) {
+//		LinkedList<JoinColumn> joinColumns = new LinkedList<JoinColumn>();
+//		for ( JoinColumn jc : listOfJoinColumnInDbModel ) {
+//			joinColumns.add(jc);
+//		}
+//		return joinColumns ;
+//	}
+
+//	public void setJoinColumns( JoinColumnsInDbModel joinColumns ) {
+//		joinColums = joinColumns ;
+//	}
+	public void setJoinColumns( List<JoinColumnInDbModel> joinColumns ) 	{
+		this.joinColumns = joinColumns ;
 	}
-	public JoinColumns getJoinColumns()
-	{
-		return joinColums ;
+//	public JoinColumnsInDbModel getJoinColumns() {
+//		return joinColums ;
+//	}
+	@Override
+	public List<JoinColumn> getJoinColumns() {
+//		LinkedList<JoinColumn> joinColumns = new LinkedList<JoinColumn>();
+//		for ( JoinColumn jc : joinColumsInDbModel ) {
+//			joinColumns.add(jc);
+//		}
+//		return joinColumns ;
+//		return toListOfJoinColumns(this.joinColumns) ;
+		return DbModelUtil.toListOfJoinColumns(this.joinColumns);
 	}
 	
 	//--------------------------------------------------------------------------
-	public void setInverseJoinColumns( InverseJoinColumns joinColumns )
-	{
-		inverseJoinColums = joinColumns ;
+//	public void setInverseJoinColumns( InverseJoinColumnsInDbModel joinColumns ) {
+//		inverseJoinColums = joinColumns ;
+//	}
+	public void setInverseJoinColumns( List<JoinColumnInDbModel> inverseJoinColumns ) {
+		this.inverseJoinColumns = inverseJoinColumns ;
 	}
-	public InverseJoinColumns getInverseJoinColumns()
-	{
-		return inverseJoinColums ;
+//	public InverseJoinColumnsInDbModel getInverseJoinColumns() {
+//		return inverseJoinColums ;
+//	}
+	@Override
+	public List<JoinColumn> getInverseJoinColumns() {
+		//return toListOfJoinColumns(this.inverseJoinColumns) ;
+		return DbModelUtil.toListOfJoinColumns(this.inverseJoinColumns);		
 	}
 	
 	//--------------------------------------------------------------------------

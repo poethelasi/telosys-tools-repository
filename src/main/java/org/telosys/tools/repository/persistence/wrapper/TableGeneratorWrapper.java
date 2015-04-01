@@ -15,7 +15,7 @@
  */
 package org.telosys.tools.repository.persistence.wrapper;
 
-import org.telosys.tools.repository.model.TableGenerator;
+import org.telosys.tools.repository.model.TableGeneratorInDbModel;
 import org.telosys.tools.repository.persistence.util.RepositoryConst;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -26,8 +26,8 @@ public class TableGeneratorWrapper {
 		super();
 	}
 
-	public TableGenerator getTableGenerator(final Element elem) {
-		final TableGenerator tg = new TableGenerator();
+	public TableGeneratorInDbModel getTableGenerator(final Element elem) {
+		final TableGeneratorInDbModel tg = new TableGeneratorInDbModel();
 		tg.setName(elem.getAttribute(RepositoryConst.TABLE_GENERATOR_NAME));
 		tg.setTable(elem.getAttribute(RepositoryConst.TABLE_GENERATOR_TABLE));
 		tg.setPkColumnName(elem.getAttribute(RepositoryConst.TABLE_GENERATOR_PKCOLUMNNAME));
@@ -36,7 +36,7 @@ public class TableGeneratorWrapper {
 		return tg;
 	}
 
-	public Element getXmlDesc(final TableGenerator tg, final Document doc) {
+	public Element getXmlDesc(final TableGeneratorInDbModel tg, final Document doc) {
 		final Element element = doc.createElement(RepositoryConst.TABLE_GENERATOR_ELEMENT);
 		element.setAttribute(RepositoryConst.TABLE_GENERATOR_NAME, tg.getName());
 		element.setAttribute(RepositoryConst.TABLE_GENERATOR_TABLE, tg.getTable());

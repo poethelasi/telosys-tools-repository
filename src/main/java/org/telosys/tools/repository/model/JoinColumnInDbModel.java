@@ -17,6 +17,8 @@ package org.telosys.tools.repository.model;
 
 import java.io.Serializable;
 
+import org.telosys.tools.generic.model.JoinColumn;
+
 /**
  * "joinColumn" model class <br>
  * <joinColumn name="EMPLOYEE_ID" table="" referencedColumnName="ID" unique="true|false" nullable="true|false" updatable="" insertable="" />
@@ -24,7 +26,8 @@ import java.io.Serializable;
  * @author slabbe
  * 
  */
-public class JoinColumn implements Serializable {
+public class JoinColumnInDbModel implements Serializable, JoinColumn
+{
 	
 	private static final long serialVersionUID = 1L;
 
@@ -40,7 +43,7 @@ public class JoinColumn implements Serializable {
 
 	private boolean insertable = false; 
 
-	public JoinColumn() {
+	public JoinColumnInDbModel() {
 		
 	}
 	
@@ -62,6 +65,7 @@ public class JoinColumn implements Serializable {
 //		}
 //	}
 	
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -70,6 +74,7 @@ public class JoinColumn implements Serializable {
 		this.name = name;
 	}
 
+	@Override
 	public String getReferencedColumnName() {
 		return referencedColumnName;
 	}
@@ -78,6 +83,7 @@ public class JoinColumn implements Serializable {
 		this.referencedColumnName = referencedColumnName;
 	}
 
+	@Override
 	public boolean isUnique() {
 		return unique;
 	}
@@ -86,6 +92,7 @@ public class JoinColumn implements Serializable {
 		this.unique = unique;
 	}
 
+	@Override
 	public boolean isNullable() {
 		return nullable;
 	}
@@ -94,6 +101,7 @@ public class JoinColumn implements Serializable {
 		this.nullable = nullable;
 	}
 
+	@Override
 	public boolean isUpdatable() {
 		return updatable;
 	}
@@ -102,6 +110,7 @@ public class JoinColumn implements Serializable {
 		this.updatable = updatable;
 	}
 
+	@Override
 	public boolean isInsertable() {
 		return insertable;
 	}

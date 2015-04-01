@@ -19,8 +19,9 @@ import java.io.Serializable;
 
 import org.telosys.tools.commons.StrUtil;
 import org.telosys.tools.commons.jdbctypes.MetadataUtil;
+import org.telosys.tools.generic.model.ForeignKeyColumn;
 
-public class ForeignKeyColumn implements Comparable<ForeignKeyColumn>, Serializable
+public class ForeignKeyColumnInDbModel implements Comparable<ForeignKeyColumnInDbModel>, Serializable, ForeignKeyColumn
 {
 	private static final long serialVersionUID = 1L;
 
@@ -83,11 +84,18 @@ public class ForeignKeyColumn implements Comparable<ForeignKeyColumn>, Serializa
 
 	//-------------------------------------------------------------------------------
 
-	public String getColumnRef() {
+//	public String getColumnRef() {
+//		return _columnRef;
+//	}
+	@Override
+	public String getReferencedColumnName() { // v 3.0.0
 		return _columnRef;
 	}
 
-	public void setColumnRef(String v) {
+//	public void setColumnRef(String v) {
+//		_columnRef = v;
+//	}
+	public void setReferencedColumnName(String v) { // v 3.0.0
 		_columnRef = v;
 	}
 
@@ -144,21 +152,19 @@ public class ForeignKeyColumn implements Comparable<ForeignKeyColumn>, Serializa
 
 	//-------------------------------------------------------------------------------
 	//public boolean equals(Object o) // unreliable
-	public boolean isIdentical(ForeignKeyColumn o)  // v 2.1.1
+	public boolean isIdentical(ForeignKeyColumnInDbModel o)  // v 2.1.1
 	{
 		if ( null == o ) return false ;
 		if ( this == o ) return true ;
 		if ( o.getClass() != this.getClass() ) return false ;
 		
-		ForeignKeyColumn fkcol = (ForeignKeyColumn) o ;
+		ForeignKeyColumnInDbModel fkcol = (ForeignKeyColumnInDbModel) o ;
 		
 		return     StrUtil.identical(_columnName, fkcol.getColumnName() )
-				&& StrUtil.identical(_columnRef, fkcol.getColumnRef() )
+//				&& StrUtil.identical(_columnRef, fkcol.getColumnRef() )
+				&& StrUtil.identical(_columnRef, fkcol.getReferencedColumnName() )
 				&& StrUtil.identical(_tableName, fkcol.getTableName() )
 				&& StrUtil.identical(_tableRef, fkcol.getTableRef() )
-//				&& StrUtil.identical(_deferrable, fkcol.getDeferrable() )
-//				&& StrUtil.identical(_deleteRule, fkcol.getDeleteRule() )
-//				&& StrUtil.identical(_updateRule, fkcol.getUpdateRule() )
 				&& _deferrableCode == fkcol.getDeferrableCode()
 				&& _deleteRuleCode == fkcol.getDeleteRuleCode()
 				&& _updateRuleCode == fkcol.getUpdateRuleCode()
@@ -167,11 +173,9 @@ public class ForeignKeyColumn implements Comparable<ForeignKeyColumn>, Serializa
 	}
 	
 	//-------------------------------------------------------------------------------
-	//public int compareTo(Object o) {
-	public int compareTo(ForeignKeyColumn other) {
-		if ( other != null )
-		{
-			//ForeignKeyColumn other = (ForeignKeyColumn) o;
+	public int compareTo(ForeignKeyColumnInDbModel other) {
+		// The comparison is based on the sequence (to sort the FK in their original order)
+		if ( other != null ) {
 			return ( this.getSequence() - other.getSequence() );
 		}
 		return 0;
