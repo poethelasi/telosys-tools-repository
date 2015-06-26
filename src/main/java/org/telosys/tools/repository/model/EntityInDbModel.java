@@ -272,7 +272,14 @@ public class EntityInDbModel implements Comparable<EntityInDbModel>, Serializabl
 	//--------------------------------------------------------------------------
 	// ATTRIBUTES ( ex COLUMNS )  management
 	//--------------------------------------------------------------------------
-	
+	/**
+	 * Returns the number of attributes 
+	 * @return
+	 */
+	public int getAttributesCount() {
+		return attributes.size();
+	}
+
 	/**
 	 * Returns an array containing all the columns of the entity<br>
 	 * The columns are sorted by ordinal position (the original database order).
@@ -394,6 +401,13 @@ public class EntityInDbModel implements Comparable<EntityInDbModel>, Serializabl
 	//--------------------------------------------------------------------------
 	// LINKS management
 	//--------------------------------------------------------------------------
+	/**
+	 * Returns the number of links 
+	 * @return
+	 */
+	public int getLinksCount() {
+		return links.size();
+	}
 	
 	/**
 	 * Returns all the links of the entity

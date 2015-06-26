@@ -38,19 +38,23 @@ public class LinkInDbModelTest {
 		
 		//--- Check set null = set UNDEFINED
 		link.setCardinality(null);
+		System.out.println( " getCardinality : " + link.getCardinality() );
 		assertNotNull(link.getCardinality());
 		assertEquals(Cardinality.UNDEFINED, link.getCardinality());
 		
 		link.setFetchType(null);
+		System.out.println( " getFetchType : " + link.getFetchType() );
 		assertNotNull(link.getFetchType());
 		assertEquals(FetchType.UNDEFINED, link.getFetchType());
 		
 		link.setOptional(null);
+		System.out.println( " getOptional : " + link.getOptional() );
 		assertNotNull(link.getOptional());
 		assertEquals(Optional.UNDEFINED, link.getOptional());
 		
 		//--- Check set null = set void list of cascade options
 		link.setCascadeOptions(null);
+		System.out.println( " getCascadeOptions : " + link.getCascadeOptions() );
 		assertNotNull(link.getCascadeOptions());
 		assertFalse(link.getCascadeOptions().isCascadeAll());
 		assertFalse(link.getCascadeOptions().isCascadeMerge());

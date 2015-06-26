@@ -1,16 +1,17 @@
 package org.telosys.tools.repository.model;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.LinkedList;
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.telosys.tools.commons.ObjectUtil;
 import org.telosys.tools.generic.model.Cardinality;
 
 public class EntityTest {
 	
-	private AttributeInDbModel getColumn(int i) {
+	private AttributeInDbModel buildAttribute(int i) {
 		AttributeInDbModel c = new AttributeInDbModel();
 		c.setDatabaseName("COL_NAME"+i);
 		c.setDatabaseNotNull(true);
@@ -18,7 +19,7 @@ public class EntityTest {
 		return c;
 	}
 	
-	private ForeignKeyInDbModel getForeignKey(int i) {
+	private ForeignKeyInDbModel buildForeignKey(int i) {
 		ForeignKeyInDbModel fk = new ForeignKeyInDbModel();
 		fk.setName("FK"+i);
 		for ( int n = 1 ; n <= 3 ; n++ ) {
@@ -31,7 +32,7 @@ public class EntityTest {
 		return fk;
 	}
 	
-	private LinkInDbModel getLink(int i) {
+	private LinkInDbModel buildLink(int i) {
 		LinkInDbModel link = new LinkInDbModel();
 		link.setId("id"+i);
 //		link.setJavaFieldName("author"+i);
@@ -41,12 +42,12 @@ public class EntityTest {
 		JoinTableInDbModel joinTable = new JoinTableInDbModel() ;
 		joinTable.setCatalog("CATALOG");
 		link.setJoinTable(joinTable);
-		link.setJoinColumns(getJoinColumns(2));
+		link.setJoinColumns(buildJoinColumns(2));
 		return link;
 	}
 	
 //	private JoinColumnsInDbModel getJoinColumns(int i) {
-	private List<JoinColumnInDbModel> getJoinColumns(int i) { // v 3.0.0
+	private List<JoinColumnInDbModel> buildJoinColumns(int i) { // v 3.0.0
 //		JoinColumnsInDbModel joinColumns = new JoinColumnsInDbModel();
 		List<JoinColumnInDbModel> joinColumns = new LinkedList<JoinColumnInDbModel>(); // v 3.0.0
 		for ( int n = 1 ; n <= 3 ; n++ ) {
@@ -69,27 +70,46 @@ public class EntityTest {
 		entity.setDatabaseCatalog("MYCATALOG");
 		entity.setDatabaseTable("BOOK");
 		for ( int i = 1 ; i <= 5 ; i++ ) {
-			entity.storeAttribute(getColumn(i));
+			entity.storeAttribute(buildAttribute(i));
 		}
 		for ( int i = 1 ; i <= 5 ; i++ ) {
-			entity.storeForeignKey(getForeignKey(i));
+			entity.storeForeignKey(buildForeignKey(i));
 		}
 		for ( int i = 1 ; i <= 3 ; i++ ) {
-			entity.storeLink(getLink(i));
+			entity.storeLink(buildLink(i));
 		}		
 		
+		//--- Clone entity
 		EntityInDbModel e2 = ObjectUtil.deepCopy(entity);
-		for ( int i = 6 ; i <= 8 ; i++ ) {
-			entity.storeAttribute(getColumn(i));
-		}
-		entity.removeAttribute(entity.getAttributeByColumnName("COL_NAME2"));
-//		e.setName("BOOK_UPDATED");
-		entity.setDatabaseTable("BOOK_UPDATED");
-		Assert.assertTrue(entity.getAttributesArray().length == 7 );
 		
-//		Assert.assertTrue(e2.getName().equals("BOOK"));
-		Assert.assertTrue(e2.getDatabaseTable().equals("BOOK"));
-		Assert.assertTrue(e2.getAttributesArray().length == 5 );
+		//--- Add 3 new attributes
+		for ( int i = 6 ; i <= 8 ; i++ ) { 
+			entity.storeAttribute(buildAttribute(i));
+		}
+		//--- Remove 1 attribute
+		entity.removeAttribute(entity.getAttributeByColumnName("COL_NAME2"));
+		//--- Change db table name
+		entity.setDatabaseTable("BOOK_UPDATED");
+
+
+		//----- Original entity after changes
+		assertEquals("BOOK_UPDATED", entity.getDatabaseTable() );
+		//--- Check attributes 
+		assertEquals(7, entity.getAttributesCount() );
+		assertEquals(7, entity.getAttributesArray().length);
+		assertEquals(7, entity.getAttributes().size());
+		//--- Check links 
+		assertEquals(3, entity.getLinksCount());
+		assertEquals(3, entity.getLinksArray().length);
+		assertEquals(3, entity.getLinks().size());
+		
+		//----- Cloned entity
+		assertEquals("BOOK", e2.getDatabaseTable() );
+		//--- Check attributes 
+		assertEquals(5, e2.getAttributesCount() );
+		assertEquals(5, e2.getAttributesArray().length);
+		assertEquals(5, e2.getAttributes().size());
+		
 	}
 
 }
