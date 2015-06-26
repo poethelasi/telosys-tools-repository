@@ -104,6 +104,19 @@ public class LinkInDbModel implements Serializable, Link
 	private JoinTableInDbModel    joinTable  = null ;	
 
 	//--------------------------------------------------------------------------
+	/**
+	 * Constructor  
+	 */
+	public LinkInDbModel() { 
+		super();
+		// v 3.0.0 
+		this.cascadeOptions = new CascadeOptions() ; // void ( no cascade option )
+		this.cardinality = Cardinality.UNDEFINED ; 
+		this.fetchType   = FetchType.UNDEFINED ;
+		this.optional    = Optional.UNDEFINED ;
+	}
+
+	//--------------------------------------------------------------------------
 	public final static String buildId(ForeignKeyInDbModel foreignKey, boolean owningSide) 
 	{
 		return "LINK_FK_" + foreignKey.getName() + "_" + ( owningSide ? "O" : "I" ) ;
@@ -122,13 +135,6 @@ public class LinkInDbModel implements Serializable, Link
 			tableId = joinTable.getDatabaseSchema() + "." + joinTable.getDatabaseTable() ;
 		}
 		return "LINK_JT_" + tableId + "_" + ( owningSide ? "O" : "I" ) ;
-	}
-	//--------------------------------------------------------------------------
-	/**
-	 * Constructor for basic link creation (without source information) 
-	 */
-	public LinkInDbModel() {
-		super();
 	}
 	
 	@Override
@@ -349,6 +355,10 @@ public class LinkInDbModel implements Serializable, Link
 //			}
 //		}
 //	}
+	/**
+	 * Set the 'Optional' property ( TRUE, FALSE, UNDEFINED )
+	 * @param v
+	 */
 	public void setOptional(Optional v) { // v 3.0.0
 		if ( v != null ) {
 			this.optional = v ;
@@ -359,7 +369,7 @@ public class LinkInDbModel implements Serializable, Link
 	}
 	
 	/**
-	 * Returns optional value : "TRUE"/"FALSE"/"UNDEFINED"
+	 * Returns the 'optional' property : "TRUE"/"FALSE"/"UNDEFINED" (never null)
 	 * @return
 	 */
 //	public String getOptional() {
@@ -439,6 +449,10 @@ public class LinkInDbModel implements Serializable, Link
 //			this.cardinality = RepositoryConst.MAPPING_UNKNOWN;
 //		}
 //	}
+	/**
+	 * Set the cardinality
+	 * @param v the cardinality to be set, a 'null' value is transformed into 'UNDEFINED'
+	 */
 	public void setCardinality(Cardinality v) {  // v 3.0.0
 		if ( v != null ) {
 			this.cardinality = v ;
@@ -542,8 +556,17 @@ public class LinkInDbModel implements Serializable, Link
 //		}
 //	}
 
+	/**
+	 * Set the 'cascade options' ( ALL, MERGE, PERSIST, etc )
+	 * @param cascadeOptions the cascade options to be set (a 'null' value is transformed into a void set of options)
+	 */
 	public void setCascadeOptions(CascadeOptions cascadeOptions) {
-		this.cascadeOptions = cascadeOptions ;
+		if ( cascadeOptions != null ) {
+			this.cascadeOptions = cascadeOptions ;
+		}
+		else {
+			this.cascadeOptions = new CascadeOptions() ; // void (no cascade options)
+		}
 	}
 
 //	public boolean isCascadeALL() {
@@ -582,7 +605,7 @@ public class LinkInDbModel implements Serializable, Link
 //	}
 
 	/**
-	 * Returns "fetch" property : "DEFAULT" or "EAGER" or "LAZY"
+	 * Returns "fetch" property (DEFAULT, EAGER, LAZY, UNDEFINED)
 	 * @return
 	 */
 //	public String getFetch() {
@@ -594,9 +617,9 @@ public class LinkInDbModel implements Serializable, Link
 	}
 	
 
-	/**
-	 * @param p_fetch
-	 */
+//	/**
+//	 * @param p_fetch
+//	 */
 //	public void setFetch(String p_fetch) {
 //		// Traitement normatif, exclusif (cumul possible) et NON obligatoire de la strategie du Fetch
 ////		this.fetchDEFAULT = false;
@@ -618,6 +641,10 @@ public class LinkInDbModel implements Serializable, Link
 //			//this.fetchDEFAULT = true;
 //		}
 //	}
+	/**
+	 * Set the fetch type (DEFAULT, EAGER, LAZY, UNDEFINED)
+	 * @param v the fetch type to be set (a 'null' value is transformed into 'UNDEFINED')
+	 */
 	public void setFetchType(FetchType v) {  // v 3.0.0
 		if ( v != null ) {
 			this.fetchType = v ;
