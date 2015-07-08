@@ -22,12 +22,22 @@ import org.telosys.tools.generic.model.JoinColumn;
 
 public class DbModelUtil {
 	
+	/**
+	 * Converts a list of 'JoinColumnInDbModel' to a list of 'JoinColumn' (abstract model) 
+	 * @param listOfJoinColumnInDbModel (can be null)
+	 * @return list of 'JoinColumn' (or null if the given list is null)
+	 */
 	protected static List<JoinColumn> toListOfJoinColumns(List<JoinColumnInDbModel> listOfJoinColumnInDbModel) {
-		LinkedList<JoinColumn> joinColumns = new LinkedList<JoinColumn>();
-		for ( JoinColumn jc : listOfJoinColumnInDbModel ) {
-			joinColumns.add(jc);
+		if ( listOfJoinColumnInDbModel != null ) {
+			LinkedList<JoinColumn> joinColumns = new LinkedList<JoinColumn>();
+			for ( JoinColumn jc : listOfJoinColumnInDbModel ) {
+				joinColumns.add(jc);
+			}
+			return joinColumns ;
 		}
-		return joinColumns ;
+		else {
+			return null ;
+		}
 	}
 
 }
