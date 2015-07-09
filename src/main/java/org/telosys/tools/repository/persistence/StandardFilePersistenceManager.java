@@ -26,7 +26,6 @@ import java.io.OutputStream;
 import org.telosys.tools.commons.TelosysToolsException;
 import org.telosys.tools.commons.TelosysToolsLogger;
 import org.telosys.tools.repository.model.RepositoryModel;
-import org.telosys.tools.repository.persistence.util.CommandException;
 
 public class StandardFilePersistenceManager extends GenericPersistenceManager
 {
@@ -55,8 +54,8 @@ public class StandardFilePersistenceManager extends GenericPersistenceManager
 			return repositoryModel ;
 		} catch (FileNotFoundException e) {
 			throw new TelosysToolsException("file not found : " + this._fileName, e);
-		} catch (CommandException e) {
-			throw new TelosysToolsException("parsing exception : " + this._fileName, e);
+//		} catch (CommandException e) {
+//			throw new TelosysToolsException("parsing exception : " + this._fileName, e);
 		}
 		
 	}

@@ -95,9 +95,12 @@ public class RepositoryGenerator extends RepositoryManager
 		Connection connection = getConnection(databaseConfiguration);
 		
 		//--- STEP 1 : Generates the model entities 
-		RepositoryModel repositoryModel = generateRepository(connection, databaseConfiguration);
-		
-		closeConnection(connection);
+		RepositoryModel repositoryModel;
+		try {
+			repositoryModel = generateRepository(connection, databaseConfiguration);
+		} finally { // v 3.0.0 (finally added for connection closing)
+			closeConnection(connection); 
+		}
 		
 		//--- STEP 2 : Generates the links between entities 
 //		LinksGenerator linksGenerator = new LinksGenerator(getRepositoryRules(), getLogger() );

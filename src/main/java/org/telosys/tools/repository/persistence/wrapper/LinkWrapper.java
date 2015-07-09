@@ -26,7 +26,7 @@ import org.telosys.tools.repository.persistence.util.RepositoryConst;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class LinkWrapper {
+public class LinkWrapper extends GenericWrapper {
 
 	public LinkWrapper() {
 		super();
@@ -45,15 +45,15 @@ public class LinkWrapper {
 		link.setFetchType(convertStringToFetchType(element.getAttribute(RepositoryConst.LINK_FETCH))); // v 3.0.0
 
 //		link.setInverseSideOf(element.getAttribute(RepositoryConst.LINK_INVERSE_SIDE_OF));
-		link.setInverseSideLinkId(element.getAttribute(RepositoryConst.LINK_INVERSE_SIDE_OF)); // v 3.0.0
+		link.setInverseSideLinkId(nullIfVoidOrBlank(element.getAttribute(RepositoryConst.LINK_INVERSE_SIDE_OF))); // v 3.0.0
 		
 //		link.setJavaFieldName(element.getAttribute(RepositoryConst.LINK_JAVA_NAME));
-		link.setFieldName(element.getAttribute(RepositoryConst.LINK_JAVA_NAME)); // v 3.0.0
+		link.setFieldName(mandatory(element.getAttribute(RepositoryConst.LINK_JAVA_NAME))); // v 3.0.0
 		
 //		link.setJavaFieldType(element.getAttribute(RepositoryConst.LINK_JAVA_TYPE));
-		link.setFieldType(element.getAttribute(RepositoryConst.LINK_JAVA_TYPE)); // v 3.0.0
+		link.setFieldType(mandatory(element.getAttribute(RepositoryConst.LINK_JAVA_TYPE))); // v 3.0.0
 		
-		link.setMappedBy(element.getAttribute(RepositoryConst.LINK_MAPPED_BY));
+		link.setMappedBy( nullIfVoidOrBlank(element.getAttribute(RepositoryConst.LINK_MAPPED_BY)) );
 		
 //		link.setTargetEntityJavaType(element.getAttribute(RepositoryConst.LINK_TARGET_ENTITY));
 		link.setTargetEntityClassName(element.getAttribute(RepositoryConst.LINK_TARGET_ENTITY)); // v 3.0.0

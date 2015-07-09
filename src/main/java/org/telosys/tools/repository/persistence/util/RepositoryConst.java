@@ -19,44 +19,30 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.telosys.tools.repository.persistence.wrapper.BaseWrapper;
-import org.telosys.tools.repository.persistence.wrapper.ColumnWrapper;
-import org.telosys.tools.repository.persistence.wrapper.EntityWrapper;
-import org.telosys.tools.repository.persistence.wrapper.ForeignKeyColumnWrapper;
-import org.telosys.tools.repository.persistence.wrapper.ForeignKeyWrapper;
-import org.telosys.tools.repository.persistence.wrapper.GeneratedValueWrapper;
-import org.telosys.tools.repository.persistence.wrapper.InverseJoinColumnsWrapper;
-import org.telosys.tools.repository.persistence.wrapper.JoinColumnWrapper;
-import org.telosys.tools.repository.persistence.wrapper.JoinColumnsWrapper;
-import org.telosys.tools.repository.persistence.wrapper.JoinTableWrapper;
-import org.telosys.tools.repository.persistence.wrapper.LinkWrapper;
-import org.telosys.tools.repository.persistence.wrapper.SequenceGeneratorWrapper;
-import org.telosys.tools.repository.persistence.wrapper.TableGeneratorWrapper;
-
 public class RepositoryConst {
 
-	//--------------------------------------------------------------------------------------------------
-	// WRAPPERS 
-	//--------------------------------------------------------------------------------------------------
-	public final static BaseWrapper               BASE_WRAPPER = new BaseWrapper();
-	public final static EntityWrapper             ENTITY_WRAPPER = new EntityWrapper();
-	public final static LinkWrapper               LINK_WRAPPER = new LinkWrapper();
-	public final static ColumnWrapper             COLUMN_WRAPPER = new ColumnWrapper();
-	public final static ForeignKeyWrapper         FOREIGNKEY_WRAPPER = new ForeignKeyWrapper();
-	public final static ForeignKeyColumnWrapper   FOREIGNKEY_COLUMN_WRAPPER = new ForeignKeyColumnWrapper();
-
-	public final static JoinTableWrapper          JOIN_TABLE_WRAPPER  = new JoinTableWrapper();
-	//public final static JoinFKWrapper     JOIN_FK_WRAPPER     = new JoinFKWrapper();	
-	public final static JoinColumnWrapper         JOIN_COLUMN_WRAPPER          = new JoinColumnWrapper();	
-	
-	public final static JoinColumnsWrapper        JOIN_COLUMNS_WRAPPER         = new JoinColumnsWrapper();
-	public final static InverseJoinColumnsWrapper INVERSE_JOIN_COLUMNS_WRAPPER = new InverseJoinColumnsWrapper();
-
-	public final static GeneratedValueWrapper     GENERATED_VALUE_WRAPPER = new GeneratedValueWrapper();
-	public final static SequenceGeneratorWrapper  SEQUENCE_GENERATOR_WRAPPER = new SequenceGeneratorWrapper();
-	public final static TableGeneratorWrapper     TABLE_GENERATOR_WRAPPER = new TableGeneratorWrapper();
-	
-	//--------------------------------------------------------------------------------------------------
+//	//--------------------------------------------------------------------------------------------------
+//	// WRAPPERS 
+//	//--------------------------------------------------------------------------------------------------
+//	public final static BaseWrapper               BASE_WRAPPER = new BaseWrapper();
+//	public final static EntityWrapper             ENTITY_WRAPPER = new EntityWrapper();
+//	public final static LinkWrapper               LINK_WRAPPER = new LinkWrapper();
+//	public final static ColumnWrapper             COLUMN_WRAPPER = new ColumnWrapper();
+//	public final static ForeignKeyWrapper         FOREIGNKEY_WRAPPER = new ForeignKeyWrapper();
+//	public final static ForeignKeyColumnWrapper   FOREIGNKEY_COLUMN_WRAPPER = new ForeignKeyColumnWrapper();
+//
+//	public final static JoinTableWrapper          JOIN_TABLE_WRAPPER  = new JoinTableWrapper();
+//	//public final static JoinFKWrapper     JOIN_FK_WRAPPER     = new JoinFKWrapper();	
+//	public final static JoinColumnWrapper         JOIN_COLUMN_WRAPPER          = new JoinColumnWrapper();	
+//	
+//	public final static JoinColumnsWrapper        JOIN_COLUMNS_WRAPPER         = new JoinColumnsWrapper();
+//	public final static InverseJoinColumnsWrapper INVERSE_JOIN_COLUMNS_WRAPPER = new InverseJoinColumnsWrapper();
+//
+//	public final static GeneratedValueWrapper     GENERATED_VALUE_WRAPPER = new GeneratedValueWrapper();
+//	public final static SequenceGeneratorWrapper  SEQUENCE_GENERATOR_WRAPPER = new SequenceGeneratorWrapper();
+//	public final static TableGeneratorWrapper     TABLE_GENERATOR_WRAPPER = new TableGeneratorWrapper();
+//	
+//	//--------------------------------------------------------------------------------------------------
 
 	// v 2.1.1
 	//public final static SimpleDateFormat DATE_TIME_ISO_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
