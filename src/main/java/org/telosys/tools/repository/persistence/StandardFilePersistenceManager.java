@@ -27,15 +27,15 @@ import org.telosys.tools.commons.TelosysToolsException;
 import org.telosys.tools.commons.TelosysToolsLogger;
 import org.telosys.tools.repository.model.RepositoryModel;
 
-public class StandardFilePersistenceManager extends GenericPersistenceManager
+/* package */  class StandardFilePersistenceManager extends GenericPersistenceManager
 {
 
 	private String _fileName = null ;
 	
-	public StandardFilePersistenceManager(String fileName, TelosysToolsLogger logger) {
-		super(logger);
-		this._fileName = fileName ;
-	}
+//	public StandardFilePersistenceManager(String fileName, TelosysToolsLogger logger) {
+//		super(logger);
+//		this._fileName = fileName ;
+//	}
 
 	public StandardFilePersistenceManager(File file, TelosysToolsLogger logger) {
 		super(logger);

@@ -20,6 +20,7 @@ import java.io.OutputStream;
 
 import org.telosys.tools.commons.TelosysToolsException;
 import org.telosys.tools.commons.TelosysToolsLogger;
+import org.telosys.tools.repository.conversion.XmlConverter;
 import org.telosys.tools.repository.model.RepositoryModel;
 import org.telosys.tools.repository.persistence.util.Xml;
 import org.w3c.dom.Document;

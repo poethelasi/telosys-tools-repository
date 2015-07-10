@@ -4,7 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.telosys.tools.commons.ObjectUtil;
 
-public class ColumnTest {
+public class AttributeInDbModelTest {
 
 	@Test
 	public void testDeepCopy() {

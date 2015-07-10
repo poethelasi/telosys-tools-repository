@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.telosys.tools.repository.persistence;
+package org.telosys.tools.repository.conversion;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -29,7 +29,6 @@ import org.telosys.tools.repository.model.JoinTableInDbModel;
 import org.telosys.tools.repository.model.LinkInDbModel;
 import org.telosys.tools.repository.model.RepositoryModel;
 import org.telosys.tools.repository.persistence.util.RepositoryConst;
-import org.telosys.tools.repository.persistence.util.Wrappers;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -150,7 +149,7 @@ public class XmlConverterFromXml {
 		log("processColumnNode : " + columnNode.getNodeName() );
 		assertIsElement(columnNode);
 		Element columnElement = (Element) columnNode;
-		AttributeInDbModel column = Wrappers.COLUMN_WRAPPER.getColumn(columnElement);
+		AttributeInDbModel column = Wrappers.ATTRIBUTE_WRAPPER.getAttributeObject(columnElement);
 		return column ;
 	}
 

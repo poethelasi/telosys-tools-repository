@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.telosys.tools.repository.persistence.wrapper;
+package org.telosys.tools.repository.conversion.wrapper;
 
 import org.telosys.tools.commons.StrUtil;
 import org.telosys.tools.repository.model.JoinColumnInDbModel;

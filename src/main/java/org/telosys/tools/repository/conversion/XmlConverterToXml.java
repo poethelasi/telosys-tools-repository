@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.telosys.tools.repository.persistence;
+package org.telosys.tools.repository.conversion;
 
 import java.util.List;
 
@@ -29,7 +29,6 @@ import org.telosys.tools.repository.model.JoinTableInDbModel;
 import org.telosys.tools.repository.model.LinkInDbModel;
 import org.telosys.tools.repository.model.RepositoryModel;
 import org.telosys.tools.repository.persistence.util.RepositoryConst;
-import org.telosys.tools.repository.persistence.util.Wrappers;
 import org.telosys.tools.repository.persistence.util.Xml;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
@@ -142,24 +141,41 @@ public class XmlConverterToXml {
 		}
 	}
 	
+	private Element buildJoinColumnsElement(Document doc, String elementName, List<JoinColumn> joinColumns)  // v 3.0.0
+	{
+		log("addJoinColumns...");
+		// Creates the XML element ( "joinColumns" or "inverseJoinColumns" )
+		Element joinColumnsElement = doc.createElement(elementName); 
+		for ( JoinColumn joinColumn : joinColumns ) {
+			log("process joinColumn '" + joinColumn.getName() + "'");
+			JoinColumnInDbModel joinColumnInDbModel = (JoinColumnInDbModel) joinColumn ; // v 3.0.0 
+			Element joinColumnElement = Wrappers.JOIN_COLUMN_WRAPPER.getXmlDesc(joinColumnInDbModel, doc); // v 3.0.0 
+			log( "Element : " + joinColumnElement );
+			joinColumnsElement.appendChild(joinColumnElement);
+		}
+		return joinColumnsElement ;
+	}
+	
 //	private void addJoinColumns(Document doc, JoinColumnsInDbModel joinColumns, Element linkElement) 
 	private void addJoinColumns(Document doc, List<JoinColumn> joinColumns, Element linkElement)  // v 3.0.0
 	{
 		log("addJoinColumns...");
 		if ( joinColumns != null ) {
 			log("joinColumns is not null");
-//			Element joinColumnsElement = RepositoryConst.JOIN_COLUMNS_WRAPPER.getXmlDesc(joinColumns, doc);
-			Element joinColumnsElement = Wrappers.JOIN_COLUMNS_WRAPPER.getXmlDesc(doc); // v 3.0.0
-//			for ( JoinColumnInDbModel joinColumn : joinColumns ) 
-			for ( JoinColumn joinColumn : joinColumns ) // v 3.0.0
-			{
-				log("process joinColumn '" + joinColumn.getName() + "'");
-				JoinColumnInDbModel joinColumnInDbModel = (JoinColumnInDbModel) joinColumn ; // v 3.0.0 
-//				Element joinColumnElement = RepositoryConst.JOIN_COLUMN_WRAPPER.getXmlDesc(joinColumn, doc);
-				Element joinColumnElement = Wrappers.JOIN_COLUMN_WRAPPER.getXmlDesc(joinColumnInDbModel, doc); // v 3.0.0 
-				log( "Element : " + joinColumnElement );
-				joinColumnsElement.appendChild(joinColumnElement);
-			}
+////			Element joinColumnsElement = RepositoryConst.JOIN_COLUMNS_WRAPPER.getXmlDesc(joinColumns, doc);
+////			Element joinColumnsElement = Wrappers.JOIN_COLUMNS_WRAPPER.getXmlDesc(doc); // v 3.0.0
+//			Element joinColumnsElement = doc.createElement(RepositoryConst.JOIN_COLUMNS_ELEMENT); // v 3.0.0
+////			for ( JoinColumnInDbModel joinColumn : joinColumns ) 
+//			for ( JoinColumn joinColumn : joinColumns ) // v 3.0.0
+//			{
+//				log("process joinColumn '" + joinColumn.getName() + "'");
+//				JoinColumnInDbModel joinColumnInDbModel = (JoinColumnInDbModel) joinColumn ; // v 3.0.0 
+////				Element joinColumnElement = RepositoryConst.JOIN_COLUMN_WRAPPER.getXmlDesc(joinColumn, doc);
+//				Element joinColumnElement = Wrappers.JOIN_COLUMN_WRAPPER.getXmlDesc(joinColumnInDbModel, doc); // v 3.0.0 
+//				log( "Element : " + joinColumnElement );
+//				joinColumnsElement.appendChild(joinColumnElement);
+//			}
+			Element joinColumnsElement = buildJoinColumnsElement(doc, RepositoryConst.JOIN_COLUMNS_ELEMENT, joinColumns);
 			linkElement.appendChild(joinColumnsElement);
 		}
 		else {
@@ -176,43 +192,40 @@ public class XmlConverterToXml {
 //		JoinColumnsInDbModel joinColumns = joinTable.getJoinColumns();
 		List<JoinColumn> joinColumns = joinTable.getJoinColumns(); // v 3.0.0
 		if ( joinColumns != null ) {
-//			Element joinColumnsElement = RepositoryConst.JOIN_COLUMNS_WRAPPER.getXmlDesc(joinColumns, doc);
-			Element joinColumnsElement = Wrappers.JOIN_COLUMNS_WRAPPER.getXmlDesc(doc); // v 3.0.0
-//			for ( JoinColumnInDbModel joinColumn : joinColumns ) 
-			for ( JoinColumn joinColumn : joinColumns ) // v 3.0.0
-			{
-				JoinColumnInDbModel joinColumnInDbModel = (JoinColumnInDbModel) joinColumn ; // v 3.0.0 
-//				Element joinColumnElement = RepositoryConst.JOIN_COLUMN_WRAPPER.getXmlDesc(joinColumn, doc);
-				Element joinColumnElement = Wrappers.JOIN_COLUMN_WRAPPER.getXmlDesc(joinColumnInDbModel, doc); // v 3.0.0 
-				joinColumnsElement.appendChild(joinColumnElement);
-			}
+////			Element joinColumnsElement = RepositoryConst.JOIN_COLUMNS_WRAPPER.getXmlDesc(joinColumns, doc);
+//			Element joinColumnsElement = Wrappers.JOIN_COLUMNS_WRAPPER.getXmlDesc(doc); // v 3.0.0
+////			for ( JoinColumnInDbModel joinColumn : joinColumns ) 
+//			for ( JoinColumn joinColumn : joinColumns ) // v 3.0.0
+//			{
+//				JoinColumnInDbModel joinColumnInDbModel = (JoinColumnInDbModel) joinColumn ; // v 3.0.0 
+////				Element joinColumnElement = RepositoryConst.JOIN_COLUMN_WRAPPER.getXmlDesc(joinColumn, doc);
+//				Element joinColumnElement = Wrappers.JOIN_COLUMN_WRAPPER.getXmlDesc(joinColumnInDbModel, doc); // v 3.0.0 
+//				joinColumnsElement.appendChild(joinColumnElement);
+//			}
+			Element joinColumnsElement = buildJoinColumnsElement(doc, RepositoryConst.JOIN_COLUMNS_ELEMENT, joinColumns);
 			joinTableElement.appendChild(joinColumnsElement);
 		}
 
 		//--- Add the "Inverse Join Columns" elements
 //		InverseJoinColumnsInDbModel inverseJoinColumns = joinTable.getInverseJoinColumns();
-		List<JoinColumn> inverseJoinColumns = joinTable.getJoinColumns(); // v 3.0.0
+		List<JoinColumn> inverseJoinColumns = joinTable.getInverseJoinColumns(); // v 3.0.0
 		if ( inverseJoinColumns != null ) {
-//			Element inverseJoinColumnsElement = RepositoryConst.INVERSE_JOIN_COLUMNS_WRAPPER.getXmlDesc(inverseJoinColumns, doc);
-			Element inverseJoinColumnsElement = Wrappers.INVERSE_JOIN_COLUMNS_WRAPPER.getXmlDesc(doc); // v 3.0.0
-//			for ( JoinColumnInDbModel joinColumn : inverseJoinColumns ) 
-			for ( JoinColumn joinColumn : inverseJoinColumns ) 
-			{
-				JoinColumnInDbModel joinColumnInDbModel = (JoinColumnInDbModel) joinColumn ; // v 3.0.0 
-//				Element joinColumnElement = RepositoryConst.JOIN_COLUMN_WRAPPER.getXmlDesc(joinColumn, doc);
-				Element joinColumnElement = Wrappers.JOIN_COLUMN_WRAPPER.getXmlDesc(joinColumnInDbModel, doc); // v 3.0.0
-				inverseJoinColumnsElement.appendChild(joinColumnElement);
-			}
+////			Element inverseJoinColumnsElement = RepositoryConst.INVERSE_JOIN_COLUMNS_WRAPPER.getXmlDesc(inverseJoinColumns, doc);
+//			Element inverseJoinColumnsElement = Wrappers.INVERSE_JOIN_COLUMNS_WRAPPER.getXmlDesc(doc); // v 3.0.0
+////			for ( JoinColumnInDbModel joinColumn : inverseJoinColumns ) 
+//			for ( JoinColumn joinColumn : inverseJoinColumns ) 
+//			{
+//				JoinColumnInDbModel joinColumnInDbModel = (JoinColumnInDbModel) joinColumn ; // v 3.0.0 
+////				Element joinColumnElement = RepositoryConst.JOIN_COLUMN_WRAPPER.getXmlDesc(joinColumn, doc);
+//				Element joinColumnElement = Wrappers.JOIN_COLUMN_WRAPPER.getXmlDesc(joinColumnInDbModel, doc); // v 3.0.0
+//				inverseJoinColumnsElement.appendChild(joinColumnElement);
+//			}
+			Element inverseJoinColumnsElement = buildJoinColumnsElement(doc, RepositoryConst.INVERSE_JOIN_COLUMNS_ELEMENT, inverseJoinColumns);
 			joinTableElement.appendChild(inverseJoinColumnsElement);
 		}
 
 		linkElement.appendChild(joinTableElement);
 	}
-
-//	private void addJoinColumn(Document doc, Element element, JoinColumn joinColumn ) {
-//		Element joinColumnElement = RepositoryConst.JOIN_COLUMN_WRAPPER.getXmlDesc(joinColumn, doc);
-//		element.appendChild(joinColumnElement);
-//	}
 	
 	private void addForeignKeys(Document doc, EntityInDbModel entity, Element table) {
 		// --- Foreign Keys
@@ -221,7 +234,7 @@ public class XmlConverterToXml {
 		for ( ForeignKeyInDbModel foreignKey : foreignKeys ) {
 			final Element fkElement = Wrappers.FOREIGNKEY_WRAPPER.getXmlDesc(foreignKey, doc);
 
-			this.addForeignKeyColumns(doc, foreignKey, fkElement);
+			addForeignKeyColumns(doc, foreignKey, fkElement);
 
 			table.appendChild(fkElement);
 		}
@@ -239,46 +252,22 @@ public class XmlConverterToXml {
 
 	private void addColumns(Document doc, EntityInDbModel entity, Element parentElement) {
 		// --- Columns/attributes
-//		Collection<AttributeInDbModel> colcols = entity.getColumnsCollection();
-//		for ( AttributeInDbModel column : colcols ) {
-		for ( AttributeInDbModel column : entity.getAttributesArray() ) {
-			final Element colonne = Wrappers.COLUMN_WRAPPER.getXmlDesc(column, doc);
+		for ( AttributeInDbModel attributeInDbModel : entity.getAttributesArray() ) {
+			final Element attributeElement = Wrappers.ATTRIBUTE_WRAPPER.getXmlElement(attributeInDbModel, doc);
 
-			if (column.getGeneratedValue() != null) {
-				final Element gv = Wrappers.GENERATED_VALUE_WRAPPER.getXmlDesc(column.getGeneratedValue(), doc);
-				colonne.appendChild(gv);
+			if (attributeInDbModel.getGeneratedValue() != null) {
+				final Element gv = Wrappers.GENERATED_VALUE_WRAPPER.getXmlDesc(attributeInDbModel.getGeneratedValue(), doc);
+				attributeElement.appendChild(gv);
 			}
-			if (column.getSequenceGenerator() != null) {
-				final Element sg = Wrappers.SEQUENCE_GENERATOR_WRAPPER.getXmlDesc(column.getSequenceGenerator(), doc);
-				colonne.appendChild(sg);
+			if (attributeInDbModel.getSequenceGenerator() != null) {
+				final Element sg = Wrappers.SEQUENCE_GENERATOR_WRAPPER.getXmlDesc(attributeInDbModel.getSequenceGenerator(), doc);
+				attributeElement.appendChild(sg);
 			}
-			if (column.getTableGenerator() != null) {
-				final Element tg = Wrappers.TABLE_GENERATOR_WRAPPER.getXmlDesc(column.getTableGenerator(), doc);
-				colonne.appendChild(tg);
+			if (attributeInDbModel.getTableGenerator() != null) {
+				final Element tg = Wrappers.TABLE_GENERATOR_WRAPPER.getXmlDesc(attributeInDbModel.getTableGenerator(), doc);
+				attributeElement.appendChild(tg);
 			}
-			parentElement.appendChild(colonne);
+			parentElement.appendChild(attributeElement);
 		}
 	}
-
-//	private void joinFkToXml(Document doc, final Element elem, JoinFK[] joinFKs) {
-//		for (int i = 0; i < joinFKs.length; i++) {
-//			JoinFK joinFK = joinFKs[i];
-//			Element element = RepositoryConst.JOIN_FK_WRAPPER.getXmlDesc(joinFK, doc);
-//			
-//			this.addJoinColumns(doc, joinFK, element);
-//			
-//			elem.appendChild(element);
-//		}
-//	}
-
-//	private void addJoinColumns(Document doc, JoinFK joinFK, Element element) {
-//		JoinColumn[] JoinColumns = joinFK.getJoinColumns();
-//		
-//		for (int j = 0; j < JoinColumns.length; j++) {
-//			JoinColumn joinColumn = JoinColumns[j];
-//			Element joinColumnElement = RepositoryConst.JOIN_COLUMN_WRAPPER.getXmlDesc(joinColumn, doc);
-//			element.appendChild(joinColumnElement);
-//		}
-//	}
-	
 }

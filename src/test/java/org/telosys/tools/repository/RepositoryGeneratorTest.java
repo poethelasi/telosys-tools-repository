@@ -1,20 +1,11 @@
 package org.telosys.tools.repository;
 
-//import static org.junit.Assert.assertEquals;
-//import static org.junit.Assert.assertFalse;
-//import static org.junit.Assert.assertNotNull;
-//import static org.junit.Assert.assertNull;
-//import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -25,11 +16,11 @@ import org.telosys.tools.generic.model.Cardinality;
 import org.telosys.tools.generic.model.JoinColumn;
 import org.telosys.tools.generic.model.JoinTable;
 import org.telosys.tools.generic.model.Link;
+import org.telosys.tools.repository.conversion.XmlConverter;
 import org.telosys.tools.repository.model.AttributeInDbModel;
 import org.telosys.tools.repository.model.EntityInDbModel;
 import org.telosys.tools.repository.model.LinkInDbModel;
 import org.telosys.tools.repository.model.RepositoryModel;
-import org.telosys.tools.repository.persistence.XmlConverter;
 import org.telosys.tools.repository.persistence.util.Xml;
 import org.w3c.dom.Document;
 
@@ -217,74 +208,11 @@ public class RepositoryGeneratorTest extends AbstractTestCase {
 		printModel(repositoryModel);
 		assertEquals(2, repositoryModel.getNumberOfEntities() );
 
-//		EntityInDbModel studentEntity = repositoryModel.getEntityByTableName("STUDENT");
-//		assertNotNull(studentEntity);
-//		assertFalse( studentEntity.isJoinTable() );
-//		assertEquals(1, studentEntity.getForeignKeys().length ) ;
-//		assertEquals("STUDENT", studentEntity.getForeignKeys()[0].getTableName() ) ;
-////		assertEquals("TEACHER", studentEntity.getForeignKeys()[0].getTableRef() ) ;
-//		assertEquals("TEACHER", studentEntity.getForeignKeys()[0].getReferencedTableName() ) ;
-		
 		checkStudentEntity(repositoryModel.getEntityByTableName("STUDENT"));
 		checkTeacherEntity(repositoryModel.getEntityByTableName("TEACHER"));		
 		
-////		EntityInDbModel teacherEntity = repositoryModel.getEntityByName("TEACHER");
-//		EntityInDbModel teacherEntity = repositoryModel.getEntityByTableName("TEACHER");
-//		assertNotNull(teacherEntity);
-//		assertFalse( teacherEntity.isJoinTable() );
-//		assertEquals(0, teacherEntity.getForeignKeys().length ) ;
-
-////		LinkInDbModel[] studentLinks = studentEntity.getLinks();
-//		LinkInDbModel[] studentLinks = studentEntity.getLinksArray();
-//		System.out.println("STUDENT links : " + studentLinks.length);
-//		assertEquals(1, studentLinks.length);
-//		LinkInDbModel studentLink = studentLinks[0] ;
-//		System.out.println("Student link : ");
-//		
-//		System.out.println(" . getCardinality : " + studentLink.getCardinality()  );
-//		assertEquals( Cardinality.MANY_TO_ONE, studentLink.getCardinality() ); 
-//		
-//		System.out.println(" . getMappedBy : " + studentLink.getMappedBy()  );
-//		assertNull( studentLink.getMappedBy() ); 
-//		
-//		System.out.println(" . isOwningSide  : " + studentLink.isOwningSide() );
-//		assertTrue(studentLink.isOwningSide() );
-//		System.out.println(" . isInverseSide : " + studentLink.isInverseSide() );
-//		assertFalse(studentLink.isInverseSide() );
-//
-//		System.out.println(" . getForeignKeyName : " + studentLink.getForeignKeyName() );
-//		assertNotNull(studentLink.getForeignKeyName() );
-
-//		assertNotNull(studentLink.getJoinColumns() );
-//		
-//		List<JoinColumn> joinColumns = studentLink.getJoinColumns();
-//		System.out.println(" . getJoinColumns / size : " + joinColumns.size() );
-//		assertEquals(1, joinColumns.size() );
-		
-////		LinkInDbModel[] teacherLinks = teacherEntity.getLinks();
-//		LinkInDbModel[] teacherLinks = teacherEntity.getLinksArray();
-//		System.out.println("TEACHER links : " + teacherLinks.length);
-//		assertEquals(1, teacherLinks.length);
-		
-		
-//		XmlConverter xmlConverter = new XmlConverter(new ConsoleLogger());
-//		Document doc = xmlConverter.modelToXmlDocument(repositoryModel);
-//		
-//		//OutputStream os = new FileOutputStream(this._fileName, false);
-//		OutputStream os = new ByteArrayOutputStream();
-//		Xml.save(doc, os);
-//		try {
-//			os.close();
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		
-//		System.out.println("XML DOCUMENT : ");
-//		System.out.println(os.toString());
 		Document doc = convertToXml(repositoryModel);
 		
-//		RepositoryModel model2 = xmlConverter.xmlDocumentToModel(doc);
 		RepositoryModel model2 = convertToModel(doc);
 		assertEquals(repositoryModel.getNumberOfEntities(), model2.getNumberOfEntities());
 		
@@ -296,18 +224,8 @@ public class RepositoryGeneratorTest extends AbstractTestCase {
 		XmlConverter xmlConverter = new XmlConverter(new ConsoleLogger());
 		Document doc = xmlConverter.modelToXmlDocument(repositoryModel);
 		
-		//OutputStream os = new FileOutputStream(this._fileName, false);
-		OutputStream os = new ByteArrayOutputStream();
-		Xml.save(doc, os);
-		try {
-			os.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
 		System.out.println("XML DOCUMENT : ");
-		System.out.println(os.toString());
+		System.out.println( Xml.toString(doc) );
 		
 		return doc ;
 	}		

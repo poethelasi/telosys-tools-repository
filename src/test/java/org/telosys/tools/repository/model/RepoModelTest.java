@@ -8,7 +8,7 @@ import org.telosys.tools.commons.ConsoleLogger;
 import org.telosys.tools.commons.TelosysToolsException;
 import org.telosys.tools.commons.TelosysToolsLogger;
 import org.telosys.tools.repository.persistence.PersistenceManager;
-import org.telosys.tools.repository.persistence.StandardFilePersistenceManager;
+import org.telosys.tools.repository.persistence.PersistenceManagerFactory;
 
 public class RepoModelTest {
 	
@@ -43,7 +43,8 @@ public class RepoModelTest {
 		File modelFile = new File("src/test/resources/repo/BookStoreDERBY.dbrep");
 		print(modelFile);
 		TelosysToolsLogger logger = new ConsoleLogger() ;
-		PersistenceManager pm = new StandardFilePersistenceManager(modelFile, logger);
+		//PersistenceManager pm = new StandardFilePersistenceManager(modelFile, logger);
+		PersistenceManager pm = PersistenceManagerFactory.createPersistenceManager(modelFile, logger);
 		RepositoryModel model = pm.load();
 		print(model);
 		String entityName = "BOOK";

@@ -15,6 +15,7 @@
  */
 package org.telosys.tools.repository.persistence.util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -46,7 +47,7 @@ public class Xml
 	
 	
 	
-    public static DocumentBuilder getDocumentBuilder() throws TelosysToolsException
+    private static DocumentBuilder getDocumentBuilder() throws TelosysToolsException
     {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setIgnoringElementContentWhitespace(true);
@@ -62,20 +63,17 @@ public class Xml
     
     public static Document load(String sFileName) throws TelosysToolsException
     {
-    	if ( sFileName != null )
-    	{
+    	if ( sFileName != null ) {
         	return load(new File(sFileName));
     	}
-    	else
-    	{
+    	else {
     		throw new TelosysToolsException("XML error : load(null) ");
     	}
     }
 
     public static Document load(File file) throws TelosysToolsException
     {
-    	if ( file != null )
-    	{
+    	if ( file != null ) {
     		InputStream is = null ;
     		
     		try {
@@ -91,16 +89,14 @@ public class Xml
 			}
 			return doc ;
     	}
-    	else
-    	{
+    	else {
     		throw new TelosysToolsException("XML error : load(null) ");
     	}
     }
     
     public static Document load(InputStream file) throws TelosysToolsException
     {
-    	if ( file != null )
-    	{
+    	if ( file != null ) {
 			DocumentBuilder builder = getDocumentBuilder();		
 			Document doc = null;		
 			try {
@@ -112,8 +108,7 @@ public class Xml
 			}
 			return doc ;
     	}
-    	else
-    	{
+    	else {
     		throw new TelosysToolsException("XML error : load(null) ");
     	}
     }
@@ -193,26 +188,36 @@ public class Xml
     }
     
     //---------------------------------------------------------------------------------------------------
-    /**
-     * Creates a DOM document populated with the given XML file
-     * @param file
-     * @return
-     */
-    public static Document createDomDocument(File file) throws TelosysToolsException {
- 
-        
-        DocumentBuilderFactory f = DocumentBuilderFactory.newInstance();
-        org.w3c.dom.Document doc = createDomDocument();
-        try {
-            doc = f.newDocumentBuilder().parse(file);
-        } catch (SAXException e) {
-            throw new TelosysToolsException("XML error : Cannot parse XML file.", e);
-        } catch (IOException e) {
-            throw new TelosysToolsException("XML error : Cannot parse XML file.", e);
-        } catch (ParserConfigurationException e) {
-            throw new TelosysToolsException("XML error : Cannot parse XML file.", e);
-        }
-        return doc;
+//    /**
+//     * Creates a DOM document populated with the given XML file
+//     * @param file
+//     * @return
+//     */
+//    public static Document createDomDocument(File file) throws TelosysToolsException {
+// 
+//        
+//        DocumentBuilderFactory f = DocumentBuilderFactory.newInstance();
+//        org.w3c.dom.Document doc = createDomDocument();
+//        try {
+//            doc = f.newDocumentBuilder().parse(file);
+//        } catch (SAXException e) {
+//            throw new TelosysToolsException("XML error : Cannot parse XML file.", e);
+//        } catch (IOException e) {
+//            throw new TelosysToolsException("XML error : Cannot parse XML file.", e);
+//        } catch (ParserConfigurationException e) {
+//            throw new TelosysToolsException("XML error : Cannot parse XML file.", e);
+//        }
+//        return doc;
+//    }
+    public static String toString(Document doc) throws TelosysToolsException {
+		OutputStream os = new ByteArrayOutputStream();
+		Xml.save(doc, os);
+		try {
+			os.close();
+		} catch (IOException e) {
+			throw new TelosysToolsException("Cannot close ByteArrayOutputStream", e);
+		}
+		return os.toString();
     }
 
 }

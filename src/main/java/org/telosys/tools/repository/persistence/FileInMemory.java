@@ -13,26 +13,31 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.telosys.tools.repository.persistence.wrapper;
+package org.telosys.tools.repository.persistence;
 
-import org.telosys.tools.repository.persistence.util.RepositoryConst;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import org.telosys.tools.commons.TelosysToolsException;
 
-public class InverseJoinColumnsWrapper {
+public class FileInMemory 
+{
 
-	public InverseJoinColumnsWrapper() {
-		super();
+	private byte[] currentContent = new byte[0] ;
+	
+	public FileInMemory() {
 	}
 
-//	public InverseJoinColumnsInDbModel getObject( Element element) {
-//		return new InverseJoinColumnsInDbModel();
-//	}
+	public byte[] getContent() throws TelosysToolsException {
+		return currentContent ;
+	}
+	public String getContentAsString() throws TelosysToolsException {
+		return new String(currentContent) ;
+	}
 
-//	public Element getXmlDesc( InverseJoinColumnsInDbModel object, Document doc) {
-	public Element getXmlDesc(Document doc) {
-		Element element = doc.createElement(RepositoryConst.INVERSE_JOIN_COLUMNS_ELEMENT );
-		return element;
+	public void setContent(String content) throws TelosysToolsException {
+		currentContent = content.getBytes();
+	}
+
+	public void setContent(byte[] content) throws TelosysToolsException {
+		currentContent = content;
 	}
 
 }
