@@ -68,15 +68,19 @@ public class EntityInDbModel implements Comparable<EntityInDbModel>, Serializabl
 	 */
 	public EntityInDbModel() {
 		super();
+		this.className = "";
+		this.databaseTable = "";
 	}
 
 	/**
-	 * Constructor 
-	 * @param name
+	 * Constructor for tests
+	 * @param className
+	 * @param databaseTable
 	 */
-	public EntityInDbModel(String name) {
+	public EntityInDbModel(String className, String databaseTable) {
 		super();
-		this.databaseTable = name;
+		this.className = className;
+		this.databaseTable = databaseTable;
 	}
 
 	/**

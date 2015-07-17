@@ -35,8 +35,8 @@ public class ChangeLogTest {
 		
 		
 		System.out.println("test entity updated");
-		EntityInDbModel entityUpdatedBefore = new EntityInDbModel("FOO");
-		EntityInDbModel entityUpdatedAfter  = new EntityInDbModel("FOO");
+		EntityInDbModel entityUpdatedBefore = new EntityInDbModel("Foo", "FOO");
+		EntityInDbModel entityUpdatedAfter  = new EntityInDbModel("Foo", "FOO");
 		ChangeOnEntity change = new ChangeOnEntity(ChangeType.UPDATED, entityUpdatedBefore, entityUpdatedAfter);
 		assertTrue( change.getEntityBefore() == entityUpdatedBefore );
 		assertTrue( change.getEntityAfter()  == entityUpdatedAfter );
