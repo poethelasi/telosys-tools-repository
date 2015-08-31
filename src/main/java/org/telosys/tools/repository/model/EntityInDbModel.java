@@ -531,5 +531,22 @@ public class EntityInDbModel implements Comparable<EntityInDbModel>, Serializabl
 				+ "|links=" + links.size() 
 				;
 	}
+	
+	public boolean hasPrimaryKey() 
+	{
+		for ( AttributeInDbModel attribute : this.attributes.values() ) {
+			if ( attribute.isKeyElement() ) {
+				return true ;
+			}
+		}
+		return false ; // No key attribute
+	}
 
+	public List<String> getWarnings() {
+		List<String> warnings = new LinkedList<String>() ;
+		if ( hasPrimaryKey() == false ) {
+			warnings.add("No Primary Key");
+		}
+		return warnings;
+	}
 }
