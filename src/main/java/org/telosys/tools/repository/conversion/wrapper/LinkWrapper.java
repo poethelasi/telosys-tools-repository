@@ -79,7 +79,8 @@ public class LinkWrapper extends GenericWrapper {
 		link.setOptional(convertStringToOptional(element.getAttribute(RepositoryConst.LINK_OPTIONAL)));
 
 		if (StrUtil.nullOrVoid(element.getAttribute(RepositoryConst.LINK_USED)) == false) {
-			link.setUsed(StrUtil.getBoolean(element.getAttribute(RepositoryConst.LINK_USED)));
+			//link.setUsed(StrUtil.getBoolean(element.getAttribute(RepositoryConst.LINK_USED)));
+			link.setSelected(StrUtil.getBoolean(element.getAttribute(RepositoryConst.LINK_USED))); // v 3.0.0
 		}
 		return link;
 	}
@@ -125,7 +126,8 @@ public class LinkWrapper extends GenericWrapper {
 //		element.setAttribute(RepositoryConst.LINK_OPTIONAL, link.getOptional() );
 		element.setAttribute(RepositoryConst.LINK_OPTIONAL, convertOptionalToString(link.getOptional()) );
 
-		element.setAttribute(RepositoryConst.LINK_USED, Boolean.toString(link.isUsed()));
+//		element.setAttribute(RepositoryConst.LINK_USED, Boolean.toString(link.isUsed()));
+		element.setAttribute(RepositoryConst.LINK_USED, Boolean.toString(link.isSelected())); // v 3.0.0
 		
 		return element;
 	}

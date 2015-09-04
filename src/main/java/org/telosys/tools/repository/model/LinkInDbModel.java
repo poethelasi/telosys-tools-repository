@@ -137,11 +137,6 @@ public class LinkInDbModel implements Serializable, Link
 		return "LINK_JT_" + tableId + "_" + ( owningSide ? "O" : "I" ) ;
 	}
 	
-	@Override
-	public boolean isSelected() {
-		// TODO : Managed link selection 
-		return false;
-	}
 
 //	//--------------------------------------------------------------------------
 //	public String getCheckSum() {
@@ -185,12 +180,19 @@ public class LinkInDbModel implements Serializable, Link
 	}
 
 	//--------------------------------------------------------------------------
-	public boolean isUsed() {
-		return used;
+//	public boolean isUsed() {
+//		return used;
+//	}
+//
+//	public void setUsed(boolean used) {
+//		this.used = used;
+//	}
+	@Override
+	public boolean isSelected() { // replaces isUsed()
+		return used; 
 	}
-
-	public void setUsed(boolean used) {
-		this.used = used;
+	public void setSelected(boolean selected) { // replaces setUsed(boolean used)
+		this.used = selected;
 	}
 
 	//--------------------------------------------------------------------------
@@ -774,7 +776,8 @@ public class LinkInDbModel implements Serializable, Link
 		sb.append( "/" );
 		sb.append( this.getOptional() );
 		sb.append( "/" );
-		sb.append( this.isUsed() );
+		//sb.append( this.isUsed() );
+		sb.append( this.isSelected() ); // v 3.0.0
 		
 		return sb.toString();
 	}
