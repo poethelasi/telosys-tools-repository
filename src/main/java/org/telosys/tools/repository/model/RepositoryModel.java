@@ -17,17 +17,20 @@ package org.telosys.tools.repository.model;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.telosys.tools.commons.StrUtil;
+import org.telosys.tools.generic.model.Cardinality;
 import org.telosys.tools.generic.model.Entity;
 import org.telosys.tools.generic.model.Model;
 import org.telosys.tools.generic.model.ModelType;
 import org.telosys.tools.repository.model.comparators.EntityComparatorOnClassName;
 import org.telosys.tools.repository.model.comparators.EntityComparatorOnTableName;
+import org.telosys.tools.repository.model.comparators.LinkComparator;
 
 public class RepositoryModel implements Model
 {
@@ -240,6 +243,90 @@ public class RepositoryModel implements Model
 	//-------------------------------------------------------------------------------
 	// LINKS management
 	//-------------------------------------------------------------------------------
+	/**
+	 * Returns the number of links in the model (all the links for all entities)
+	 * @return
+	 */
+	public int getNumberOfLinks() { // v 3.0.0
+		int count = 0 ;
+		for ( EntityInDbModel entity : this.getEntitiesArray() ) {
+			count = count + entity.getLinksCount();
+		}
+		return count ;
+	}
+	
+	//----------------------------------------------------------------------------------------
+	private void sortLinks( List<LinkInDbModel> linksList ) { // v 3.0.0
+        Collections.sort(linksList, new LinkComparator( LinkComparator.ASC ) );
+	}
+	
+	//----------------------------------------------------------------------------------------
+	public List<LinkInDbModel> getAllLinks()
+	{
+		List<LinkInDbModel> linksList = new LinkedList<LinkInDbModel>();
+		for ( EntityInDbModel entity : this.getEntitiesArray() ) {
+			for ( LinkInDbModel link : entity.getLinksArray() ) {
+				linksList.add(link);
+			}
+		}
+		sortLinks( linksList );
+		return linksList ;
+	}
+	//----------------------------------------------------------------------------------------
+	public LinkedList<LinkInDbModel> getLinks(LinksCriteria criteria) { // v 3.0.0
+		// ver 3.0.0
+		LinkedList<LinkInDbModel> linksList = new LinkedList<LinkInDbModel>();
+		for ( EntityInDbModel entity : this.getEntitiesArray() ) {
+			for ( LinkInDbModel link : entity.getLinksArray() ) {
+				if ( checkCriteria(link, criteria ) ) {
+					linksList.add(link);
+				}
+			}
+		}
+		sortLinks( linksList );		
+		return linksList ;
+	}
+	//----------------------------------------------------------------------------------------
+	private boolean checkCriteria(LinkInDbModel link, LinksCriteria criteria ) { // v 3.0.0
+		if ( criteria != null ) 
+		{
+			if ( criteria.isOwningSide() && link.isOwningSide() ) {
+				return checkCardinalityCriteria(link, criteria )  ;
+			}
+			if ( criteria.isInverseSide() && ( ! link.isOwningSide() ) ) {
+				return checkCardinalityCriteria(link, criteria )  ;
+			}
+			return false ;
+		}
+		return true ; // No criteria 
+	}
+	
+	//----------------------------------------------------------------------------------------
+	private boolean checkCardinalityCriteria(LinkInDbModel link, LinksCriteria criteria ) { // v 3.0.0
+		if ( criteria.isTypeManyToMany() && link.getCardinality() == Cardinality.MANY_TO_MANY ) return true ;
+		if ( criteria.isTypeManyToOne()  && link.getCardinality() == Cardinality.MANY_TO_ONE ) return true ;
+		if ( criteria.isTypeOneToMany()  && link.getCardinality() == Cardinality.ONE_TO_MANY  ) return true ;
+		if ( criteria.isTypeOneToOne()   && link.getCardinality() == Cardinality.ONE_TO_ONE   ) return true ;
+		return false ;
+	}
+	
+	//----------------------------------------------------------------------------------------
+	/**
+	 * Removes the 2 links defining the given relation <br>
+	 * Removes the 'inverse side' link and the 'owning side' link of the relation <br>
+	 * @param relation
+	 */
+	public void removeRelation(RelationLinksInDbModel relation) { // v 3.0.0
+		LinkInDbModel link = relation.getInverseSideLink();
+		if ( link != null ) {
+			this.removeLinkById( link.getId() );
+		}
+		link = relation.getOwningSideLink();
+		if ( link != null ) {
+			this.removeLinkById( link.getId() );
+		}		
+	}
+
 	/**
 	 * Returns the link for the given id
 	 * @param id
