@@ -33,12 +33,11 @@ import org.telosys.tools.generic.model.Link;
  * - 0..N foreign keys <br>
  * - 0..N links <br>
  * 
- * This class is "Comparable" ( based on the entity name )
- * 
  * @author Laurent Guerin
  *
  */
-public class EntityInDbModel implements Comparable<EntityInDbModel>, Serializable, Entity
+//public class EntityInDbModel implements Comparable<EntityInDbModel>, Serializable, Entity
+public class EntityInDbModel implements Serializable, Entity // v 3.0.0 ( 2 specific comparators )
 {
 	private static final long serialVersionUID = 1L;
 
@@ -496,7 +495,7 @@ public class EntityInDbModel implements Comparable<EntityInDbModel>, Serializabl
 	/* (non-Javadoc)
 	 * @see java.lang.Comparable#compareTo(T)
 	 */
-	@Override
+//	@Override
 	public int compareTo(EntityInDbModel other) {
 		if ( other != null ) {
 //			String sThisName = this.getName() ;

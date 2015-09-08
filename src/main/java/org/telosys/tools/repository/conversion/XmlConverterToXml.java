@@ -84,7 +84,7 @@ public class XmlConverterToXml {
 	private void addAllEntities(Document doc, RepositoryModel model, Element entitiesElement) 
 	{
 //		EntityInDbModel[] entities = model.getEntities();
-		EntityInDbModel[] entities = model.getEntitiesArray();
+		EntityInDbModel[] entities = model.getEntitiesArraySortedByTableName();
 		for ( EntityInDbModel entity : entities ) {
 //			log("entity : " + entity.getName() );
 			log("entity : " + entity.getDatabaseTable() );

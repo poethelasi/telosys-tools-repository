@@ -19,7 +19,7 @@ public class RepoModelTest {
 	public void print(RepositoryModel model) {
 		System.out.println("MODEL : " );
 		System.out.println("Database : " + model.getDatabaseId() + " " + model.getDatabaseName() );
-		for ( EntityInDbModel entity : model.getEntitiesArray() ) {
+		for ( EntityInDbModel entity : model.getEntitiesArraySortedByTableName() ) {
 			System.out.println(" . entity : " + entity );
 		}
 	}

@@ -72,7 +72,7 @@ public class LinksGenerator {
 		log("generateAllLinks()...");
 		
 		int count = 0 ;
-		EntityInDbModel[] entities = model.getEntitiesArray();
+		EntityInDbModel[] entities = model.getEntitiesArraySortedByTableName();
 		for ( EntityInDbModel entity : entities ) {
 			count = count + generateEntityLinks(model, entity);
 		}

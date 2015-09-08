@@ -76,7 +76,7 @@ public class LinksManager {
 		
 		int count = 0 ;
 		//Entity[] entities = model.getEntities();
-		for ( EntityInDbModel entity : model.getEntitiesArray() ) {
+		for ( EntityInDbModel entity : model.getEntitiesArraySortedByTableName() ) {
 			count = count + createRelations(model, entity);
 		}
 		return count ;

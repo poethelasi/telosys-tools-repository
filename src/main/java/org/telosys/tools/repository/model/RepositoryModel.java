@@ -26,6 +26,8 @@ import org.telosys.tools.commons.StrUtil;
 import org.telosys.tools.generic.model.Entity;
 import org.telosys.tools.generic.model.Model;
 import org.telosys.tools.generic.model.ModelType;
+import org.telosys.tools.repository.model.comparators.EntityComparatorOnClassName;
+import org.telosys.tools.repository.model.comparators.EntityComparatorOnTableName;
 
 public class RepositoryModel implements Model
 {
@@ -154,48 +156,39 @@ public class RepositoryModel implements Model
 		return htEntities.size();
 	}
 
+	private EntityInDbModel[] getEntitiesArray() {
+		return (EntityInDbModel[]) htEntities.values().toArray( new EntityInDbModel[htEntities.size()] ) ;
+	}
 	/**
-	 * Returns an array of all the entities of the model.<br>
-	 * The entities are sorted by name.
-	 * 
+	 * Returns an array of all the entities defined in the model.<br>
+	 * The entities are sorted by database table name.
 	 * @return
 	 */
-	public EntityInDbModel[] getEntitiesArray() {
-		EntityInDbModel[] array = (EntityInDbModel[]) htEntities.values().toArray( new EntityInDbModel[htEntities.size()] );
-		Arrays.sort(array);
+	public EntityInDbModel[] getEntitiesArraySortedByTableName() {
+		EntityInDbModel[] array = getEntitiesArray();
+		Arrays.sort(array, new EntityComparatorOnTableName());
+		return array ;
+	}
+	/**
+	 * Returns an array of all the entities defined in the model.<br>
+	 * The entities are sorted by class name.
+	 * @return
+	 */
+	public EntityInDbModel[] getEntitiesArraySortedByClassName() {
+		EntityInDbModel[] array = getEntitiesArray();
+		Arrays.sort(array, new EntityComparatorOnClassName());
 		return array ;
 	}
 	
-//	/**
-//	 * Returns a collection of all the entities of the model.<br>
-//	 * The entities are sorted by name.
-//	 * 
-//	 * @return
-//	 */
-//	public Collection<EntityInDbModel> getEntitiesCollection() {
-//		//return htEntities.values() ;
-//		EntityInDbModel[] entities = getEntitiesArray();
-//		return Arrays.asList(entities);
-//	}
-
 	@Override
 	public List<Entity> getEntities() {
-		EntityInDbModel[] entities = getEntitiesArray();
+		EntityInDbModel[] entities = getEntitiesArraySortedByClassName();
 		LinkedList<Entity> list = new LinkedList<Entity>();
 		for ( Entity entity : entities ) {
 			list.add(entity);
 		}
 		return list ;
 	}
-	
-//	/**
-//	 * Returns the entity for the given name, or null if not found
-//	 * @param name
-//	 * @return
-//	 */
-//	public EntityInDbModel getEntityByName(String name) {
-//		return htEntities.get(name);
-//	}
 	
 	@Override
 	public EntityInDbModel getEntityByTableName(String entityTableName) {
@@ -254,7 +247,7 @@ public class RepositoryModel implements Model
 	 */
 	public LinkInDbModel getLinkById(String id) {
 		if ( id != null ) {
-			EntityInDbModel [] entities = this.getEntitiesArray();
+			EntityInDbModel [] entities = this.getEntitiesArraySortedByTableName();
 			for ( int i = 0 ; i < entities.length ; i++ ) {
 				EntityInDbModel entity = entities[i];
 //				LinkInDbModel [] links = entity.getLinks();
@@ -275,7 +268,7 @@ public class RepositoryModel implements Model
 	 * Removes all the links in the model (for all the entities)
 	 */
 	public void removeAllLinks() {
-		EntityInDbModel [] entities = this.getEntitiesArray();
+		EntityInDbModel [] entities = this.getEntitiesArraySortedByTableName();
 		for ( int i = 0 ; i < entities.length ; i++ ) {
 			EntityInDbModel entity = entities[i];
 			entity.removeAllLinks();
@@ -310,7 +303,7 @@ public class RepositoryModel implements Model
 	 */
 	public int removeLinksByEntityName(String entityName) {
 		int count = 0 ;
-		for ( EntityInDbModel entity : this.getEntitiesArray() ) {
+		for ( EntityInDbModel entity : this.getEntitiesArraySortedByTableName() ) {
 //			for ( LinkInDbModel link : entity.getLinks() ) {
 			for ( LinkInDbModel link : entity.getLinksArray() ) {
 				if ( entityName.equals( link.getSourceTableName() ) || entityName.equals( link.getTargetTableName() ) ) {
@@ -349,7 +342,7 @@ public class RepositoryModel implements Model
 	public int removeLinksByJoinTableName(String joinTableName) {
 		int count = 0 ;
 		if ( joinTableName != null ) {
-			for ( EntityInDbModel entity : this.getEntitiesArray() ) {
+			for ( EntityInDbModel entity : this.getEntitiesArraySortedByTableName() ) {
 //				for ( LinkInDbModel link : entity.getLinks() ) {
 				for ( LinkInDbModel link : entity.getLinksArray() ) {
 					String jtName = link.getJoinTableName() ;
@@ -376,7 +369,7 @@ public class RepositoryModel implements Model
 		if ( link1 != null ) {
 			if ( link1.isOwningSide() ) {
 				//--- Owning Side => try to found the inverse side
-				EntityInDbModel [] entities = this.getEntitiesArray();
+				EntityInDbModel [] entities = this.getEntitiesArraySortedByTableName();
 				for ( int i = 0 ; i < entities.length ; i++ ) {
 					EntityInDbModel entity = entities[i];
 //					LinkInDbModel [] links = entity.getLinks();
@@ -414,7 +407,7 @@ public class RepositoryModel implements Model
 	 */
 	public ForeignKeyInDbModel getForeignKeyByName(String fkName)
 	{
-		EntityInDbModel [] entities = this.getEntitiesArray();
+		EntityInDbModel [] entities = this.getEntitiesArraySortedByTableName();
 		for ( EntityInDbModel entity : entities ) {
 			ForeignKeyInDbModel fk = entity.getForeignKey(fkName);
 			if ( fk != null ) {
