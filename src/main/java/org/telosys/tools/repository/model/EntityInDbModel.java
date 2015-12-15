@@ -541,6 +541,7 @@ public class EntityInDbModel implements Serializable, Entity // v 3.0.0 ( 2 spec
 		return false ; // No key attribute
 	}
 
+	@Override
 	public List<String> getWarnings() {
 		List<String> warnings = new LinkedList<String>() ;
 		if ( hasPrimaryKey() == false ) {
