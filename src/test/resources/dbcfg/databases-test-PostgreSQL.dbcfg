@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databases defaultId="0" maxId="4">
+<db dialect="" driver="org.postgresql.Driver" id="1" isolationLevel="" name="PostgreSQL for debug tests" poolSize="10" typeName="POSTGRESQL" url="jdbc:postgresql://10.226.159.81:5432/lgudb">
+<property name="user" value="lgu"/>
+<property name="password" value="lgu"/>
+<metadata catalog="!" schema="public" table-name-exclude="" table-name-include="" table-name-pattern="%" table-types="TABLE   VIEW  "/>
+</db>
+</databases>
