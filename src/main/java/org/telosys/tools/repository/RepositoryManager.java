@@ -20,7 +20,6 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import org.telosys.tools.commons.StandardTool;
 import org.telosys.tools.commons.TelosysToolsException;
 import org.telosys.tools.commons.TelosysToolsLogger;
 import org.telosys.tools.commons.dbcfg.DatabaseConfiguration;
@@ -47,12 +46,21 @@ import org.telosys.tools.repository.rules.RepositoryRules;
  * 
  */
 
-public abstract class RepositoryManager extends StandardTool
+public abstract class RepositoryManager //extends StandardTool
 {
+	
 	private final ConnectionManager     connectionManager ;
 	private final RepositoryRules       repositoryRules ;
 	
 	protected final TelosysToolsLogger  logger ;
+	protected TelosysToolsLogger getLogger() {
+		return logger;
+	}	
+//	private void log(String s) {
+//		if (logger != null ) {
+//			logger.log(s);
+//		}
+//	}
 
 	/**
 	 * Constructor
@@ -62,7 +70,7 @@ public abstract class RepositoryManager extends StandardTool
 	 */
 	protected RepositoryManager(ConnectionManager connectionManager, RepositoryRules repositoryRules, TelosysToolsLogger logger) 
 	{
-		super(logger);
+		//super(logger);
 		this.connectionManager = connectionManager ;
 		this.repositoryRules = repositoryRules ;
 		this.logger = logger;
