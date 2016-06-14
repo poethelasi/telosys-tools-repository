@@ -102,11 +102,13 @@ public class AttributeWrapper {
 		//--- Retrieve NUMBER informations if any
 		if (StrUtil.nullOrVoid(elem.getAttribute(RepositoryConst.COLUMN_MIN_VALUE)) == false) {
 			//column.setMinValue(elem.getAttribute(RepositoryConst.COLUMN_MIN_VALUE));
-			attributeInDbModel.setMinValue( StrUtil.getIntegerObject( elem.getAttribute(RepositoryConst.COLUMN_MIN_VALUE) ) ); // v 3.0.0
+			//attributeInDbModel.setMinValue( StrUtil.getIntegerObject( elem.getAttribute(RepositoryConst.COLUMN_MIN_VALUE) ) ); // v 3.0.0
+			attributeInDbModel.setMinValue( StrUtil.getBigDecimalObject( elem.getAttribute(RepositoryConst.COLUMN_MIN_VALUE) ) ); // v 3.0.0
 		}
 		if (StrUtil.nullOrVoid(elem.getAttribute(RepositoryConst.COLUMN_MAX_VALUE)) == false) {
 			//column.setMaxValue(elem.getAttribute(RepositoryConst.COLUMN_MAX_VALUE));
-			attributeInDbModel.setMaxValue( StrUtil.getIntegerObject( elem.getAttribute(RepositoryConst.COLUMN_MAX_VALUE) ) ); // v 3.0.0
+			//attributeInDbModel.setMaxValue( StrUtil.getIntegerObject( elem.getAttribute(RepositoryConst.COLUMN_MAX_VALUE) ) ); // v 3.0.0
+			attributeInDbModel.setMaxValue( StrUtil.getBigDecimalObject( elem.getAttribute(RepositoryConst.COLUMN_MAX_VALUE) ) ); // v 3.0.0
 		}
 		
 		attributeInDbModel.setLabel    ( elem.getAttribute(RepositoryConst.COLUMN_LABEL)     ) ; // #LGU 20/02/2013

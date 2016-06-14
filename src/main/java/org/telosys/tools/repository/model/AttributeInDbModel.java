@@ -16,6 +16,7 @@
 package org.telosys.tools.repository.model;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 import org.telosys.tools.commons.DatabaseUtil;
 import org.telosys.tools.commons.JavaTypeUtil;
@@ -112,8 +113,8 @@ public class AttributeInDbModel implements Comparable<AttributeInDbModel>, Seria
 	//----- SPECIAL DATA for NUMERIC -----
 //	private String  _sMinValue = null ;
 //	private String  _sMaxValue = null ;
-	private Integer _iMinValue = null ;
-	private Integer _iMaxValue = null ;
+	private BigDecimal _iMinValue = null ;
+	private BigDecimal _iMaxValue = null ;
 	
 	//----- SPECIAL DATA for BOOLEAN -----
 	private String  _sBooleanTrueValue  = null ; // the special value for TRUE 
@@ -708,26 +709,28 @@ public class AttributeInDbModel implements Comparable<AttributeInDbModel>, Seria
 //	public String getMinValue() {
 //		return _sMinValue ; 
 //	}
-	public Integer getMinValue() { // ver 3.0.0
+	@Override
+	public BigDecimal getMinValue() { // ver 3.0.0
 		return _iMinValue ; 
 	}
 //	public void setMinValue(String v) {
 //		_sMinValue = v ;
 //	}
-	public void setMinValue(Integer v) { // ver 3.0.0
+	public void setMinValue(BigDecimal v) { // ver 3.0.0
 		_iMinValue = v ;
 	}
 	
 //	public String getMaxValue() {
 //		return _sMaxValue ; 
 //	}
-	public Integer getMaxValue() { // ver 3.0.0
+	@Override
+	public BigDecimal getMaxValue() { // ver 3.0.0
 		return _iMaxValue ; 
 	}
 //	public void setMaxValue(String v) {
 //		_sMaxValue = v ;
 //	}
-	public void setMaxValue(Integer v) { // ver 3.0.0
+	public void setMaxValue(BigDecimal v) { // ver 3.0.0
 		_iMaxValue = v ;
 	}
 	
