@@ -26,6 +26,7 @@ import org.telosys.tools.commons.javatypes.JavaTypesManager;
 import org.telosys.tools.commons.jdbctypes.JdbcTypesManager;
 import org.telosys.tools.generic.model.Attribute;
 import org.telosys.tools.generic.model.DateType;
+import org.telosys.tools.generic.model.types.TypeReverser;
 
 /**
  * Column of a table/entity in the Repository Model <br>
@@ -358,6 +359,12 @@ public class AttributeInDbModel implements Comparable<AttributeInDbModel>, Seria
 		_sName = s ;
 	}
 	
+	//-----------------------------------------------------------------------------
+	@Override
+	public String getNeutralType() { // v 3.0.0
+		TypeReverser typeReverser = TypeReverser.getInstance() ;
+		return typeReverser.getNeutralType(_sFullType, dateType) ;
+	}
 	//-----------------------------------------------------------------------------
 	
 	/**
