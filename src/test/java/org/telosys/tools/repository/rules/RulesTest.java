@@ -87,7 +87,7 @@ public class RulesTest {
 		//col.setJavaName("name");
 		col.setName("name"); // v 3.0.0
 		//col.setJavaType("java.lang.String");
-		col.setFullType("java.lang.String"); // v 3.0.0
+		col.setModelFullType("java.lang.String"); // v 3.0.0
 		return col ;
 	}
 	

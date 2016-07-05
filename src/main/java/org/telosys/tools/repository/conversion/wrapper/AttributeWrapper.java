@@ -53,7 +53,7 @@ public class AttributeWrapper {
 		//column.setJavaName(elem.getAttribute(RepositoryConst.COLUMN_JAVA_NAME));
 		attributeInDbModel.setName(elem.getAttribute(RepositoryConst.COLUMN_JAVA_NAME)); // v 3.0.0
 		//column.setJavaType(elem.getAttribute(RepositoryConst.COLUMN_JAVA_TYPE));
-		attributeInDbModel.setFullType(elem.getAttribute(RepositoryConst.COLUMN_JAVA_TYPE)); // v 3.0.0
+		attributeInDbModel.setModelFullType(elem.getAttribute(RepositoryConst.COLUMN_JAVA_TYPE)); // v 3.0.0
 		//column.setJavaNotNull(  StrUtil.getBoolean(elem.getAttribute(RepositoryConst.COLUMN_NOT_NULL )) );// #LGU 30/08/2011
 		attributeInDbModel.setNotNull(  StrUtil.getBoolean(elem.getAttribute(RepositoryConst.COLUMN_NOT_NULL )) ); // v 3.0.0
 		attributeInDbModel.setNotEmpty( StrUtil.getBoolean(elem.getAttribute(RepositoryConst.COLUMN_NOT_EMPTY)) );// #LGU 30/08/2011
@@ -160,7 +160,8 @@ public class AttributeWrapper {
 		//element.setAttribute(RepositoryConst.COLUMN_JAVA_NAME, column.getJavaName());
 		element.setAttribute(RepositoryConst.COLUMN_JAVA_NAME, attributeInDbModel.getName()); // v 3.0.0
 		//element.setAttribute(RepositoryConst.COLUMN_JAVA_TYPE, column.getJavaType());
-		element.setAttribute(RepositoryConst.COLUMN_JAVA_TYPE, attributeInDbModel.getFullType()); // v 3.0.0
+		//element.setAttribute(RepositoryConst.COLUMN_JAVA_TYPE, attributeInDbModel.getFullType()); // v 3.0.0
+		element.setAttribute(RepositoryConst.COLUMN_JAVA_TYPE, attributeInDbModel.getModelFullType()); // v 3.0.0
 				
 		if (StrUtil.nullOrVoid(attributeInDbModel.getDefaultValue()) == false) {
 			element.setAttribute(RepositoryConst.COLUMN_JAVA_DEFAULT_VALUE, attributeInDbModel.getDefaultValue()); // #LGU 17/10/2011

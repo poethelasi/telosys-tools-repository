@@ -21,11 +21,10 @@ import java.math.BigDecimal;
 import org.telosys.tools.commons.DatabaseUtil;
 import org.telosys.tools.commons.JavaTypeUtil;
 import org.telosys.tools.commons.StrUtil;
-import org.telosys.tools.commons.javatypes.JavaTypes;
-import org.telosys.tools.commons.javatypes.JavaTypesManager;
 import org.telosys.tools.commons.jdbctypes.JdbcTypesManager;
 import org.telosys.tools.generic.model.Attribute;
 import org.telosys.tools.generic.model.DateType;
+import org.telosys.tools.generic.model.types.AttributeTypeInfo;
 import org.telosys.tools.generic.model.types.TypeReverser;
 
 /**
@@ -79,7 +78,7 @@ public class AttributeInDbModel implements Comparable<AttributeInDbModel>, Seria
 
 	private String  _sName        = null ;  // javaName=""
 	
-	private String  _sFullType    = null ;  // javaType="int|...." 
+	private String  _sModelFullType    = null ;  // javaType="int|...." 
 	
 	private boolean _bNotNull = false ;  // javaNotNull="true|false" 
 	
@@ -132,6 +131,10 @@ public class AttributeInDbModel implements Comparable<AttributeInDbModel>, Seria
 	
 	private SequenceGeneratorInDbModel sequenceGenerator = null ;
 	
+	//-----------------------------------------------------------------------------
+	private AttributeTypeInfo getTypeInfo(String fullType) {
+		return TypeReverser.getInstance().getTypeInfo(fullType);
+	}
 	//-----------------------------------------------------------------------------
 	
 	public GeneratedValueInDbModel getGeneratedValue() {
@@ -362,48 +365,60 @@ public class AttributeInDbModel implements Comparable<AttributeInDbModel>, Seria
 	//-----------------------------------------------------------------------------
 	@Override
 	public String getNeutralType() { // v 3.0.0
-		TypeReverser typeReverser = TypeReverser.getInstance() ;
-		return typeReverser.getNeutralType(_sFullType, dateType) ;
+		return TypeReverser.getInstance().getNeutralType(_sModelFullType, dateType) ;
 	}
 	//-----------------------------------------------------------------------------
 	
-	/**
-	 * Returns the primitive Java type or the full java class name ( with package )
-	 * e.g. : "boolean", "java.lang.Boolean", "java.util.Date", etc...
-	 * @return
-	 */
-//	public String getJavaType() {
-	@Override
-	public String getFullType() { // v 3.0.0
-		
-		String sType = _sFullType ;
-		
-		//--- Backward compatibility with old repository
-		
-		JavaTypes javaTypes = JavaTypesManager.getJavaTypes();
-		if ( javaTypes.getTypeIndex(sType) < 0 )
-		{
-			// Type NOT FOUND : may be a short type ( from an old repository ) 
-			return javaTypes.getTypeForShortType(sType); 
-		}
-		else
-		{
-			// Type found => Type OK
-			return sType ;
-		}
-	}
+//	/**
+//	 * Returns the primitive Java type or the full java class name ( with package )
+//	 * e.g. : "boolean", "java.lang.Boolean", "java.util.Date", etc...
+//	 * @return
+//	 */
+////	public String getJavaType() {
+//	@Override
+//	public String getFullType() { // v 3.0.0
+//		
+//		String sType = _sFullType ;
+//		
+//		//--- Backward compatibility with old repository
+//		
+//		JavaTypes javaTypes = JavaTypesManager.getJavaTypes();
+//		if ( javaTypes.getTypeIndex(sType) < 0 )
+//		{
+//			// Type NOT FOUND : may be a short type ( from an old repository ) 
+//			return javaTypes.getTypeForShortType(sType); 
+//		}
+//		else
+//		{
+//			// Type found => Type OK
+//			return sType ;
+//		}
+//	}
 	
 //	public void setJavaType(String s) {
-	public void setFullType(String s) { // v 3.0.0
-		_sFullType = s ;
+//	public void setFullType(String s) { // v 3.0.0
+	/**
+	 * Returns the DB-Model type ( stored as a Java full type )
+	 * @param s
+	 */
+	public void setModelFullType(String s) { // v 3.0.0
+		_sModelFullType = s ;
+	}
+	
+	/**
+	 * Returns the DB-Model type ( stored as a Java full type )
+	 * @return
+	 */
+	public String getModelFullType() { // v 3.0.0
+		return _sModelFullType ;
 	}
 
-	@Override
-	public String getSimpleType() {
-		// TODO Auto-generated method stub
-		// TODO : really useful ?
-		return null;
-	}
+//	@Override
+//	public String getSimpleType() {
+//		// TODO Auto-generated method stub
+//		// TODO : really useful ?
+//		return null;
+//	}
 
 	//-----------------------------------------------------------------------------
 //	/**
@@ -442,7 +457,7 @@ public class AttributeInDbModel implements Comparable<AttributeInDbModel>, Seria
 	public boolean isJavaTypeBoolean() 
 	{
 		//return JavaTypeUtil.isCategoryBoolean( getJavaType() ) ;
-		return JavaTypeUtil.isCategoryBoolean( getFullType() ) ;  // v 3.0.0
+		return JavaTypeUtil.isCategoryBoolean( _sModelFullType ) ;  // v 3.0.0
 	}
 	
 	/**
@@ -452,7 +467,8 @@ public class AttributeInDbModel implements Comparable<AttributeInDbModel>, Seria
 	public boolean isJavaTypeString() 
 	{
 		//return JavaTypeUtil.isCategoryString( getJavaType() ) ;
-		return JavaTypeUtil.isCategoryString( getFullType() ) ; // v 3.0.0
+		//return JavaTypeUtil.isCategoryString( getFullType() ) ; // v 3.0.0
+		return JavaTypeUtil.isCategoryString( _sModelFullType ) ; // v 3.0.0
 	}
 
 	/**
@@ -464,7 +480,8 @@ public class AttributeInDbModel implements Comparable<AttributeInDbModel>, Seria
 	public boolean isJavaTypeNumber() 
 	{
 		//return JavaTypeUtil.isCategoryNumber( getJavaType() ) ;
-		return JavaTypeUtil.isCategoryNumber( getFullType() ) ; // v 3.0.0
+		//return JavaTypeUtil.isCategoryNumber( getFullType() ) ; // v 3.0.0
+		return JavaTypeUtil.isCategoryNumber( _sModelFullType ) ; // v 3.0.0
 	}
 	
 	/**
@@ -475,7 +492,8 @@ public class AttributeInDbModel implements Comparable<AttributeInDbModel>, Seria
 	public boolean isJavaTypeDateOrTime() 
 	{
 		//return JavaTypeUtil.isCategoryDateOrTime( getJavaType() ) ;
-		return JavaTypeUtil.isCategoryDateOrTime( getFullType() ) ; // v 3.0.0
+		//return JavaTypeUtil.isCategoryDateOrTime( getFullType() ) ; // v 3.0.0
+		return JavaTypeUtil.isCategoryDateOrTime( _sModelFullType ) ; // v 3.0.0
 	}
 	
 	/**
@@ -485,7 +503,8 @@ public class AttributeInDbModel implements Comparable<AttributeInDbModel>, Seria
 	public boolean isJavaPrimitiveType()
 	{
 		//return JavaTypeUtil.isPrimitiveType( getJavaType() );
-		return JavaTypeUtil.isPrimitiveType( getFullType() ); // v 3.0.0
+		//return JavaTypeUtil.isPrimitiveType( getFullType() ); // v 3.0.0
+		return JavaTypeUtil.isPrimitiveType( _sModelFullType ); // v 3.0.0
 	}
 
 	//-----------------------------------------------------------------------------
@@ -883,7 +902,7 @@ public class AttributeInDbModel implements Comparable<AttributeInDbModel>, Seria
 			//+ getJavaName() + "|" 
 			//+ getName() + "|" // v 3.0.0 
 			// + getJavaType() ;
-			+ getFullType() ; // v 3.0.0
+			+ getNeutralType() ; // v 3.0.0
 	}
 
 	//---------------------------------------------------------------------------------------------------
@@ -1011,5 +1030,24 @@ public class AttributeInDbModel implements Comparable<AttributeInDbModel>, Seria
 		return null;
 	}
 
-	//---------------------------------------------------------------------------------------------------
+	@Override
+	public boolean isPrimitiveTypeExpected() {
+		return getTypeInfo(_sModelFullType).isPrimitiveTypeExpected() ;
+	}
+
+	@Override
+	public boolean isUnsignedTypeExpected() {
+		return false; // Always false for this kind of model (no unsigned type in Java)
+	}
+
+	@Override
+	public boolean isObjectTypeExpected() {
+		return getTypeInfo(_sModelFullType).isObjectTypeExpected();
+	}
+
+	@Override
+	public boolean isSqlTypeExpected() {
+		return getTypeInfo(_sModelFullType).isSqlTypeExpected();
+	}
+
 }

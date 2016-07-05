@@ -267,7 +267,7 @@ public abstract class RepositoryManager //extends StandardTool
 		//column.setJavaName(sAttributeName);
 		column.setName(sAttributeName); // v 3.0.0
 		//column.setJavaType(sAttributeType);
-		column.setFullType(sAttributeType); // v 3.0.0
+		column.setModelFullType(sAttributeType); // v 3.0.0
 		
 		//--- Java default value for primitive types
 		JavaTypes javaTypes = JavaTypesManager.getJavaTypes();
