@@ -99,6 +99,16 @@ public class ForeignKeyInDbModel implements Comparable<ForeignKeyInDbModel>, Ser
 //		return Arrays.asList(array);
 //	}
 //	
+	
+	/**
+	 * Returns TRUE if the FK is "composite", that is to say based on more than 1 column
+	 * @return
+	 * @since v 3.0.0
+	 */
+	public boolean isComposite() {
+		return foreignKeyColumns.size() > 1 ;
+	}
+	
 	@Override
 	public List<ForeignKeyColumn> getColumns() {
 		//--- Returns the columns of this FK sorted by "sequence"

@@ -154,7 +154,7 @@ public abstract class RepositoryManager //extends StandardTool
 		addColumns( entity, dbTable) ;
 				
 		//--- Add the Foreign Keys of this table
-		addForeignKeyParts( entity, dbTable);
+		addForeignKeyParts( entity, dbTable); 
 		
 		//--- Add the entity in the repository
 		repositoryModel.storeEntity(entity);
@@ -291,7 +291,8 @@ public abstract class RepositoryManager //extends StandardTool
 		column.setKeyElement( dbCol.isInPrimaryKey()); // v 3.0.0
 
 		//--- Is this column a member of a Foreign Key ?
-		column.setForeignKey( dbCol.getUsedInForeignKey() > 0 );
+		// Removed in v 3.0.0 - now FK Type (Simple/Composite) is set later, after FK building  
+		// column.setForeignKey( dbCol.getUsedInForeignKey() > 0 );
 
 		//--- Is this column auto-incremented ?
 		column.setAutoIncremented(dbCol.isAutoIncremented());
@@ -344,11 +345,68 @@ public abstract class RepositoryManager //extends StandardTool
 		return foreignKey ;
 	}
 	
+//	private final static int FK_SIMPLE    = 1 ;
+//	private final static int FK_COMPOSITE = 2 ;
+	
 	private void addForeignKeyParts( EntityInDbModel entity, DatabaseTable dbTable) {
 		//--- For each foreign key of the table ...
 		for ( DatabaseForeignKey dbFK : dbTable.getForeignKeys() ) {
-			entity.storeForeignKey(buildForeignKey( dbFK ) );
+			// Build the FK instance
+			ForeignKeyInDbModel fk = buildForeignKey( dbFK ) ;
+			// Attach the FK to the entity
+			entity.storeForeignKey(fk);
+			
+			// Set FK type for each attribute involved in a FK  
+			// Now done globally in "After Load Processing"
+			// setAttributesFKType(entity, fk); // Added in v 3.0.0
 		}
 	}
-
+	
+//	/**
+//	 * Set the FK type for each attribute involved in the given FK
+//	 * @param entity
+//	 * @param fk
+//	 * @since v 3.0.0
+//	 */
+//	private void setAttributesFKType(EntityInDbModel entity, ForeignKeyInDbModel fk) {
+//		if ( fk.isComposite() ) {
+//			// Composite FK ( many columns )
+//			for ( ForeignKeyColumn fkCol : fk.getColumns() ) {
+//				setAttributeFKType(entity, fkCol, FK_COMPOSITE) ;
+//			}
+//		}
+//		else {
+//			// Simple FK ( only one column )
+//			if ( fk.getColumns().size() == 1 ) {
+//				ForeignKeyColumn fkCol = fk.getColumns().get(0);
+//				setAttributeFKType(entity, fkCol, FK_SIMPLE) ;
+//			}
+//			else {
+//				throw new IllegalStateException("FK has " + fk.getColumns().size() + " part(s) (1 expected)");
+//			}
+//		}
+//	}
+//	
+//	/**
+//	 * Set the FK Type for the attribute associated with the given FK Column
+//	 * @param entity
+//	 * @param fkCol
+//	 * @param fkType
+//	 * @since v 3.0.0
+//	 */
+//	private void setAttributeFKType(EntityInDbModel entity, ForeignKeyColumn fkCol, int fkType ) {
+//		String fkColName = fkCol.getColumnName();
+//		AttributeInDbModel attribute = entity.getAttributeByColumnName(fkColName);
+//		if ( attribute != null ) {
+//			if ( fkType == FK_SIMPLE ) {
+//				attribute.setFKSimple(true);
+//			}
+//			else if ( fkType == FK_COMPOSITE ) {
+//				attribute.setFKComposite(true);
+//			}
+//		}
+//		else {
+//			throw new IllegalStateException("Cannot get attribute by column name'" + fkColName + "'");
+//		}
+//	}
 }

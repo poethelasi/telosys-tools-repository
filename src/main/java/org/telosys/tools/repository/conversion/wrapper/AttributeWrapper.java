@@ -41,7 +41,10 @@ public class AttributeWrapper {
 		attributeInDbModel.setDatabaseTypeName(elem.getAttribute(RepositoryConst.COLUMN_DB_TYPE_NAME));
 		attributeInDbModel.setDatabaseSize(StrUtil.getInt(elem.getAttribute(RepositoryConst.COLUMN_DB_SIZE)));
 		attributeInDbModel.setDatabaseNotNull(StrUtil.getBoolean(elem.getAttribute(RepositoryConst.COLUMN_DB_NOTNULL)));
-		attributeInDbModel.setForeignKey(StrUtil.getBoolean(elem.getAttribute(RepositoryConst.COLUMN_DB_FOREIGN_KEY)));
+		
+		// Removed in v 3.0.0
+		//attributeInDbModel.setForeignKey(StrUtil.getBoolean(elem.getAttribute(RepositoryConst.COLUMN_DB_FOREIGN_KEY))); 
+		
 		attributeInDbModel.setAutoIncremented(StrUtil.getBoolean(elem.getAttribute(RepositoryConst.COLUMN_DB_AUTO_INCREMENTED))); // #LGU 04/08/2011
 		attributeInDbModel.setDatabaseDefaultValue( elem.getAttribute(RepositoryConst.COLUMN_DB_DEFAULT_VALUE) ); // #LGU 10/08/2011
 		attributeInDbModel.setDatabaseComment( elem.getAttribute(RepositoryConst.COLUMN_DB_COMMENT) ); // v 2.1.1 #LCH 20/08/2014
@@ -138,9 +141,12 @@ public class AttributeWrapper {
 //		if (column.isForeignKey()) {
 //			element.setAttribute(RepositoryConst.COLUMN_DB_FOREIGN_KEY, Boolean.toString(column.isForeignKey()));
 //		}
-		if ( attributeInDbModel.isUsedInForeignKey() ) { // v 3.0.0
-			element.setAttribute(RepositoryConst.COLUMN_DB_FOREIGN_KEY, Boolean.toString(attributeInDbModel.isUsedInForeignKey())); // v 3.0.0
-		}
+
+// Removed in v 3.0.0		
+//		if ( attributeInDbModel.isUsedInForeignKey() ) { // v 3.0.0
+//			element.setAttribute(RepositoryConst.COLUMN_DB_FOREIGN_KEY, Boolean.toString(attributeInDbModel.isUsedInForeignKey())); // v 3.0.0
+//		}
+		
 //		if (column.isPrimaryKey()) {
 //			element.setAttribute(RepositoryConst.COLUMN_DB_PRIMARY_KEY, Boolean.toString(column.isPrimaryKey()));
 //		}

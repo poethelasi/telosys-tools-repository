@@ -41,7 +41,8 @@ public abstract class AbstractTestCase {
 	}
 
 	protected void printModel (RepositoryModel model)  {
-		System.out.println("Model generated : " );
+		System.out.println("---------------------------------------------------" );
+		System.out.println("MODEL : " );
 		System.out.println("Database ID = " + model.getDatabaseId() );
 		
 		System.out.println("Number of entities = " + model.getNumberOfEntities() );
@@ -59,9 +60,13 @@ public abstract class AbstractTestCase {
 			for ( LinkInDbModel link : links ) {
 				System.out.println(" . Link : "  + link);
 //				System.out.println(" . " + link.getJavaFieldName() );
-				System.out.println(" . " + link.getFieldName() );
+				System.out.println("     Field name = " + link.getFieldName() );
+				System.out.println("     Foreign Key name = " + link.getForeignKeyName() );
+				System.out.println("     Join Table name = " + link.getJoinTableName() );
 			}
 		}
+		System.out.println("---------------------------------------------------" );
+
 	}
 	
 	/**

@@ -107,9 +107,9 @@ public class EntityInDbModel implements Serializable, Entity // v 3.0.0 ( 2 spec
 		}
 		
 		//--- Check if all the columns are in a Foreign Key
-		for ( AttributeInDbModel column : getAttributesArray() ) {
-			//if ( ! column.isForeignKey() ) {
-			if ( ! column.isUsedInForeignKey() ) {
+		for ( AttributeInDbModel attribute : getAttributesArray() ) {
+			//if ( ! attribute.isUsedInForeignKey() ) {
+			if ( ! attribute.isFK() ) { // v 3.0.0
 				return false ;
 			}
 		}

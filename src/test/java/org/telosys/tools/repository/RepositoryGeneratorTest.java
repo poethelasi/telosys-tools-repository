@@ -132,9 +132,20 @@ public class RepositoryGeneratorTest extends AbstractTestCase {
 		
 		LinkedList<Link> linksBasedOnFK = new LinkedList<Link>() ;
 		LinkedList<Link> linksBasedOnJoinTable = new LinkedList<Link>() ;
+		System.out.println("Student nb links : " + studentEntity.getLinks().size() );
 		for ( Link link : studentEntity.getLinks() ) {
-			if ( link.isBasedOnForeignKey() )  linksBasedOnFK.add(link) ;
-			if ( link.isBasedOnJoinTable() )  linksBasedOnJoinTable.add(link) ;
+			System.out.println("Student link : " + link.getId() 
+					+ " getForeignKeyName = " + link.getForeignKeyName() 
+					+ " getJoinTableName = " + link.getJoinTableName() 
+					);
+			if ( link.isBasedOnForeignKey() )  {
+				System.out.println("Student link : " + link.getId() + " based on FOREIGN KEY");
+				linksBasedOnFK.add(link) ;
+			}
+			if ( link.isBasedOnJoinTable() )  {
+				System.out.println("Student link : " + link.getId() + " based on JOIN TABLE");
+				linksBasedOnJoinTable.add(link) ;
+			}
 		}
 		assertEquals(2, linksBasedOnFK.size() ); // 2 FK --> Teacher
 		assertEquals(1, linksBasedOnJoinTable.size() ); // 1 Join Table "Relation1"

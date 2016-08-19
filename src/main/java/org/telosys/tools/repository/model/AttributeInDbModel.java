@@ -60,8 +60,12 @@ public class AttributeInDbModel implements Comparable<AttributeInDbModel>, Seria
 	//private boolean _bPrimaryKey       = false ; // primaryKey="true|false" ( false by default )
 	private boolean _bKeyElement        = false ; // primaryKey="true|false" ( false by default ) // v 3.0.0
 	
-	private boolean _bForeignKey       = false ; // foreignKey="true|false" ( false by default )
+	//private boolean _bForeignKey       = false ; // foreignKey="true|false" ( false by default )
 
+	// An attribute can be involved in many FK, it can be both in a SIMPLE FK and in a COMPOSITE FK 
+	private boolean _bForeignKeySimple     = false ; // ( false by default )
+	private boolean _bForeignKeyComposite  = false ; // ( false by default )
+	
 	private boolean _bAutoIncremented  = false ; // autoIncremented="true|false" ( false by default )
 	
 	private int     _iDatabasePosition = 0 ;     // position="" ( database ordinal position ) #LGU 10/08/2011
@@ -187,18 +191,6 @@ public class AttributeInDbModel implements Comparable<AttributeInDbModel>, Seria
 		return _bKeyElement ;
 	}
 
-	//-----------------------------------------------------------------------------
-	public void setForeignKey(boolean b) {
-		_bForeignKey = b ;
-	}
-//	public boolean isForeignKey() {
-//		return _bForeignKey ;
-//	}
-	@Override
-	public boolean isUsedInForeignKey() { // v 3.0.0
-		return _bForeignKey;
-	}
-	
 	//-----------------------------------------------------------------------------
 
 	public void setAutoIncremented(boolean b) {
@@ -1048,6 +1040,38 @@ public class AttributeInDbModel implements Comparable<AttributeInDbModel>, Seria
 	@Override
 	public boolean isSqlTypeExpected() {
 		return getTypeInfo(_sModelFullType).isSqlTypeExpected();
+	}
+
+	//-----------------------------------------------------------------------------
+//--- Remove, replaced by isFK()
+//	public void setForeignKey(boolean b) {
+//		_bForeignKey = b ;
+//	}
+//	@Override
+//	public boolean isUsedInForeignKey() { // v 3.0.0
+//		return _bForeignKey;
+//	}
+	
+	
+	@Override
+	public boolean isFK() {
+		return _bForeignKeySimple || _bForeignKeyComposite ;
+	}
+
+	public void setFKSimple(boolean flag) {
+		_bForeignKeySimple = flag ;
+	}
+	@Override
+	public boolean isFKSimple() {
+		return _bForeignKeySimple;
+	}
+
+	public void setFKComposite(boolean flag) {
+		_bForeignKeyComposite = flag ;
+	}
+	@Override
+	public boolean isFKComposite() {
+		return _bForeignKeyComposite;
 	}
 
 }

@@ -102,6 +102,10 @@ public class RepositoryGenerator extends RepositoryManager
 			closeConnection(connection); 
 		}
 		
+		//--- STEP 1.1 : set FK flags on attributes - MUST BE CALLED BEFORE THE LINKS GENERATION
+		ForeignKeyTypeManager fkTypeManager = new ForeignKeyTypeManager() ;
+		fkTypeManager.setAttributesForeignKeyType(repositoryModel);
+		
 		//--- STEP 2 : Generates the links between entities 
 //		LinksGenerator linksGenerator = new LinksGenerator(getRepositoryRules(), getLogger() );
 //		linksGenerator.generateAllLinks(repositoryModel);
