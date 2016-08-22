@@ -71,7 +71,7 @@ public abstract class GenericPersistenceManager implements PersistenceManager {
 		
 		//--- Model finalization 
 		ForeignKeyTypeManager fkTypeManager = new ForeignKeyTypeManager() ;
-		fkTypeManager.setAttributesForeignKeyType(model);
+		fkTypeManager.setAttributesForeignKeyInformation(model);
 		
 		return model;
 	}

@@ -202,7 +202,7 @@ public class RepositoryUpdator extends RepositoryManager
 		
 		//--- STEP 1.1 : set FK flags on attributes - MUST BE CALLED BEFORE THE LINKS GENERATION
 		ForeignKeyTypeManager fkTypeManager = new ForeignKeyTypeManager() ;
-		fkTypeManager.setAttributesForeignKeyType(repositoryModel);
+		fkTypeManager.setAttributesForeignKeyInformation(repositoryModel);
 
 		//--- STEP 2 : Updates the links between entities ( since v 2.1.1 )
 		LinksManager linksManager = new LinksManager(getRepositoryRules(), getLogger() );

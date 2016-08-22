@@ -12,6 +12,7 @@ import java.util.List;
 import org.junit.Test;
 import org.telosys.tools.commons.ConsoleLogger;
 import org.telosys.tools.commons.TelosysToolsException;
+import org.telosys.tools.generic.model.Attribute;
 import org.telosys.tools.generic.model.Cardinality;
 import org.telosys.tools.generic.model.JoinColumn;
 import org.telosys.tools.generic.model.JoinTable;
@@ -80,7 +81,29 @@ public class RepositoryGeneratorTest extends AbstractTestCase {
 //		checkJavaName(studentLinks[0].getJavaFieldName(),studentLinks[1].getJavaFieldName(), "teacher", "teacher2" );
 //		checkJavaName(teacherLinks[0].getJavaFieldName(),teacherLinks[1].getJavaFieldName(), "listOfStudent", "listOfStudent2" );		
 		checkJavaName(studentLinks[0].getFieldName(),studentLinks[1].getFieldName(), "teacher", "teacher2" );
-		checkJavaName(teacherLinks[0].getFieldName(),teacherLinks[1].getFieldName(), "listOfStudent", "listOfStudent2" );		
+		checkJavaName(teacherLinks[0].getFieldName(),teacherLinks[1].getFieldName(), "listOfStudent", "listOfStudent2" );	
+		
+		//--- Check FK information stored in Attribute
+		Attribute studentId = studentEntity.getAttributeByColumnName("ID");
+		assertNotNull(studentId);
+		assertFalse(studentId.isFK());
+		assertFalse(studentId.isFKSimple());
+		assertFalse(studentId.isFKComposite());
+		assertNull (studentId.getReferencedEntityClassName() );
+
+		Attribute studentTeacherCode1 = studentEntity.getAttributeByColumnName("TEACHER_CODE1") ;
+		assertNotNull(studentTeacherCode1);
+		assertTrue(studentTeacherCode1.isFK());
+		assertTrue(studentTeacherCode1.isFKSimple());
+		assertFalse(studentTeacherCode1.isFKComposite());
+		assertEquals ("Teacher", studentTeacherCode1.getReferencedEntityClassName() );
+
+		Attribute studentTeacherCode2 = studentEntity.getAttributeByColumnName("TEACHER_CODE2") ;
+		assertNotNull(studentTeacherCode2);
+		assertTrue(studentTeacherCode2.isFK());
+		assertTrue(studentTeacherCode2.isFKSimple());
+		assertFalse(studentTeacherCode2.isFKComposite());
+		assertEquals ("Teacher", studentTeacherCode2.getReferencedEntityClassName() );
 	}
 
 	@Test

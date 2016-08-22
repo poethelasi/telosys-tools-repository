@@ -65,6 +65,7 @@ public class AttributeInDbModel implements Comparable<AttributeInDbModel>, Seria
 	// An attribute can be involved in many FK, it can be both in a SIMPLE FK and in a COMPOSITE FK 
 	private boolean _bForeignKeySimple     = false ; // ( false by default )
 	private boolean _bForeignKeyComposite  = false ; // ( false by default )
+	private String  referencedEntityClassName = null ;
 	
 	private boolean _bAutoIncremented  = false ; // autoIncremented="true|false" ( false by default )
 	
@@ -1072,6 +1073,19 @@ public class AttributeInDbModel implements Comparable<AttributeInDbModel>, Seria
 	@Override
 	public boolean isFKComposite() {
 		return _bForeignKeyComposite;
+	}
+
+	public void setReferencedEntityClassName(String entityClassName) {
+		referencedEntityClassName = entityClassName ;
+	}
+	@Override
+	public String getReferencedEntityClassName() {
+		if ( isFK() ) {
+			return referencedEntityClassName ;
+		}
+		else {
+			return null ;
+		}
 	}
 
 }

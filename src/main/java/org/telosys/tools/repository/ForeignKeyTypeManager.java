@@ -58,56 +58,65 @@ public class ForeignKeyTypeManager
 	 * @param repositoryModel
 	 * @since v 3.0.0
 	 */
-	public void setAttributesForeignKeyType(RepositoryModel repositoryModel) {
+	public void setAttributesForeignKeyInformation(RepositoryModel repositoryModel) {
 		
 		for ( Entity entity : repositoryModel.getEntities() ) {
 			List<ForeignKey> foreignKeys = entity.getDatabaseForeignKeys();
 			for ( ForeignKey fk : foreignKeys ) {
+				EntityInDbModel referencedEntity = repositoryModel.getEntityByTableName( fk.getReferencedTableName() );
 				// Set FK type for each attribute involved in a FK  
-				setAttributesFKType((EntityInDbModel)entity, fk); 
+				setAttributesFKInfo((EntityInDbModel)entity, fk, referencedEntity); 
 			}
 		}		
 	}
 	
 	/**
-	 * Set the FK type for each attribute involved in the given FK
+	 * Set the FK information for all the attributes associated with the given FK
 	 * @param entity
 	 * @param fk
+	 * @param referencedEntity
 	 * @since v 3.0.0
 	 */
-	private void setAttributesFKType(EntityInDbModel entity, ForeignKey fk) {
+	private void setAttributesFKInfo(EntityInDbModel entity, ForeignKey fk, EntityInDbModel referencedEntity ) {
 		List<ForeignKeyColumn> fkColumns = fk.getColumns() ;
 		if ( fkColumns != null ) {
 			if ( fkColumns.size() > 1 ) {
 				//--- Composite FK ( many columns )
 				for ( ForeignKeyColumn fkCol : fkColumns ) {
-					setAttributeFKType(entity, fkCol, FK_COMPOSITE) ;
+					setAttributeFKInfo(entity, fkCol, FK_COMPOSITE, referencedEntity) ;
 				}
 			}
 			else if ( fk.getColumns().size() == 1 ) {
 				//--- Simple FK ( only one column )
 				ForeignKeyColumn fkCol = fkColumns.get(0);
-				setAttributeFKType(entity, fkCol, FK_SIMPLE) ;
+				setAttributeFKInfo(entity, fkCol, FK_SIMPLE, referencedEntity) ;
 			}
 		}
 	}
 	
 	/**
-	 * Set the FK Type for the attribute associated with the given FK Column
+	 * Set the FK information for the attribute associated with the given FK Column
 	 * @param entity
 	 * @param fkCol
 	 * @param fkType
+	 * @param referencedEntity
 	 * @since v 3.0.0
 	 */
-	private void setAttributeFKType(EntityInDbModel entity, ForeignKeyColumn fkCol, int fkType ) {
+	private void setAttributeFKInfo(EntityInDbModel entity, ForeignKeyColumn fkCol, int fkType, EntityInDbModel referencedEntity ) {
 		String fkColName = fkCol.getColumnName();
 		AttributeInDbModel attribute = entity.getAttributeByColumnName(fkColName);
 		if ( attribute != null ) {
 			if ( fkType == FK_SIMPLE ) {
 				attribute.setFKSimple(true);
+				// Always set the "FK Simple" reference as the main referenced entity (priority = 1)
+				attribute.setReferencedEntityClassName(referencedEntity.getClassName());
 			}
 			else if ( fkType == FK_COMPOSITE ) {
 				attribute.setFKComposite(true);
+				// Set the reference only if there's no "FK Simple" reference (priority = 2)
+				if ( ! attribute.isFKSimple() ) {
+					attribute.setReferencedEntityClassName(referencedEntity.getClassName());
+				}
 			}
 		}
 		else {
