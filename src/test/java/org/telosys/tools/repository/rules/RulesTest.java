@@ -81,8 +81,8 @@ public class RulesTest {
 		assertEquals("Ab cd", rules.getAttributeGuiLabel("ab_cd") ) ;
 	}
 
-	private AttributeInDbModel buildColumn(String dbName, String javaName, String javaType ) {
-		AttributeInDbModel col = new AttributeInDbModel();
+	private AttributeInDbModel buildAttribute(EntityInDbModel entity, String dbName, String javaName, String javaType ) {
+		AttributeInDbModel col = new AttributeInDbModel(entity);
 		col.setDatabaseName(dbName);
 		//col.setJavaName("name");
 		col.setName("name"); // v 3.0.0
@@ -111,17 +111,17 @@ public class RulesTest {
 		owningSideEntity.setDatabaseTable("EMPLOYEE");
 //		owningSideEntity.setBeanJavaClass("Employee");
 		owningSideEntity.setClassName("Employee");
-		owningSideEntity.storeAttribute(buildColumn("ID", "id", "int"));
-		owningSideEntity.storeAttribute(buildColumn("FIRST_NAME", "firstName", "java.lang.String"));
-		owningSideEntity.storeAttribute(buildColumn("LAST_NAME", "lastName", "java.lang.String"));
+		owningSideEntity.storeAttribute(buildAttribute(owningSideEntity, "ID", "id", "int"));
+		owningSideEntity.storeAttribute(buildAttribute(owningSideEntity, "FIRST_NAME", "firstName", "java.lang.String"));
+		owningSideEntity.storeAttribute(buildAttribute(owningSideEntity, "LAST_NAME", "lastName", "java.lang.String"));
 		
 		EntityInDbModel inverseSideEntity = new EntityInDbModel();
 //		inverseSideEntity.setName("COMPANY");
 		inverseSideEntity.setDatabaseTable("COMPANY");
 //		inverseSideEntity.setBeanJavaClass("Company");
 		inverseSideEntity.setClassName("Company");
-		inverseSideEntity.storeAttribute(buildColumn("CODE", "code", "short"));
-		inverseSideEntity.storeAttribute(buildColumn("NAME", "name", "java.lang.String"));
+		inverseSideEntity.storeAttribute(buildAttribute(inverseSideEntity, "CODE", "code", "short"));
+		inverseSideEntity.storeAttribute(buildAttribute(inverseSideEntity, "NAME", "name", "java.lang.String"));
 
 		assertEquals("company", rules.getAttributeNameForLinkToOne(owningSideEntity, inverseSideEntity) ) ;
 		
@@ -145,17 +145,17 @@ public class RulesTest {
 		entity.setDatabaseTable("EMPLOYEE");
 //		entity.setBeanJavaClass("Employee");
 		entity.setClassName("Employee");
-		entity.storeAttribute(buildColumn("ID", "id", "int"));
-		entity.storeAttribute(buildColumn("FIRST_NAME", "firstName", "java.lang.String"));
-		entity.storeAttribute(buildColumn("LAST_NAME", "lastName", "java.lang.String"));
+		entity.storeAttribute(buildAttribute(entity, "ID", "id", "int"));
+		entity.storeAttribute(buildAttribute(entity, "FIRST_NAME", "firstName", "java.lang.String"));
+		entity.storeAttribute(buildAttribute(entity, "LAST_NAME", "lastName", "java.lang.String"));
 		
 		EntityInDbModel referencedEntity = new EntityInDbModel();
 //		referencedEntity.setName("COMPANY");
 		referencedEntity.setDatabaseTable("COMPANY");
 //		referencedEntity.setBeanJavaClass("Company");
 		referencedEntity.setClassName("Company");
-		referencedEntity.storeAttribute(buildColumn("CODE", "code", "short"));
-		referencedEntity.storeAttribute(buildColumn("NAME", "name", "java.lang.String"));
+		referencedEntity.storeAttribute(buildAttribute(referencedEntity, "CODE", "code", "short"));
+		referencedEntity.storeAttribute(buildAttribute(referencedEntity, "NAME", "name", "java.lang.String"));
 
 		assertEquals("listOfCompany", rules.getAttributeNameForLinkToMany(entity, referencedEntity) ) ;
 		

@@ -18,6 +18,7 @@ package org.telosys.tools.repository.conversion.wrapper;
 import org.telosys.tools.commons.StrUtil;
 import org.telosys.tools.generic.model.DateType;
 import org.telosys.tools.repository.model.AttributeInDbModel;
+import org.telosys.tools.repository.model.EntityInDbModel;
 import org.telosys.tools.repository.persistence.util.RepositoryConst;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -28,9 +29,9 @@ public class AttributeWrapper {
 		super();
 	}
 
-	public AttributeInDbModel getAttributeObject(final Element elem) 
+	public AttributeInDbModel getAttributeObject(EntityInDbModel entity, Element elem) 
 	{
-		final AttributeInDbModel attributeInDbModel = new AttributeInDbModel();
+		final AttributeInDbModel attributeInDbModel = new AttributeInDbModel(entity);
 
 		attributeInDbModel.setSelected(StrUtil.getBoolean(elem.getAttribute(RepositoryConst.COLUMN_SELECTED)));
 

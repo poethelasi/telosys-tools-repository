@@ -8,16 +8,33 @@ public class AttributeInDbModelTest {
 
 	@Test
 	public void testDeepCopy() {
-		AttributeInDbModel c = new AttributeInDbModel();
-		c.setDatabaseName("FIRST_NAME");
-		c.setDatabaseNotNull(true);
-		c.setDatabaseComment("my comment");
 		
-		AttributeInDbModel c2 = ObjectUtil.deepCopy(c);
+		EntityInDbModel entity = new EntityInDbModel("Employee","EMPLOYEE");
+		AttributeInDbModel attribute = new AttributeInDbModel(entity);
 		
-		c.setDatabaseName("OTHER");
+		// Init instance 1
+		attribute.setDatabaseName("FIRST_NAME");
+		attribute.setDatabaseNotNull(true);
+		attribute.setDatabaseComment("my comment");
+		Assert.assertEquals("Employee", attribute.getEntity().getClassName() ) ;
+		Assert.assertEquals("EMPLOYEE", attribute.getEntity().getDatabaseTable() ) ;
 		
-		Assert.assertTrue(c2.getDatabaseName().equals("FIRST_NAME"));
+		// Deep copy in instance 2
+		AttributeInDbModel attribute2 = ObjectUtil.deepCopy(attribute);
+		
+		// Change instance 1
+		attribute.setDatabaseName("OTHER");
+		attribute.setDatabaseNotNull(false);
+		entity.setClassName("Employee2");
+		entity.setDatabaseTable("EMPLOYEE2");
+		Assert.assertEquals("Employee2", attribute.getEntity().getClassName() ) ;
+		Assert.assertEquals("EMPLOYEE2", attribute.getEntity().getDatabaseTable() ) ;
+		
+		// Check everything is unchanged in instance 2
+		Assert.assertEquals("FIRST_NAME", attribute2.getDatabaseName() );
+		Assert.assertEquals(true,         attribute2.isDatabaseNotNull() );
+		Assert.assertEquals("Employee",   attribute2.getEntity().getClassName() ) ;
+		Assert.assertEquals("EMPLOYEE",   attribute2.getEntity().getDatabaseTable() ) ;
 	}
 
 }

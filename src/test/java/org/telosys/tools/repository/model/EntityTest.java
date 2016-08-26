@@ -11,8 +11,8 @@ import org.telosys.tools.generic.model.Cardinality;
 
 public class EntityTest {
 	
-	private AttributeInDbModel buildAttribute(int i) {
-		AttributeInDbModel c = new AttributeInDbModel();
+	private AttributeInDbModel buildAttribute(EntityInDbModel entity, int i) {
+		AttributeInDbModel c = new AttributeInDbModel(entity);
 		c.setDatabaseName("COL_NAME"+i);
 		c.setDatabaseNotNull(true);
 		c.setDatabaseComment("my comment " + i);
@@ -70,7 +70,7 @@ public class EntityTest {
 		entity.setDatabaseCatalog("MYCATALOG");
 		entity.setDatabaseTable("BOOK");
 		for ( int i = 1 ; i <= 5 ; i++ ) {
-			entity.storeAttribute(buildAttribute(i));
+			entity.storeAttribute(buildAttribute(entity,i));
 		}
 		for ( int i = 1 ; i <= 5 ; i++ ) {
 			entity.storeForeignKey(buildForeignKey(i));
@@ -84,7 +84,7 @@ public class EntityTest {
 		
 		//--- Add 3 new attributes
 		for ( int i = 6 ; i <= 8 ; i++ ) { 
-			entity.storeAttribute(buildAttribute(i));
+			entity.storeAttribute(buildAttribute(entity, i));
 		}
 		//--- Remove 1 attribute
 		entity.removeAttribute(entity.getAttributeByColumnName("COL_NAME2"));

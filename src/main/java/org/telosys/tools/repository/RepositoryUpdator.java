@@ -70,7 +70,7 @@ public class RepositoryUpdator extends RepositoryManager
 	}
 
 	private AttributeInDbModel addEntityAttribute(EntityInDbModel entity, DatabaseColumn dbColumn ) 	{
-		AttributeInDbModel column = buildColumn( dbColumn ) ;
+		AttributeInDbModel column = buildColumn( entity, dbColumn ) ;
 		
 		//--- Add the "column" to the "entity"
 		entity.storeAttribute(column);

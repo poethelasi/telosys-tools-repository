@@ -168,7 +168,7 @@ public abstract class RepositoryManager //extends StandardTool
 		//--- For each column of the table ...
 		for ( DatabaseColumn dbCol : dbTable.getColumns() ) {
 			//--- Create a new column from the database model
-			AttributeInDbModel column = buildColumn( dbCol );
+			AttributeInDbModel column = buildColumn( entity, dbCol );
 			
 			//--- Add the "column" element in the XML tree
 			entity.storeAttribute(column);
@@ -221,7 +221,7 @@ public abstract class RepositoryManager //extends StandardTool
     	return false ;
     }
 		
-	protected AttributeInDbModel buildColumn( DatabaseColumn dbCol ) {	
+	protected AttributeInDbModel buildColumn(EntityInDbModel entity, DatabaseColumn dbCol ) {	
 		String dbColName     = dbCol.getColumnName(); //--- Column Name
 		String dbTypeName    = dbCol.getDbTypeName(); //--- Column Type (original database type)
 		int    iDbSize       = dbCol.getSize(); //--- Column Size (max nb of characters or decimal precision 
@@ -258,7 +258,7 @@ public abstract class RepositoryManager //extends StandardTool
 				+ sAttributeName + " ( " + sAttributeType + " ) ");
 
 		//--- Create a new "column" for this "table/entity"
-		AttributeInDbModel column = new AttributeInDbModel();
+		AttributeInDbModel column = new AttributeInDbModel(entity);
 		column.setDatabaseName(dbColName);
 		column.setDatabaseTypeName(dbTypeName);
 		column.setJdbcTypeCode(iJdbcTypeCode);

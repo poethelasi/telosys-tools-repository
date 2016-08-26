@@ -313,6 +313,9 @@ public class EntityInDbModel implements Serializable, Entity // v 3.0.0 ( 2 spec
 //	public void storeColumn(AttributeInDbModel column)
 	public void storeAttribute(AttributeInDbModel attribute)  // renamed in v 3.0.0
 	{
+		if ( attribute.getEntity() != this ) {
+			throw new IllegalStateException("Invalid entity in attribute '" + attribute.getName() + "'");
+		}
 		attributes.put(attribute.getDatabaseName(), attribute);
 	}
 
@@ -413,13 +416,40 @@ public class EntityInDbModel implements Serializable, Entity // v 3.0.0 ( 2 spec
 	}
 	
 	/**
-	 * Returns all the links of the entity
+	 * Returns all the links of the entity as an array
 	 * @return
 	 */
-	//public LinkInDbModel[] getLinks()
 	public LinkInDbModel[] getLinksArray()
 	{
 		return (LinkInDbModel[]) links.values().toArray(new LinkInDbModel[links.size()]);
+	}
+
+	/**
+	 * Returns a List containing all the links of the entity <br>
+	 * The links are in a random order
+	 * @return
+	 */
+	public List<LinkInDbModel> getAllLinks() {
+		List<LinkInDbModel> list = new LinkedList<LinkInDbModel>();
+		for ( LinkInDbModel link : links.values() ) {
+			list.add(link);
+		}
+		return list ;
+	}
+
+	/**
+	 * Returns a List containing all the selected links of the entity <br>
+	 * The links are in a random order
+	 * @return
+	 */
+	public List<LinkInDbModel> getSelectedLinks() {
+		List<LinkInDbModel> list = new LinkedList<LinkInDbModel>();
+		for ( LinkInDbModel link : links.values() ) {
+			if ( link.isSelected() ) {
+				list.add(link);
+			}
+		}
+		return list ;
 	}
 
 	@Override

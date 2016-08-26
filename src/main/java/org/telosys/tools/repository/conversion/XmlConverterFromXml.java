@@ -119,7 +119,7 @@ public class XmlConverterFromXml {
 			//assertIsElement(node);
 			if ( node.getNodeType() == Node.ELEMENT_NODE ) {
 				if ( RepositoryConst.COLUMN.equals(node.getNodeName())) {
-					AttributeInDbModel attribute = processColumnNode( node ) ;
+					AttributeInDbModel attribute = processColumnNode(entity, node ) ;
 					entity.storeAttribute(attribute);
 				}
 				else if ( RepositoryConst.FK.equals(node.getNodeName())) {
@@ -145,11 +145,11 @@ public class XmlConverterFromXml {
 	 * @return
 	 * @throws TelosysToolsException
 	 */
-	private AttributeInDbModel processColumnNode( Node columnNode ) throws TelosysToolsException  {
+	private AttributeInDbModel processColumnNode( EntityInDbModel entity, Node columnNode ) throws TelosysToolsException  {
 		log("processColumnNode : " + columnNode.getNodeName() );
 		assertIsElement(columnNode);
 		Element columnElement = (Element) columnNode;
-		AttributeInDbModel column = Wrappers.ATTRIBUTE_WRAPPER.getAttributeObject(columnElement);
+		AttributeInDbModel column = Wrappers.ATTRIBUTE_WRAPPER.getAttributeObject(entity, columnElement);
 		return column ;
 	}
 

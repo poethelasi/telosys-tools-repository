@@ -781,6 +781,17 @@ public class LinkInDbModel implements Serializable, Link
 		
 		return sb.toString();
 	}
+	
+	public boolean usesAttribute(AttributeInDbModel attribute) {
+		if ( joinColumns != null ) {
+			for ( JoinColumnInDbModel jc : joinColumns ) {
+				if ( attribute.getDatabaseName().equals( jc.getName() ) ) {
+					return true ;
+				}
+			}
+		}
+		return false ;
+	}
 
 	//--------------------------------------------------------------------------
 	/* (non-Javadoc)

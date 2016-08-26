@@ -17,6 +17,7 @@ package org.telosys.tools.repository.model;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.telosys.tools.commons.DatabaseUtil;
 import org.telosys.tools.commons.JavaTypeUtil;
@@ -38,6 +39,8 @@ import org.telosys.tools.generic.model.types.TypeReverser;
 public class AttributeInDbModel implements Comparable<AttributeInDbModel>, Serializable, Attribute
 {
 	private static final long serialVersionUID = 1L;
+	
+	private final EntityInDbModel entity ; // v 3.0.0 - The entity owning the attribute
 	
 //	public final static String SPECIAL_DATE_ONLY      = "D";
 //	public final static String SPECIAL_TIME_ONLY      = "T";
@@ -136,6 +139,19 @@ public class AttributeInDbModel implements Comparable<AttributeInDbModel>, Seria
 	
 	private SequenceGeneratorInDbModel sequenceGenerator = null ;
 	
+	
+	/**
+	 * Constructor
+	 * @since v 3.0.0
+	 */
+	public AttributeInDbModel(EntityInDbModel entity) {
+		super();
+		this.entity = entity ;
+	}
+
+	public EntityInDbModel getEntity() {
+		return this.entity ;
+	}
 	//-----------------------------------------------------------------------------
 	private AttributeTypeInfo getTypeInfo(String fullType) {
 		return TypeReverser.getInstance().getTypeInfo(fullType);
@@ -405,13 +421,6 @@ public class AttributeInDbModel implements Comparable<AttributeInDbModel>, Seria
 	public String getModelFullType() { // v 3.0.0
 		return _sModelFullType ;
 	}
-
-//	@Override
-//	public String getSimpleType() {
-//		// TODO Auto-generated method stub
-//		// TODO : really useful ?
-//		return null;
-//	}
 
 	//-----------------------------------------------------------------------------
 //	/**
@@ -1086,6 +1095,37 @@ public class AttributeInDbModel implements Comparable<AttributeInDbModel>, Seria
 		else {
 			return null ;
 		}
+	}
+	
+	
+	/**
+	 * Returns true if the attribute is used in at least one the given links
+	 * @param links
+	 * @return
+	 */
+	private boolean isUsedInLink( List<LinkInDbModel> links ) {
+		if ( links != null ) {
+			for ( LinkInDbModel link : links ) {
+				if( link.isOwningSide() ) {
+					if ( link.usesAttribute(this) ) {
+						return true ;
+					}
+				}
+			}
+		}
+		return false ;
+	}
+	
+	@Override
+	public boolean isUsedInLinks() {
+		// Is it used in one of all the links ?
+		return isUsedInLink( this.entity.getAllLinks() );
+	}
+	
+	@Override
+	public boolean isUsedInSelectedLinks() {
+		// Is it used in one of the selected links ?
+		return isUsedInLink( this.entity.getSelectedLinks() );
 	}
 
 }

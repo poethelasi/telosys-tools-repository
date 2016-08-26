@@ -92,8 +92,8 @@ public class ChangeLogTest {
 		assertTrue( changeOnEntity.getEntityBefore() == entityUpdatedBefore );
 		assertTrue( changeOnEntity.getEntityAfter()  == entityUpdatedAfter );
 		
-		AttributeInDbModel columnBefore = new AttributeInDbModel();
-		AttributeInDbModel columnAfter  = new AttributeInDbModel();
+		AttributeInDbModel columnBefore = new AttributeInDbModel(entityUpdatedBefore);
+		AttributeInDbModel columnAfter  = new AttributeInDbModel(entityUpdatedAfter);
 		changeOnEntity.addChangeOnColumn( new ChangeOnColumn(ChangeType.UPDATED, columnBefore, columnAfter ) );
 		changeLog.log(changeOnEntity);
 		assertNotNull( changeLog.getChangesByType(ChangeType.UPDATED).size() == 1 );
